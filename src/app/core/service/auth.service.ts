@@ -224,8 +224,6 @@ export class AuthenticationService {
         }
       }
     
-      
-    
       getUserByUsername(username: string) {
         const token = localStorage.getItem('token'); // Récupère le token stocké
         //console.log(token)
