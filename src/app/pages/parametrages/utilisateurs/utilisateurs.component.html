@@ -1,0 +1,233 @@
+ <!-- page title -->
+ <app-page-title [breadcrumbItems]="pageTitle" title="Les utilisateurs"></app-page-title>
+ <div class="loader-container" *ngIf="!result">
+  <div class="lds-dual-ring"></div>
+</div>
+ <div *ngIf="result" >
+
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <h4 class="page-title"></h4>
+                <div class="page-title-right">
+                    <div class="mt-2 mt-md-0">
+                        
+                        <button (click)="openScrollableModal(utilisateurModal)" type="button" class="btn btn-success me-1 mb-2 mb-sm-0">
+                            <i class="uil-plus me-1"></i> CREER UN UTILISATEUR
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+          <ng-template #utilisateurModal let-modal>
+                                <div class="modal-header" style="background-color: #128C7E;">
+                                    <h4 class="modal-title text-light" id="NewTaskModalLabel">UTILISATEUR</h4>
+                                    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
+                                </div>
+                                <div class="modal-body" >
+                                    <form (ngSubmit)="onSaveUtilisateur(utilisateurForm);modal.close('Close click')" [formGroup]="utilisateurForm"  class="p-2">
+                                                     
+                                            <div class="row mb-1">
+                                              <div class="col-md-6">
+                                                <div class="form-group">
+                                                  <label for="">Nom</label>
+                                                  <input type="text" id="nom" name="nom" formControlName="nom" class="form-control" placeholder="Nom" >
+                                                  <strong class="text-danger" *ngIf="utilisateurForm.get('nom').hasError('required') && utilisateurForm.get('nom').touched"> Ce champ est obligatoire !</strong>
+                                                  <strong class="text-danger" *ngIf="utilisateurForm.get('nom').hasError('minlength') && utilisateurForm.get('nom').touched"> Minimum 2 caractères !</strong>
+                                                </div>
+                                              </div>
+                                              <div class="col-md-6">
+                                                <div class="form-group">
+                                                  <label for="">Prénom(s)</label>
+                                                  <input type="text" id="prenom" name="prenom" formControlName="prenom" class="form-control" placeholder="prenom" >
+                                                  <strong class="text-danger" *ngIf="utilisateurForm.get('prenom').hasError('required') && utilisateurForm.get('prenom').touched"> Ce champ est obligatoire !</strong>
+                                                </div>
+                                              </div>
+                                            </div>
+                                            <div class="row mb-1">
+                                              <div class="col-md-6">
+                                                <div class="form-group">
+                                                  <label for="">Username</label>
+                                                  <input type="text" id="username" name="username" formControlName="username" class="form-control" placeholder="username">
+                                                  <strong class="text-danger" *ngIf="utilisateurForm.get('username').hasError('required') && utilisateurForm.get('username').touched"> Ce champ est obligatoire !</strong>
+                                                </div>
+                                               
+                                              </div>
+                                              <div class="col-xs-12 col-sm-6">
+                                                <div class="form-group">
+                                                <label for="">Roles</label>
+                                                <select required name="idRole" formControlName="idRole" class="form-select" id="idRole">
+                                                    <option value="null" disabled>---Select Role---</option>
+                                                    <option *ngFor="let role of roles" [value]="role.id">{{role.libelle}}</option>
+                                                  </select>
+                                                </div>
+                                              </div>
+                                              <div class="col-xs-12 col-sm-6">
+                                                <div class="form-group">
+                                                <label for="">Superviseurs</label>
+                                                <select name="superviseurId" formControlName="superviseurId" class="form-select" id="superviseurId">
+                                                    <option value="null" disabled>---Select Superviseur---</option>
+                                                    <option *ngFor="let superviseur of superviseurs" [value]="superviseur.id">{{superviseur.nom}}</option>
+                                                  </select>
+                                                </div>
+                                              </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-danger" (click)="modal.close('Close click')">FERMER</button>
+                                                <button type="submit" [disabled]="utilisateurForm.invalid" class="btn btn-primary">
+                                                  <span *ngIf="!loading" >ENREGISTRER </span>
+                                                    <span *ngIf="loading">EN COURS <span class="spinner-border"></span></span>
+                                                </button>
+                                               
+                                            </div>
+                                            </form>
+                                   
+                                </div>
+        </ng-template>
+ <div  class="card">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-sm-6">
+            <h5 class="card-title mt-0 mb-0 header-title">Liste des utilisateurs</h5>
+        </div>
+        </div><br>
+<div>
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="table-responsive m-t-40">
+                    <table class="table stylish-table">
+                        <thead>
+                            <tr>
+                                
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Username</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let u of formsArr | paginate: configPagination">
+                              
+                                <td>{{u.value.nom}}</td>
+                                <td>{{u.value.prenom}}</td>
+                                <td>{{u.value.username}}</td>
+                                <td>
+                                  <span *ngIf="u.value.enabled" class="badge bg-success py-1">Actif</span>
+                                  <span *ngIf="!u.value.enabled" class="badge bg-danger py-1" style="color: white;">Non Actif</span>
+                                </td>
+                                <td  style="cursor:pointer;">
+                                  
+                                  <span style="color:blue"  class="fa fa-edit fa-2x mr-1" (click)="openModal(content3)"></span>
+                                  <span   class="fa fa-trash fa-2x text-danger" (click)="deleteUser(u.value.id)"></span> 
+                                  <div class="col-md-12">
+                                      
+                                             <ng-template #content3 let-modal>
+                                              <div class="modal-header" style="background-color: #128C7E;">
+                                                <h4 class="modal-title text-light" id="NewTaskModalLabel">Modification Utilisateur</h4>
+                                                <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
+                                            </div>
+                                                  <div class="modal-body">
+                                                      <form novalidate [formGroup]="u" (ngSubmit)="onUpdateUser(u.value);modal.close('Close click')">
+                                                        
+                                                        <div class="row mb-1">
+                                                          <div class="col-md-6">
+                                                            <div class="form-group">
+                                                              <label for="">Nom</label>
+                                                              <input type="text" id="nom" name="nom" formControlName="nom" class="form-control" placeholder="Nom" >
+                                                              <strong class="text-danger" *ngIf="u.get('nom').hasError('required') && u.get('nom').touched"> Ce champ est obligatoire !</strong>
+                                                              <strong class="text-danger" *ngIf="u.get('nom').hasError('minlength') && u.get('nom').touched"> Minimum 2 caractères !</strong>
+                                                            </div>
+                                                          </div>
+                                                          <div class="col-md-6">
+                                                            <div class="form-group">
+                                                              <label for="">Prénom(s)</label>
+                                                              <input type="text" id="prenom" name="prenom" formControlName="prenom" class="form-control" placeholder="prenom" >
+                                                              <strong class="text-danger" *ngIf="u.get('prenom').hasError('required') && u.get('prenom').touched"> Ce champ est obligatoire !</strong>
+                                                            </div>
+                                                          </div>
+                                                        </div>
+                                                        <div class="row mb-1">
+                                                          <div class="col-md-6">
+                                                            <div class="form-group">
+                                                              <label for="">Username</label>
+                                                              <input type="text" id="username" name="username" formControlName="username" class="form-control" placeholder="username">
+                                                              <strong class="text-danger" *ngIf="u.get('username').hasError('required') && u.get('username').touched"> Ce champ est obligatoire !</strong>
+                                                            </div>
+                                                           
+                                                          </div>
+                                                          <div class="col-xs-12 col-sm-6">
+                                                            <div class="form-group">
+                                                            <label for="">Roles</label>
+                                                            <select required name="idRole" formControlName="idRole" class="form-select" id="idRole">
+                                                                <option value="null" disabled>---Select Role---</option>
+                                                                <option *ngFor="let role of roles" [value]="role.id">{{role.libelle}}</option>
+                                                              </select>
+                                                            </div>
+                                                          </div>
+                                                        </div>
+                                                        <div class="row">
+                                                         <div class="col-md-6" >
+                                                          <div class="form-group">
+                                                              <label for="">Statut</label>
+                                                              <div class="">
+                                                                <div class="row">
+                                                                  <div class="col-md-3" >
+                                                                    <div  class="form-check mb-1">
+                                                                      <input type="radio" [value]="true" formControlName="enabled" name="enabled" id="enabled1" class="form-check-input">
+                                                                      <label style="cursor: pointer;" class="form-check-label" for="enabled1">Actif</label>
+                                                                  </div>
+                                                                  </div>
+                                                                  <div class="col-md-3">
+                                                                    <div class="form-check">
+                                                                      <input type="radio" [value]="false" formControlName="enabled" name="enabled" id="enabled2" class="form-check-input">
+                                                                      <label style="cursor: pointer;" class="form-check-label" for="enabled2">Inactif</label>
+                                                                  </div>
+                                                                  </div>
+                                                                </div>
+                                                            </div></div>
+                                                          </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-danger" (click)="modal.close('Close click')">FERMER</button>
+                                                            <button type="submit" [disabled]="u.invalid" class="btn btn-primary">
+                                                              <span *ngIf="!loading" >MODIFIER </span>
+                                                                <span *ngIf="loading">EN COURS <span class="spinner-border"></span></span>
+                                                            </button>
+                                                           
+                                                        </div>
+                                                        </form>
+                                                  </div>
+                                                  
+                                              </ng-template>
+                                         
+                                  </div>
+                                  
+                                  
+                            </td>
+                            
+                    
+                  </tr>
+                            
+                            
+                            
+                            
+                            
+                        </tbody>
+                    </table>
+                    <div class="text-right" >
+                      <pagination-controls (pageChange)="pageChange($event)" previousLabel="Précédent" nextLabel="Suivant" >
+                      </pagination-controls>
+                    </div>
+                </div>
+    </div>
+  </div>
+  <!-- Row -->
+  
+  </div>
+  </div>
+</div>
+</div>

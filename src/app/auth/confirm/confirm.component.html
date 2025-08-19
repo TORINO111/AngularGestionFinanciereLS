@@ -1,0 +1,67 @@
+<app-default-layout>
+
+    <div class="auth-logo mx-auto">
+        <a [routerLink]="['']" class="logo logo-dark text-center">
+            <span class="logo-lg">
+                <img src="assets/images/logo-sm.png" alt="" height="24">
+            </span>
+        </a>
+
+        <a [routerLink]="['']" class="logo logo-light text-center">
+            <span class="logo-lg">
+                <img src="assets/images/logo-light.png" alt="" height="24">
+            </span>
+        </a>
+    </div>
+
+    
+    <p class="text-muted mt-1 mb-4">Entrez votre numéro et nous vous enverrons un lien de réinitialisation.</p>
+
+    <form class="authentication-form" name="reset-password-form" [formGroup]="resetPasswordForm" (ngSubmit)="resetPassword()">
+        <div class="mb-3">
+            <label class="form-label">Mot de passe</label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="icon-dual" data-feather="lock" appFeatherIcon></i>
+                </span>
+                <input class="form-control" type="password" id="password" placeholder="Mot de passe"
+                    formControlName="password" [ngClass]="{'is-invalid': formSubmitted && formValues.password.invalid}"
+                    required>
+
+                <div *ngIf="formSubmitted && formValues.password.invalid" class="invalid-feedback">
+
+                    <div *ngIf="formValues.password.errors?.required">
+                        Mot de passe obligatoire.
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Confirmation</label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="icon-dual" data-feather="lock" appFeatherIcon></i>
+                </span>
+                <input class="form-control" type="password" id="confirmation" placeholder="Confirmation"
+                    formControlName="confirmation" [ngClass]="{'is-invalid': formSubmitted && formValues.confirmation.invalid}"
+                    required>
+
+                <div *ngIf="formSubmitted && formValues.confirmation.invalid" class="invalid-feedback">
+
+                    <div *ngIf="formValues.confirmation.errors?.required">
+                        Confirmation obligatoire.
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-0 text-center">
+            <button class="btn btn-primary w-100" type="submit"> Valider</button>
+        </div>
+    </form>
+
+    <p class="text-muted" footerLink>Retour au <a [routerLink]="['../login']" class="text-primary fw-bold ms-1">Login</a>
+    </p>
+</app-default-layout>

@@ -1,0 +1,60 @@
+.societes{
+    color: #a4f467;
+    padding-top: 14%;
+}
+
+.exercice-cours{
+  color: red;
+}
+
+.exercice-neant{
+  color: #a4f467;
+}
+.scrollable-y {
+    overflow-y: auto;
+  }
+  
+  .max-height-300 {
+    max-height: 300px;
+  }
+  
+  .list-group-item.active {
+    background-color: #a4f467 !important;
+    color: #fff;
+    font-weight: 600;
+  }
+  
+  /*nouveau*/
+  
+  
+  .dropdown-menu .form-control {
+    border-radius: 0.3rem;
+  }
+  
+  .list-group-item-action {
+    transition: background-color 0.2s ease;
+  }
+  
+  .list-group-item-action:hover {
+    background-color: #e9ecef;
+  }
+
+  .blinking-alert {
+    animation: blinker 1.2s linear infinite;
+    font-weight: bold;
+    font-size: 1.2rem;
+    border: 2px solid red;
+    border-radius: 5px;
+    background-color: #ffe6e6;
+    color: #b30000;
+  }
+  
+  @keyframes blinker {
+    50% {
+      opacity: 0;
+    }
+  }
+  
+
+  
+  

@@ -1,0 +1,80 @@
+<app-page-title [breadcrumbItems]="pageTitle" title="Gestion des Exercices"></app-page-title>
+
+<div class="loader-container" *ngIf="!result">
+  <div class="lds-dual-ring"></div>
+</div>
+<!-- start page title -->
+<div class="mt-2 card" *ngIf="result">
+  <div class="card-body">
+<div class="container mt-1">
+  <div *ngIf="!societeId" class="alert alert-warning animated-blink text-center" role="alert">
+     Veuillez sélectionner une société pour afficher les exercices.
+  </div>
+  
+  <button *ngIf="!formVisible" (click)="nouvelExercice()"  class="btn btn-success mt-1">
+    NOUVEAU
+  </button>
+  <form *ngIf="formVisible" [formGroup]="exerciceForm" (ngSubmit)="creerExercice()" class="border p-3 rounded mb-4 bg-light">
+    <div class="row">
+      <div class="form-group col-md-2">
+        <label>Année</label>
+        <input type="number" class="form-control" formControlName="annee" />
+      </div>
+
+      <div class="form-group col-md-3">
+        <label>Date début</label>
+        <input type="date" class="form-control" formControlName="dateOuverture" />
+      </div>
+
+      <div class="form-group col-md-3">
+        <label>Date fin</label>
+        <input type="date" class="form-control" formControlName="dateCloture" />
+      </div>
+
+      
+    </div>
+
+    <button *ngIf="!exerciceEnCours" type="submit" class="btn btn-success mt-1" [disabled]="loading || exerciceForm.invalid">
+      {{ loading ? 'Ouverture...' : 'Ouvrir exercice' }}
+    </button>
+  </form>
+
+  <table class="table table-bordered table-striped">
+    <thead class="thead-dark">
+      <tr>
+        <th>Année</th>
+        <th>Ouverture</th>
+        <th>Clôture</th>
+        <th>Statut</th>
+        <th>Création</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let exercice of exercices">
+        <td>{{ exercice.annee }}</td>
+        <td>{{ exercice.dateOuverture | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ exercice.dateCloture ? (exercice.dateCloture | date: 'dd/MM/yyyy') : '-' }}</td>
+        <td>
+          <span
+            class="badge text-white"
+            [ngClass]="!exercice.cloture ? 'bg-success' : 'bg-secondary'">
+            {{ !exercice.cloture ? 'Ouvert' : 'Clôturé' }}
+          </span>
+
+        </td>
+        <td>{{ exercice.createdDate | date: 'shortDate' }}</td>
+        <td>
+          <button *ngIf="!exercice.cloture" class="btn btn-danger btn-sm" (click)="cloturerExercice(exercice)">
+            Clôturer
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="exercices?.length == 0" >
+        <td  colspan="6"><h3 style="text-align: center;">Aucune donnée trouvée</h3></td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+</div>
+</div>

@@ -1,0 +1,149 @@
+<!-- Right Sidebar -->
+<div class="right-bar" (clickOutside)="hide()" [exclude]="'.right-bar-toggle'" [excludeBeforeClick]="true">
+    <ngx-simplebar class="h-100">
+
+        <h6 class="fw-medium px-3 m-0 py-2 text-uppercase bg-light">
+            <span class="d-block py-1">Theme Settings</span>
+        </h6>
+
+        <div class="p-3">
+            <ngb-alert [dismissible]="false" type="warning">
+                <strong>Customize </strong> the overall color scheme, sidebar menu, etc
+            </ngb-alert>
+
+            <h6 class="fw-medium mt-4 mb-2 pb-1">Layout Type</h6>
+
+            <div class="form-check form-switch mb-1">
+                <input type="radio" class="form-check-input" name="layoutType" value="vertical" id="vertical-check"
+                    [(ngModel)]="layoutType" (change)="changeLayout('vertical')" />
+                <label class="form-check-label" for="vertical-check">Vertical Layout</label>
+            </div>
+
+            <div class="form-check form-switch mb-1">
+                <input type="radio" class="form-check-input" name="layoutType" value="horizontal" id="horizontal-check"
+                    [(ngModel)]="layoutType" (change)="changeLayout('horizontal')" />
+                <label class="form-check-label" for="horizontal-check">Horizontal Layout</label>
+            </div>
+
+            <div class="form-check form-switch mb-1">
+                <input type="radio" class="form-check-input" name="layoutType" value="detached" id="detached-check"
+                    [(ngModel)]="layoutType" (change)="changeLayout('detached')" />
+                <label class="form-check-label" for="detached-check">Detached Layout</label>
+            </div>
+
+            <div class="form-check form-switch mb-1">
+                <input type="radio" class="form-check-input" name="layoutType" value="two-column" id="two-column-check"
+                    [(ngModel)]="layoutType" (change)="changeLayout('two-column')" />
+                <label class="form-check-label" for="two-column-check">Two Column Menu</label>
+            </div>
+
+            <!-- Width -->
+            <h6 class="fw-medium mt-4 mb-2 pb-1">Width</h6>
+            <div class="form-check form-switch mb-1">
+                <input type="radio" class="form-check-input" name="layoutWidth" value="fluid" id="fluid-check"
+                    [(ngModel)]="layoutWidth" (change)="changeLayoutWidth('fluid')" />
+                <label class="form-check-label" for="fluid-check">Fluid</label>
+            </div>
+            <div class="form-check form-switch mb-1">
+                <input type="radio" class="form-check-input" name="layoutWidth" value="boxed" id="boxed-check"
+                    [(ngModel)]="layoutWidth" (change)="changeLayoutWidth('boxed')" />
+                <label class="form-check-label" for="boxed-check">Boxed</label>
+            </div>
+
+            <!-- Menu positions -->
+            <ng-container *ngIf="layoutType!=='two-column'">
+                <h6 class="fw-medium mt-4 mb-2 pb-1">Menus (Leftsidebar and Topbar) Positon</h6>
+                <div class="form-check form-switch mb-1">
+                    <input type="radio" class="form-check-input" name="menuPosition" value="fixed" id="fixed-check"
+                        [(ngModel)]="menuPosition" (change)="changeMenuPosition('fixed')" />
+                    <label class="form-check-label" for="fixed-check">Fixed</label>
+                </div>
+
+                <div class="form-check form-switch mb-1">
+                    <input type="radio" class="form-check-input" name="menuPosition" value="scrollable"
+                        id="scrollable-check" [(ngModel)]="menuPosition" (change)="changeMenuPosition('scrollable')" />
+                    <label class="form-check-label" for="scrollable-check">Scrollable</label>
+                </div>
+            </ng-container>
+
+            <!-- Left Sidebar-->
+            <ng-container *ngIf="layoutType!=='horizontal'">
+                <h6 class="fw-medium mt-4 mb-2 pb-1">Left Sidebar Color</h6>
+
+                <div class="form-check form-switch mb-1">
+                    <input type="radio" class="form-check-input" name="leftSidebarTheme" value="light" id="light-check"
+                        [(ngModel)]="leftSidebarTheme" (change)="changeLeftSidebarTheme('light')" />
+                    <label class="form-check-label" for="light-check">Light</label>
+                </div>
+
+                <div class="form-check form-switch mb-1">
+                    <input type="radio" class="form-check-input" name="leftSidebarTheme" value="dark" id="dark-check"
+                        [(ngModel)]="leftSidebarTheme" (change)="changeLeftSidebarTheme('dark')" />
+                    <label class="form-check-label" for="dark-check">Dark</label>
+                </div>
+            </ng-container>
+
+            <!-- size -->
+            <ng-container *ngIf="layoutType!=='horizontal' && layoutType!=='two-column' && !disableLeftBarSize">
+                <h6 class="fw-medium mt-4 mb-2 pb-1">Left Sidebar Size</h6>
+
+                <div class="form-check form-switch mb-1">
+                    <input type="radio" class="form-check-input" name="leftSidebarType" value="default"
+                        id="default-size-check" [(ngModel)]="leftSidebarType"
+                        (change)="changeLeftSidebarType('default')" />
+                    <label class="form-check-label" for="default-size-check">Default</label>
+                </div>
+
+                <div class="form-check form-switch mb-1">
+                    <input type="radio" class="form-check-input" name="leftSidebarType" value="condensed"
+                        id="condensed-check" [(ngModel)]="leftSidebarType"
+                        (change)="changeLeftSidebarType('condensed')" />
+                    <label class="form-check-label" for="condensed-check">Condensed <small>(Extra Small
+                            size)</small></label>
+                </div>
+
+                <div class="form-check form-switch mb-1">
+                    <input type="radio" class="form-check-input" name="leftSidebarType" value="compact"
+                        id="compact-check" [(ngModel)]="leftSidebarType" (change)="changeLeftSidebarType('compact')" />
+                    <label class="form-check-label" for="compact-check">Compact <small>(Small
+                            size)</small></label>
+                </div>
+            </ng-container>
+
+            <!-- User info -->
+            <ng-container *ngIf="layoutType!=='horizontal' && layoutType!=='two-column'">
+                <h6 class="fw-medium mt-4 mb-2 pb-1">Sidebar User Info</h6>
+
+                <div class="form-check form-switch mb-1">
+                    <input type="checkbox" class="form-check-input" name="showSidebarUserInfo" value="fixed"
+                        id="sidebaruser-check" [(ngModel)]="showSidebarUserInfo"
+                        (change)="toggleLeftSidebarUserInfo(showSidebarUserInfo)" />
+                    <label class="form-check-label" for="sidebaruser-check">Enable</label>
+                </div>
+            </ng-container>
+
+            <!-- Topbar -->
+            <h6 class="fw-medium mt-4 mb-2 pb-1">Topbar</h6>
+
+            <div class="form-check form-switch mb-1">
+                <input type="radio" class="form-check-input" name="topbarTheme" value="dark" id="darktopbar-check"
+                    [(ngModel)]="topbarTheme" (change)="changeTopbarTheme('dark')" />
+                <label class="form-check-label" for="darktopbar-check">Dark</label>
+            </div>
+
+            <div class="form-check form-switch mb-1">
+                <input type="radio" class="form-check-input" name="topbarTheme" value="light" id="lighttopbar-check"
+                    [(ngModel)]="topbarTheme" (change)="changeTopbarTheme('light')" />
+                <label class="form-check-label" for="lighttopbar-check">Light</label>
+            </div>
+
+            <button class="btn btn-primary w-100 mt-4" id="resetBtn" (click)="reset()">Reset to Default</button>
+
+        </div>
+
+    </ngx-simplebar>
+</div>
+<!-- /Right-bar -->
+
+<!-- Right bar overlay-->
+<div class="rightbar-overlay"></div>

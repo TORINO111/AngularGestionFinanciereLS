@@ -1,0 +1,103 @@
+<app-page-title [breadcrumbItems]="pageTitle" title="Informations Utilisateur"></app-page-title>
+<div class="loader-container" *ngIf="!result">
+    <div class="lds-dual-ring"></div>
+  </div>
+<div class="mt-2 card" *ngIf="result">
+    <h4>Vos informations</h4>
+<div class="card-body">
+<form   [formGroup]="userForm" (ngSubmit)="onUpdateUser(userForm)">
+    <div class="row mb-1">
+      <!-- Nom -->
+      <div class="col-md-4">
+        <div class="form-group">
+          <input type="text" class="form-control" name="nom" formControlName="nom" placeholder="Nom">
+        </div>
+      </div>
+  
+      <!-- Sigle -->
+      <div class="col-md-4">
+        <div class="form-group">
+          <input type="text" class="form-control" name="prenom" formControlName="prenom" placeholder="Prenom">
+        </div>
+      </div>
+      <!-- Logo -->
+      <!-- Champ Logo amélioré avec aperçu -->
+    <div class="col-md-4">
+      <div class="form-group">
+        <input type="text" class="form-control" name="username" formControlName="username" placeholder="Username">
+      </div>
+    </div>
+
+      </div>
+      <div class="row mb-1">
+      <!-- Téléphone -->
+      <div class="col-md-4">
+        <div class="form-group">
+          <input type="text" class="form-control" name="telephone" formControlName="telephone" placeholder="Ex: xxxxxxxx ou 226xxxxxxxx">
+        </div>
+         <!-- Messages d'erreur -->
+      <div *ngIf="userForm.get('telephone')?.errors?.['invalidPhoneNumber']" class="error">
+        Format invalide.
+      </div>
+      </div>
+  
+      <!-- Email -->
+      <div class="col-md-4">
+        <div class="form-group">
+          <input type="email" class="form-control" name="email" formControlName="email" placeholder="Email">
+        </div>
+      </div>
+  
+    </div>
+    <!-- Bouton de soumission -->
+    <div class="text-end mt-3">
+      <button class="btn btn-primary" type="submit" [disabled]="userLoading">
+        <span *ngIf="userLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        {{ userLoading ? 'Enregistrement...' : 'Modifier' }}
+      </button>
+      
+    </div>
+  </form>
+  
+  
+</div>
+</div>
+
+<div class="mt-2 card" *ngIf="result">
+    <h4>Changer votre mot de passe </h4>
+    <div class="card-body">
+        
+    <form   [formGroup]="passwordForm" (ngSubmit)="sendPassword(passwordForm)">
+        <div class="row mb-1">
+          <div class="col-md-4">
+            <div class="form-group">
+              <input type="password" class="form-control" name="ancien" formControlName="ancien" placeholder="Ancien mot de passe">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <input type="password" class="form-control" name="password" formControlName="password" placeholder="Mot de passe">
+            </div>
+          </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <input type="password" class="form-control" name="confirmation" formControlName="confirmation" placeholder="Confirmation">
+          </div>
+        </div>
+    
+          </div>
+         <!-- Bouton de soumission -->
+        <div class="text-end mt-3">
+          <button class="btn btn-primary" type="submit" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            {{ loading ? 'Enregistrement...' : 'Valider' }}
+          </button>
+          
+        </div>
+      </form>
+      
+      
+    </div>
+    </div>
+
+  

@@ -1,0 +1,141 @@
+//
+// datepicker.scss
+//
+
+ngb-datepicker {
+    .ngb-dp-header {
+        background-color: $gray-100;
+        padding: 0.25rem 0;
+        .ngb-dp-navigation-select {
+            & > .form-select {
+                margin: 0 3px;
+            }
+        }
+        .ngb-dp-arrow-btn {
+            color: $dark;
+            &:focus {
+                box-shadow: none;
+            }
+            .ngb-dp-navigation-chevron {
+                width: 0.55rem;
+                height: 0.55rem;
+            }
+        }
+    }
+
+    .ngb-dp-month .ngb-dp-week:last-child {
+        padding-bottom: 0;
+    }
+
+    .ngb-dp-week .ngb-dp-weekdays {
+        background-color: $gray-100;
+    }
+
+    [ngbDatepickerDayView] {
+        line-height: 2.5rem;
+    }
+
+    .ngb-dp-week-number,
+    .ngb-dp-weekday,
+    .ngb-dp-day {
+        font-style: inherit;
+        color: $dark;
+        width: 36px;
+        height: 36px;
+        margin: 2px;
+        line-height: 36px;
+    }
+
+    .ngb-dp-day {
+        &:focus {
+            outline: none !important;
+        }
+    }
+
+    .ngb-dp-today {
+        .btn-light {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 13px;
+            color: $primary;
+            &.active {
+                border: none;
+            }
+            &.bg-primary {
+                background: transparent !important;
+                color: $primary !important;
+                font-weight: bold;
+            }
+        }
+    }
+
+    .ngb-dp-day {
+        .btn-light {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 13px;
+            color: $gray-700;
+            &.bg-primary {
+                background: transparent !important;
+                color: $primary !important;
+                font-weight: bold;
+            }
+        }
+    }
+
+    .ngb-footer-button {
+        padding: 8px;
+        text-align: right;
+
+        .btn-sm {
+            font-size: 0.75rem;
+        }
+    }
+}
+
+// Date Range
+.custom-day {
+    text-align: center;
+    display: inline-block;
+    height: 2rem;
+    width: 2rem;
+    vertical-align: middle;
+
+    &:hover {
+        background-color: $primary !important;
+        color: $white;
+    }
+
+    &.range {
+        background: $primary !important;
+        border-color: $primary;
+        color: $white;
+        // border-radius: 10px;
+    }
+
+    &.range.faded {
+        background-color: lighten($gray-300, 5%) !important;
+        color: $gray-700 !important;
+    }
+}
+
+.calendar-inline {
+    ngb-datepicker {
+        border: 1px solid $gray-300 !important;
+        width: 100%;
+        .ngb-dp-month {
+            width: 100%;
+            .ngb-dp-weekday {
+                width: 100%;
+            }
+            .ngb-dp-day {
+                width: 100%;
+                .btn-light {
+                    width: 100%;
+                }
+            }
+        }
+    }
+}
