@@ -1,0 +1,10 @@
+{
+	"/api/*":{
+		"target":"//4.222.22.46:8082",
+		"secure":false,
+		 "changeOrigin": true,
+		"logLevel":"debug"
+		
+
+	}
+}

@@ -1,0 +1,104 @@
+<app-default-layout>
+    <div class="auth-logo mx-auto">
+        <a [routerLink]="['../../dashboard/ecommerce']" class="logo logo-dark text-center">
+            <span class="logo-lg">
+                <img src="../assets/images/logo-sm.png" alt="" height="44">
+            </span>
+        </a>
+
+        <a [routerLink]="['../../dashboard/ecommerce']" class="logo logo-light text-center">
+            <span class="logo-lg">
+                <img src="../assets/images/logo-sm.png" alt="" height="24">
+            </span>
+        </a>
+    </div>
+
+    <h6 class="h5 mb-0 mt-3" i18n>Create your account</h6>
+    <p class="text-muted mt-1 mb-4" i18n>Create a free account and start using Shreyu</p>
+
+    <form name="signup-form" [formGroup]="signUpForm" (ngSubmit)="onSubmit()" class="authentication-form">
+        <app-ui-preloader [display]="loading"></app-ui-preloader>
+        <ngb-alert type="danger" *ngIf="error" [dismissible]="false">{{ error }}</ngb-alert>
+
+        <div class="mb-3">
+            <label class="form-label" i18n>Name</label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="icon-dual" data-feather="user" appFeatherIcon></i>
+                </span>
+                <input type="text" class="form-control" id="name" i18n-placeholder placeholder="Your full name" required
+                    formControlName="name" [ngClass]="{'is-invalid': formSubmitted && formValues.name.invalid}">
+
+                <div *ngIf="formSubmitted && formValues.name.invalid" class="invalid-feedback">
+
+                    <div *ngIf="formValues.name.errors?.required" i18n>
+                        Name is required.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" i18n>Email Address</label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="icon-dual" data-feather="mail" appFeatherIcon></i>
+                </span>
+                <input type="email" class="form-control" required id="email" placeholder="hello@coderthemes.com"
+                    formControlName="email" [ngClass]="{'is-invalid': formSubmitted && formValues.email.invalid}">
+
+
+                <div *ngIf="formSubmitted && formValues.email.invalid" class="invalid-feedback">
+
+                    <div *ngIf="formValues.email.errors?.required" i18n>
+                        Email is required.
+                    </div>
+                    <div *ngIf="formValues.email.errors?.email" i18n>
+                        Email must be a valid Email Address
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" i18n>Password</label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="icon-dual" data-feather="lock" appFeatherIcon></i>
+                </span>
+                <input type="password" class="form-control" id="password" i18n-placeholder
+                    placeholder="Enter your password" formControlName="password" required minlength="4"
+                    [ngClass]="{'is-invalid': formSubmitted && formValues.password.invalid}">
+
+
+                <div *ngIf="formSubmitted && formValues.password.invalid" class="invalid-feedback">
+
+                    <div *ngIf="formValues.password.errors?.required" i18n>
+                        Password is required.
+                    </div>
+                    <div *ngIf="formValues.password.errors?.minlength" i18n>
+                        Password length must be greater than 3.
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="checkbox-signup" checked>
+                <label class="form-check-label" for="checkbox-signup" i18n>
+                    I accept <a href="javascript: void(0);">Terms and Conditions</a>
+                </label>
+            </div>
+        </div>
+
+        <div class="mb-3 text-center d-grid">
+            <button class="btn btn-primary" type="submit" i18n>Sign Up</button>
+        </div>
+    </form>
+
+    <p class="text-muted" footerLink i18n>Already have account? <a [routerLink]="['../login']"
+            class="text-primary fw-bold ms-1">Login</a></p>
+</app-default-layout>

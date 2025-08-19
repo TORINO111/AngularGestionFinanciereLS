@@ -1,0 +1,56 @@
+{
+  "version": "1.0.7",
+  "name": "simplebar-core",
+  "title": "SimpleBar.js",
+  "description": "Scrollbars, simpler.",
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "author": "Adrien Denat from a fork by Jonathan Nicol",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grsmto/simplebar.git",
+    "directory": "packages/simplebar-core"
+  },
+  "main": "dist/simplebar-core.js",
+  "module": "dist/simplebar-core.esm.js",
+  "style": "dist/simplebar.min.css",
+  "typings": "dist/simplebar-core.d.ts",
+  "sideEffects": [
+    "*.css"
+  ],
+  "homepage": "https://grsmto.github.io/simplebar/",
+  "bugs": "https://github.com/grsmto/simplebar/issues",
+  "license": "MIT",
+  "scripts": {
+    "serve": "serve -s demo",
+    "build": "rollup -c && cp src/simplebar.css dist/simplebar.css && cp simplebar-core.d.ts dist/simplebar-core.d.ts",
+    "dev": "rollup -c -w --environment BUILD:development",
+    "test": "yarn test:unit && yarn test:e2e",
+    "test:unit": "jest -c jest-unit.config.js",
+    "test:e2e": "jest -c jest-e2e.config.js",
+    "version": "yarn build",
+    "precommit": "lint-staged"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.11.2",
+    "can-use-dom": "^0.1.0",
+    "lodash-es": "^4.17.15"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-runtime": "^7.10.1",
+    "babel-loader": "^8.1.0",
+    "css-loader": "^0.28.11",
+    "intern": "^4.4.2",
+    "promise": "^8.0.2"
+  },
+  "lint-staged": {
+    "*.{js,jsx,json}": [
+      "prettier-eslint --write",
+      "git add"
+    ]
+  },
+  "gitHead": "2495b2259ca9e3602546a285c3433ee48e864d50"
+}

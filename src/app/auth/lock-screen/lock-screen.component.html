@@ -1,0 +1,58 @@
+<app-default-layout>
+    <div class="text-center">
+        <div class="auth-logo mx-auto mb-4">
+            <a [routerLink]="['../../dashboard/ecommerce']" class="logo logo-dark text-center">
+                <span class="logo-lg">
+                    <img src="../assets/images/logo-dark.png" alt="" height="24">
+                </span>
+            </a>
+
+            <a [routerLink]="['../../dashboard/ecommerce']" class="logo logo-light text-center">
+                <span class="logo-lg">
+                    <img src="../assets/images/logo-light.png" alt="" height="24">
+                </span>
+            </a>
+        </div>
+        <img src="assets/images/users/avatar-7.jpg" height="88" alt="user-image"
+            class="avatar-lg rounded-circle shadow">
+        <h4 class="h4 mb-0 mt-3">Hi ! Nik</h4>
+        <p class="text-muted mt-1 mb-4">
+            Enter your password to access the admin.
+        </p>
+    </div>
+
+    <form [formGroup]="lockScreenForm" (ngSubmit)="onSubmit()" class="authentication-form">
+        <ngb-alert type="danger" *ngIf="error" [dismissible]="false">{{ error }}</ngb-alert>
+
+        <div class="mb-3">
+            <label class="form-label">Password</label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="icon-dual" data-feather="lock" appFeatherIcon></i>
+                </span>
+                <input type="password" class="form-control" required id="password" placeholder="Enter your password"
+                    minlength="4" formControlName="password"
+                    [ngClass]="{'is-invalid': formSubmitted && formValues.password.invalid}">
+
+                <div *ngIf="formSubmitted && formValues.password.invalid" class="invalid-feedback">
+
+                    <div *ngIf="formValues.password.errors?.required">
+                        Password is required.
+                    </div>
+                    <div *ngIf="formValues.password.errors?.minlength">
+                        Password length must be greater than 3.
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center d-grid">
+            <button class="btn btn-primary" type="submit">Log In</button>
+        </div>
+    </form>
+
+    <p class="text-muted" footerLink>Not you? return <a [routerLink]="['../register']"
+            class="text-primary fw-bold ms-1">Sign Up</a></p>
+
+</app-default-layout>

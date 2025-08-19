@@ -1,0 +1,110 @@
+//
+// accordions.scss
+//
+
+.accordion {
+    .accordion-item {
+        border: none;
+        box-shadow: $box-shadow;
+        .accordion-header {
+            background-color: $card-cap-bg !important;
+            border-radius: 0;
+            border-bottom: none !important;
+            margin-bottom: -1px;
+            .accordion-button {
+                box-shadow: none !important;
+                &:after {
+                    background-image: none;
+                }
+                &:not(.collapsed) {
+                    color: inherit;
+                    background-color: inherit;
+                }
+            }
+        }
+        .accordion-body {
+            padding: 0 !important;
+        }
+    }
+}
+
+.custom-accordionwitharrow {
+    .card {
+        margin-top: 0.5rem;
+
+        .accordion-header {
+            background-color: transparent;
+            .accordion-button {
+                background-color: transparent !important;
+                border-bottom: $card-border-width solid $card-border-color;
+            }
+        }
+    }
+    .accordion-item {
+        background-color: transparent;
+
+        .accordion-header {
+            background-color: transparent !important;
+
+            .accordion-button {
+                background-color: transparent !important;
+            }
+        }
+    }
+
+    .accordion-arrow {
+        // transform: rotate(180deg);
+        margin-top: -5px;
+        font-size: 1.2rem !important;
+        position: absolute !important;
+        right: 22px !important;
+    }
+
+    button {
+        &.collapsed {
+            i.accordion-arrow {
+                // transform: rotate(180deg);
+                &:before {
+                    content: "\e831";
+                }
+            }
+        }
+    }
+}
+
+// Custom Accordion
+
+.custom-accordion {
+    .card {
+        overflow: visible;
+        border-color: transparent !important;
+        border-left: 2px dashed $gray-300 !important;
+        box-shadow: none;
+        padding-left: 24px;
+        margin-left: 10px;
+        background-color: transparent;
+
+        .accordion-header {
+            border-radius: 7px !important;
+
+            &:before {
+                content: "";
+                position: absolute;
+                left: 5px;
+                top: 22px;
+                width: 25px;
+                height: 2px;
+                background: $card-cap-bg;
+            }
+        }
+
+        .icon {
+            position: absolute;
+            left: -40px;
+            top: -2px;
+            background-color: $card-bg;
+            border-radius: 50%;
+            margin-right: 1px;
+        }
+    }
+}

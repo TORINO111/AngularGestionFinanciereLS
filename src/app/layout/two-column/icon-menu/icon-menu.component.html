@@ -1,0 +1,23 @@
+<ngx-simplebar class="sidebar-icon-menu h-100">
+    <!-- LOGO -->
+    <a [routerLink]="'../dashboard/ecommerce'" class="logo">
+        <span>
+            <img src="../assets/images/logo-sm-light.png" alt="" height="28">
+        </span>
+    </a>
+
+    <nav class="nav flex-column" id="two-col-sidenav-main">
+        <ng-container *ngFor="let menu of menuItems">
+            <a class="nav-link two-column-nav-link-ref" href="javascript: void(0)" [attr.data-menu-key]="menu.key"
+                [ngClass]="{'active': openMenuItems.includes(menu.key!)}" [ngbTooltip]="menu.label" placement="end"
+                container="body" (click)="toggleMenuItem($event,menu)" *ngIf="menu.children">
+                <i [attr.data-feather]="menu.icon" appFeatherIcon *ngIf="menu.icon"></i>
+            </a>
+            <a class="nav-link two-column-nav-link-ref" [attr.href]="menu.link" [attr.data-menu-key]="menu.key"
+                [ngClass]="{'active': openMenuItems.includes(menu.key!)}" [ngbTooltip]="menu.label" placement="end"
+                container="body" (click)="toggleMenuItem($event,menu)" *ngIf="!menu.children">
+                <i [attr.data-feather]="menu.icon" appFeatherIcon *ngIf="menu.icon"></i>
+            </a>
+        </ng-container>
+    </nav>
+</ngx-simplebar>

@@ -1,0 +1,49 @@
+//
+// dropzone.scss
+//
+
+ngx-dropzone {
+    border: 2px dashed $input-border-color !important;
+    background: $input-bg !important;
+    border-radius: 6px !important;
+    cursor: pointer;
+    min-height: 150px !important;
+    padding: 20px !important;
+
+    ngx-dropzone-label {
+        z-index: 9 !important;
+        margin: 2rem auto !important;
+        text-align: center;
+    }
+
+    .dz-message {
+        text-align: center;
+        margin: 2rem 0 !important;
+    }
+    &.dz-started {
+        .dz-message {
+            display: none;
+        }
+    }
+
+    ngx-dropzone-preview {
+        min-height: 120px !important;
+        min-width: 120px !important;
+        height: 120px !important;
+        width: 130px !important;
+
+        .dz-size,
+        .dz-filename {
+            color: $dark;
+            background-color: rgba($white, 0.4);
+            padding: 0 0.4em;
+            border-radius: 3px;
+            margin: 1rem auto;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 90px;
+            font-size: 13px;
+        }
+    }
+}

@@ -1,0 +1,194 @@
+<!-- end page title -->
+<app-page-title [breadcrumbItems]="pageTitle" title="Nature Opération"></app-page-title>
+
+<div class="loader-container" *ngIf="!result">
+  <div class="lds-dual-ring"></div>
+</div>
+<!-- start page title -->
+<div class="mt-2 card" *ngIf="result">
+  <div class="card-body">
+    
+    <form [formGroup]="natureOperationForm">
+      <!-- Toolbar responsive -->
+      <div class="toolbar d-flex flex-wrap gap-2 mb-3">
+        <button type="button" class="btn btn-success" (click)="ajouter()">Nouveau</button>
+        <button type="button" class="btn btn-success" (click)="modifier()" [disabled]="selectedIndex === null">Modifier</button>
+        <button type="button" class="btn btn-danger" (click)="supprimer()" [disabled]="selectedIndex === null">Supprimer</button>
+        <button type="button" class="btn btn-success" (click)="enregistrer()" [disabled]="!formVisible">Enregistrer</button>
+        <button type="button" class="btn btn-success" (click)="fermer()" [disabled]="!formVisible">Fermer</button>
+        <button type="button" class="btn btn-success" >Importer</button>
+      </div>
+    
+      <div class="container-fluid">
+        <!-- Formulaire principal -->
+        <div class="row mb-3" *ngIf="formVisible">
+          <div class="row" >
+            <div class="col-md-2">
+              <div class="form-group">
+                <label for="">Catégorie</label>
+                <select required name="categorieId"
+                        formControlName="categorieId"
+                        class="form-select"
+                        id="categorieId"
+                        (change)="onCategorieChange()">
+                  <option [value]="null" disabled>---Select Catégorie---</option>
+                  <option *ngFor="let categorie of categories" [value]="categorie.id">
+                    {{ categorie.libelle }}
+                  </option>
+                </select>
+                </div>
+            </div>
+
+            <div class="col-md-2" *ngIf="isType">
+              <div class="form-group">
+                <label for="">Type</label>
+                <select (change)="onTypeChange()" name="typeNature"
+                        formControlName="typeNature"
+                        class="form-select"
+                        id="typeNature">
+                  <option [value]="null" disabled>---Select Type---</option>
+                  <option *ngFor="let type of typesFiltres" [value]="type.id">
+                    {{ type.libelle }}
+                  </option>
+                </select>
+                </div>
+            </div>
+            <div class="col-md-2" >
+              <div class="form-group">
+                <label for="">Code journal</label>
+                <select  name="codeJournal"
+                        formControlName="codeJournal"
+                        class="form-select"
+                        id="codeJournal">
+                  <option [value]="null" disabled>---Select Journal---</option>
+                  <option *ngFor="let cj of codesjournaux" [value]="cj.code">
+                    {{ cj.libelle }}
+                  </option>
+                </select>
+                </div>
+            </div>
+          <div class="col-12 col-md-2 mb-2">
+            <div class="form-group">
+              <label for="">Code</label>
+            <input type="text" id="code" name="code" formControlName="code" class="form-control" placeholder="code">
+            <strong class="text-danger" *ngIf="natureOperationForm.get('code').hasError('required') && natureOperationForm.get('code').touched">
+              Champ obligatoire !
+            </strong>
+            </div>
+          </div>
+      
+          <div class="col-12 col-md-4 mb-2">
+            <div class="form-group">
+              <label for="">Libélle</label>
+            <input type="text" id="libelle" name="libelle" formControlName="libelle" class="form-control" placeholder="libelle">
+            <strong class="text-danger" *ngIf="natureOperationForm.get('libelle').hasError('required') && natureOperationForm.get('libelle').touched">
+              Champ obligatoire !
+            </strong>
+            </div>
+          </div>
+      
+          <div class="col-12 col-md-3 mb-2">
+            <div class="form-group">
+              <label for="">Compte Comptable</label>
+              <select2
+                name="compteComptable"
+                [data]="comptables"
+                placeholder="Select Comptable"
+                formControlName="compteComptable"
+                id="compteComptable"
+                style="width: 100%;"
+              ></select2>
+              <strong class="text-danger" *ngIf="natureOperationForm.get('compteComptable').hasError('required') && natureOperationForm.get('compteComptable').touched">
+                Champ obligatoire !
+              </strong>
+            </div>
+            </div>
+
+          <div class="col-12 col-md-3 mb-2" *ngIf="isExploitation">
+            <div class="form-group">
+              <label for="">Section Analytique</label>
+              <select2
+                name="sectionAnalytique"
+                [data]="analytiques"
+                placeholder="Select Analytique"
+                formControlName="sectionAnalytique"
+                id="sectionAnalytique"
+                style="width: 100%;"
+              ></select2>
+              <strong class="text-danger" *ngIf="natureOperationForm.get('sectionAnalytique').hasError('required') && natureOperationForm.get('sectionAnalytique').touched">
+                Champ obligatoire !
+              </strong>
+            </div>
+            </div>
+            <div class="col-md-2">
+              <div class="form-group">
+                <label for="">Sens</label>
+                <select required name="sensParDefaut"
+                        formControlName="sensParDefaut"
+                        class="form-select"
+                        id="sensParDefaut">
+                  <option [value]="null" disabled>---Select Sens---</option>
+                  <option *ngFor="let ls of listeSens" [value]="ls.id">
+                    {{ ls.libelle }}
+                  </option>
+                </select>
+                </div>
+            </div>
+            <div class="col-12 col-md-3 mb-2" *ngIf="isTresorerie">
+              <div class="form-group">
+                <label for="">Contre-Partie</label>
+              <input type="text" id="compteContrePartie" name="compteContrePartie" formControlName="compteContrePartie" class="form-control" placeholder="Contre Partie">
+              </div>
+            </div>
+       
+        </div>
+        
+         </div>
+      </div>
+      
+    </form>
+
+      <div class="table-container">
+        <table class="table table-bordered table-sm custom-table">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Libellé</th>
+          <th>Compte comptable</th>
+          <th>Section Analytique</th>
+          <th>Catégorie</th>
+          <th>Code journal</th>
+          <th>Sens</th>
+        </tr>
+      </thead>
+      <tbody *ngIf="!isLoading">
+        <tr  *ngFor="let natureopertion of natureOperations; let i = index"
+        (click)="selectLigne(i)"
+        [class.selected]="i === selectedIndex">
+          <td>{{ natureopertion.value.code }}</td>
+          <td>{{ natureopertion.value.libelle }}</td>
+          <td>{{ natureopertion.value.compteComptable }}</td>
+          <td>{{ natureopertion.value.sectionAnalytique }}</td>
+          <td>{{ natureopertion.value.categorieLibelle }}</td>
+          <td>{{ natureopertion.value.codeJournal }}</td>
+          <td>{{ natureopertion.value.sensParDefaut }}</td>
+          
+        </tr>
+        <tr *ngIf="natureOperations?.length == 0" >
+            <td  colspan="7"><h3 style="text-align: center;">Aucune donnée trouvée</h3></td>
+        </tr>
+      </tbody>
+      <tbody *ngIf="isLoading">
+        <tr>
+          <td colspan="7" class="text-center">
+            <div class="spinner-border text-secondary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+ 
+    </div>
+  </div>

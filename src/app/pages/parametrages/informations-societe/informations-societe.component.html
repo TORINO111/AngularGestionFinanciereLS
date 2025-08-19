@@ -1,0 +1,106 @@
+<app-page-title [breadcrumbItems]="pageTitle" title="Informations Société"></app-page-title>
+
+<div class="mt-2 card">
+<div class="card-body">
+<form   [formGroup]="societeForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data">
+    <div class="row mb-1">
+      <!-- Nom -->
+      <div class="col-md-4">
+        <div class="form-group">
+          <input type="text" class="form-control" formControlName="nom" placeholder="Nom">
+        </div>
+      </div>
+  
+      <!-- Sigle -->
+      <div class="col-md-4">
+        <div class="form-group">
+          <input type="text" class="form-control" formControlName="sigle" placeholder="Sigle">
+        </div>
+      </div>
+      <!-- Logo -->
+      <!-- Champ Logo amélioré avec aperçu -->
+    <div class="col-md-4">
+      <div class="form-group">
+        <!-- <label class="form-label">Logo</label> -->
+        <!-- Bouton personnalisé -->
+        <div class="input-group">
+          <button type="button" class="btn btn-outline-primary w-100" (click)="fileInput.click()">Choisir un logo</button>
+          <input #fileInput type="file" accept="image/*" hidden (change)="onLogoSelected($event)">
+        </div>
+      </div>
+    </div>
+
+      </div>
+      <div class="row mb-1">
+      <!-- Téléphone -->
+      <div class="col-md-4">
+        <div class="form-group">
+          <input type="text" class="form-control" formControlName="telephone" placeholder="Téléphone">
+        </div>
+      </div>
+  
+      <!-- Email -->
+      <div class="col-md-4">
+        <div class="form-group">
+          <input type="email" class="form-control" formControlName="email" placeholder="Email">
+        </div>
+      </div>
+  
+      <!-- Adresse -->
+      <div class="col-md-4">
+        <div class="form-group">
+          <input type="text" class="form-control" formControlName="adresse" placeholder="Adresse">
+        </div>
+      </div>
+    </div>
+    <div class="row mb-1">
+      <!-- Registre Commerce -->
+      <div class="col-md-4">
+        <div class="form-group">
+          <input type="text" class="form-control" name="rccm" formControlName="rccm" placeholder="RCCM">
+        </div>
+      </div>
+  
+      <!-- Identifiant Fiscal -->
+      <div class="col-md-4">
+        <div class="form-group">
+          <input type="text" class="form-control" name="ifu" formControlName="ifu" placeholder="IFU">
+        </div>
+      </div>
+      <!-- Ville -->
+      <div class="col-md-4">
+        <div class="form-group">
+          <input type="text" class="form-control" formControlName="ville" placeholder="Ville">
+        </div>
+      </div>
+    </div>
+
+    <!-- Aperçu de l'image -->
+    <div *ngIf="imagePreview">
+      <p>Logo sélectionné :</p>
+      <img [src]="imagePreview" class="img-thumbnail mt-2" alt="Aperçu logo" width="150">
+    </div>
+      
+      <!-- Ajoute ça avant le champ de téléversement de logo -->
+      <div class="col-md-6" *ngIf="logoPreview">
+        <p>Logo actuel :</p>
+        <img [src]="logoPreview" alt="Logo actuel" class="img-thumbnail" style="max-height: 100px;">
+        
+      </div>
+
+  
+    <!-- Bouton de soumission -->
+    <div class="text-end mt-3">
+      <button class="btn btn-primary" type="submit" [disabled]="loading">
+        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        {{ loading ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
+      
+    </div>
+  </form>
+  
+  
+</div>
+</div>
+
+  
