@@ -10,7 +10,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 @Injectable({ providedIn: 'root' })
 export class AuthenticationService {
     user: User | null = null;
-    private host:string='http://localhost:8082/gest-fin';
+    private host:string='http://localhost:8082';
     //private host:String="http://localhost:8082";
     //private host:string='http://4.222.22.46:8082/gest-fin';
     //private host:String="//4.222.22.46:8082/gest-fin";
