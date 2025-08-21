@@ -6,9 +6,10 @@ import { getLayoutConfig } from './shared/helper/utils';
 import { LayoutConfig } from './shared/models/layout-config.model';
 
 @Component({
-  selector: 'app-layout-container',
-  templateUrl: './layout-container.component.html',
-  styleUrls: ['./layout-container.component.scss']
+    selector: 'app-layout-container',
+    templateUrl: './layout-container.component.html',
+    styleUrls: ['./layout-container.component.scss'],
+    standalone: false
 })
 export class LayoutContainerComponent implements OnInit {
 

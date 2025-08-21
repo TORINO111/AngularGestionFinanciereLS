@@ -1,16 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { TresorerieService } from 'src/app/services/tresorerie.service';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 @Component({
-  selector: 'app-informations-societe',
-  templateUrl: './informations-societe.component.html',
-  styleUrls: ['./informations-societe.component.scss']
+    selector: 'app-informations-societe',
+    templateUrl: './informations-societe.component.html',
+    styleUrls: ['./informations-societe.component.scss'],
+    standalone: false
 })
 export class InformationsSocieteComponent implements OnInit {
 
-    societeForm: FormGroup;
+    societeForm: UntypedFormGroup;
     imagePreview: string | ArrayBuffer | null = null;
     logoPreview: string | null = null;
     pageTitle: BreadcrumbItem[] = [];
@@ -23,7 +24,7 @@ export class InformationsSocieteComponent implements OnInit {
     constructor(
       private tresorerieService: TresorerieService,
       private toastr: ToastrService,
-      private fb: FormBuilder
+      private fb: UntypedFormBuilder
     ) {
       this.societeForm = this.fb.group({
         id: [],

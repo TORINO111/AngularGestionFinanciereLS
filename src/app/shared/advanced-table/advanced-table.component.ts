@@ -15,10 +15,11 @@ export interface Column {
 
 
 @Component({
-  selector: 'app-advanced-table',
-  templateUrl: './advanced-table.component.html',
-  styleUrls: ['./advanced-table.component.scss'],
-  providers: [AdvancedTableServices]
+    selector: 'app-advanced-table',
+    templateUrl: './advanced-table.component.html',
+    styleUrls: ['./advanced-table.component.scss'],
+    providers: [AdvancedTableServices],
+    standalone: false
 })
 export class AdvancedTableComponent implements OnInit, AfterViewChecked {
 

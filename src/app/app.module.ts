@@ -1,4 +1,4 @@
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgModule,LOCALE_ID} from '@angular/core';
 import { BrowserModule, Title } from '@angular/platform-browser';
 
@@ -17,27 +17,20 @@ import {CommonModule,LocationStrategy,PathLocationStrategy,HashLocationStrategy}
 
 
 registerLocaleData(localeFr, 'fr');
-@NgModule({
-  declarations: [
-    AppComponent
-    
-  ],
-  imports: [
-    BrowserModule,
-    HttpClientModule,
-    AppRoutingModule,
-    LayoutModule, BrowserAnimationsModule,ToastrModule.forRoot(),
-    CoreModule.forRoot()
-  ],
-  providers: [
-    {provide: LocationStrategy, useClass: HashLocationStrategy},
-    Title,
-    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
-    // provider used to create fake backend
-    FakeBackendProvider,
-    { provide: LOCALE_ID, useValue: 'fr' }
-  ],
-  bootstrap: [AppComponent]
-})
+@NgModule({ declarations: [
+        AppComponent
+    ],
+    bootstrap: [AppComponent], imports: [BrowserModule,
+        AppRoutingModule,
+        LayoutModule, BrowserAnimationsModule, ToastrModule.forRoot(),
+        CoreModule.forRoot()], providers: [
+        { provide: LocationStrategy, useClass: HashLocationStrategy },
+        Title,
+        { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+        { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+        // provider used to create fake backend
+        FakeBackendProvider,
+        { provide: LOCALE_ID, useValue: 'fr' },
+        provideHttpClient(withInterceptorsFromDi())
+    ] })
 export class AppModule { }

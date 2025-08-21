@@ -9,7 +9,7 @@ export interface Utilisateur {
     type?: string;
     civilite?: string;
     enabled?: boolean;
-    societeId: number;
+    societeId?: number;
     roles: string[];
   }
   

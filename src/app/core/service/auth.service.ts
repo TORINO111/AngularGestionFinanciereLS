@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {HttpClient,HttpHeaders} from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { User } from '../models/auth.models';
 import { loggedInUser } from '../helpers/utils';
@@ -43,14 +43,15 @@ export class AuthenticationService {
       getRolesFromToken(): string[] {
         const token = localStorage.getItem('token');
         if (token) {
-          const payload = JSON.parse(atob(token.split('.')[1])); // Décodage de la charge utile du JWT
-          payload.roles= payload.roles
-        .filter(auth => auth && auth.authority)
-        .map(auth => auth.authority);
-          return payload.roles || []; // Assure-toi que le token contient les rôles
+          const payload = JSON.parse(atob(token.split('.')[1])); // Décodage JWT
+          payload.roles = payload.roles
+            .filter((auth: { authority: string }) => auth && auth.authority)
+            .map((auth: { authority: string }) => auth.authority);
+          return payload.roles || [];
         }
         return [];
       }
+
 
     /**
      * Performs the login auth
@@ -116,14 +117,14 @@ export class AuthenticationService {
         this.jwtToken=jwt;
         localStorage.setItem('token',jwt);
         
-        let helper= new JwtHelperService();
+        const helper= new JwtHelperService();
         this.roles=helper.decodeToken(this.jwtToken).roles;
         let rolea=false;
         let roleb=false;
         let rolec=false;
-        this.current_user_roles= this.roles
-        .filter(auth => auth && auth.authority)
-        .map(auth => auth.authority);
+        this.current_user_roles = this.roles
+        .filter((auth: { authority: string }) => auth && auth.authority)
+        .map((auth: { authority: string }) => auth.authority);
     
       //console.log(this.current_user_roles);
         let userRoles = this.getUserRoles();
@@ -226,6 +227,7 @@ export class AuthenticationService {
     
       getUserByUsername(username: string) {
         const token = localStorage.getItem('token'); // Récupère le token stocké
+        if (!token) throw new Error('Token manquant');
         //console.log(token)
         return this._http.get(this.host+'/api/utilisateur-username?username='+username,{
           headers:new HttpHeaders()
@@ -235,6 +237,7 @@ export class AuthenticationService {
       }
       getUserByEmail(email: string) {
         const token = localStorage.getItem('token'); // Récupère le token stocké
+        if (!token) throw new Error('Token manquant');
         //console.log(token)
         return this._http.get(this.host+'/api/utilisateur?email='+email,{
           headers:new HttpHeaders()
@@ -253,13 +256,13 @@ export class AuthenticationService {
         });
       }
 
-      sendPassword(mn){
+      sendPassword(mn: any){
         return this._http.post(this.host+'/api/new-password',mn,{
           headers:new HttpHeaders().set('Content-Type','application/json')
         });
       }
 
-      resetPasswordWhatsApp(telephone){
+      resetPasswordWhatsApp(telephone: String){
         return this._http.post(this.host+'/api/auth/request-reset',{ telephone },{
           headers:new HttpHeaders().set('Content-Type','application/json')
         });

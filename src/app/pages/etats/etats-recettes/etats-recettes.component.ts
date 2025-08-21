@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { EtatService } from 'src/app/services/etat.service';
 import { OperationDetailDTO } from 'src/app/models/operation-detail.model'; 
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 import { NatureOperationService } from 'src/app/services/nature-operation.service';
@@ -11,15 +11,18 @@ import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { ExerciceComptable } from 'src/app/models/exercice-comptable.model';
 import { ExerciceComptableService } from 'src/app/services/exercice-comptable.service';
+import {CodeJournal} from 'src/app/models/code-journal.model';
+
 @Component({
-  selector: 'app-etats-recettes',
-  templateUrl: './etats-recettes.component.html',
-  styleUrls: ['./etats-recettes.component.scss']
+    selector: 'app-etats-recettes',
+    templateUrl: './etats-recettes.component.html',
+    styleUrls: ['./etats-recettes.component.scss'],
+    standalone: false
 })
 export class EtatsRecettesComponent implements OnInit {
 
   recettes: OperationDetailDTO[] = [];
-  filtreForm: FormGroup;
+  filtreForm: UntypedFormGroup;
   loading = false;
   societeActive: Societe | null = null;
 
@@ -29,9 +32,9 @@ export class EtatsRecettesComponent implements OnInit {
   progression = 0;
   intervalId: any;
   result=false;
-  codesjournaux=[];
+  codesjournaux:CodeJournal[] =[];
   exerciceEnCours?: ExerciceComptable;
-  exerciceId:number;
+  exerciceId?:number;
   message:string;
 
   private destroy$ = new Subject<void>();
@@ -39,7 +42,7 @@ export class EtatsRecettesComponent implements OnInit {
   constructor(private etatService: EtatService,
               private societeSelectionService: SocieteSelectionService,
               private natureOperationService: NatureOperationService,
-              private fb: FormBuilder,private toastr: ToastrService,
+              private fb: UntypedFormBuilder,private toastr: ToastrService,
               private exerciceService: ExerciceComptableService) {
                 
 
@@ -68,7 +71,7 @@ export class EtatsRecettesComponent implements OnInit {
       .subscribe(societe => {
         this.societeActive = societe;
         this.message = '';
-        this.loadExerciceEnCours(societe.id);
+        this.loadExerciceEnCours(societe.id!);
         this.filtreForm.patchValue({
           societeId: societe.id
         });

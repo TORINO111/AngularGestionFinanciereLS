@@ -8,9 +8,10 @@ import { MenuItem } from '../models/menu.model';
 import { findAllParent, findMenuItem } from '../helper/utils';
 
 @Component({
-  selector: 'app-left-sidebar',
-  templateUrl: './left-sidebar.component.html',
-  styleUrls: ['./left-sidebar.component.scss']
+    selector: 'app-left-sidebar',
+    templateUrl: './left-sidebar.component.html',
+    styleUrls: ['./left-sidebar.component.scss'],
+    standalone: false
 })
 export class LeftSidebarComponent implements OnInit, AfterViewInit {
 

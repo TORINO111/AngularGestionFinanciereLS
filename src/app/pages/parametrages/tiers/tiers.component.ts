@@ -1,5 +1,5 @@
 import { Component, OnInit ,ViewChild,TemplateRef} from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Tiers } from 'src/app/models/tiers.model';
 import { TiersService } from 'src/app/services/tiers.service';
 import { Categorie } from 'src/app/models/categorie.model';
@@ -23,9 +23,10 @@ export interface ImportTiersResultDTO {
 } 
 
 @Component({
-  selector: 'app-tiers',
-  templateUrl: './tiers.component.html',
-  styleUrls: ['./tiers.component.scss']
+    selector: 'app-tiers',
+    templateUrl: './tiers.component.html',
+    styleUrls: ['./tiers.component.scss'],
+    standalone: false
 })
 export class TiersComponent implements OnInit {
 
@@ -38,13 +39,13 @@ export class TiersComponent implements OnInit {
   selected?: Tiers;
 
   // Utilisation de FormGroup[] avec typage clair
-  tiers: FormGroup[] = [];
-  lignes: FormGroup[] = [];
+  tiers: UntypedFormGroup[] = [];
+  lignes: UntypedFormGroup[] = [];
 
   categories: Categorie[] = [];
 
   selectedIndex: number | null = null;
-  tiersForm!: FormGroup;
+  tiersForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
 
   loading = false;
@@ -52,7 +53,7 @@ export class TiersComponent implements OnInit {
   result = false;
   formVisible = false;
 
-  modelImportForm: FormGroup;
+  modelImportForm: UntypedFormGroup;
   excelFile: File | null = null;
   fileError: string | null = null;
   errorMessage: string | null = null;
@@ -64,7 +65,7 @@ export class TiersComponent implements OnInit {
   constructor(
     private tiersService: TiersService,
     private modalService: NgbModal,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private toastr: ToastrService
   ) {
     this.tiersForm = this.fb.group({

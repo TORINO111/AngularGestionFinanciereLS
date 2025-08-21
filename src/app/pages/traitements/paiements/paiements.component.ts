@@ -1,5 +1,5 @@
 import { Component, OnInit,ViewChild,TemplateRef  } from '@angular/core';
-import {FormGroup,Validators,FormBuilder } from '@angular/forms';
+import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
@@ -16,9 +16,10 @@ import { Societe } from 'src/app/models/societe.model';
 import { SocieteSelectionService } from 'src/app/services/societe-selection.service';
 
 @Component({
-  selector: 'app-paiements',
-  templateUrl: './paiements.component.html',
-  styleUrls: ['./paiements.component.scss']
+    selector: 'app-paiements',
+    templateUrl: './paiements.component.html',
+    styleUrls: ['./paiements.component.scss'],
+    standalone: false
 })
 export class PaiementsComponent implements OnInit {
 
@@ -26,14 +27,14 @@ export class PaiementsComponent implements OnInit {
   selected?: Operation;
 
   // Utilisation de FormGroup[] avec typage clair
-  operations: FormGroup[] = [];
-  lignes: FormGroup[] = [];
+  operations: UntypedFormGroup[] = [];
+  lignes: UntypedFormGroup[] = [];
 
   natureOperations: Select2Data = [];
   tiers: Select2Data = [];
 
   selectedIndex: number | null = null;
-  operationForm!: FormGroup;
+  operationForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
 
   loading = false;
@@ -47,12 +48,12 @@ export class PaiementsComponent implements OnInit {
     private operationService: OperationService,
     private tiersService:TiersService,
     private natureOperationService:NatureOperationService,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private toastr: ToastrService,
     private authService:AuthenticationService,
     private societeSelectionService: SocieteSelectionService
   ) {
-    this.user=JSON.parse(localStorage.getItem("user"));
+    this.user=JSON.parse(localStorage.getItem("user") ?? '{}');
     this.operationForm = this.fb.group({
       id: [],
       montant: ['', Validators.required],

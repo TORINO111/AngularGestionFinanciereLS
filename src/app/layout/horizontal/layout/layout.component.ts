@@ -4,9 +4,10 @@ import { EventService } from 'src/app/core/service/event.service';
 import { getLayoutConfig, changeBodyAttribute } from '../../shared/helper/utils';
 
 @Component({
-  selector: 'app-horizontal-layout',
-  templateUrl: './layout.component.html',
-  styleUrls: ['./layout.component.scss']
+    selector: 'app-horizontal-layout',
+    templateUrl: './layout.component.html',
+    styleUrls: ['./layout.component.scss'],
+    standalone: false
 })
 export class HorizontalLayoutComponent implements OnInit {
 

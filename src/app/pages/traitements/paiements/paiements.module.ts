@@ -4,7 +4,7 @@ import { FormsModule,ReactiveFormsModule } from '@angular/forms';
 import { PageTitleModule } from 'src/app/shared/page-title/page-title.module';
 import { PaiementsRoutingModule } from './paiements-routing.module';
 import { PaiementsComponent } from './paiements.component';
-import { Select2Module } from 'ng-select2-component';
+import { NgSelectModule } from '@ng-select/ng-select'; 
 
 @NgModule({
   declarations: [
@@ -14,7 +14,8 @@ import { Select2Module } from 'ng-select2-component';
     CommonModule,
     FormsModule,ReactiveFormsModule,
     PageTitleModule,
-    PaiementsRoutingModule,Select2Module
+    PaiementsRoutingModule,
+    NgSelectModule
   ]
 })
 export class PaiementsModule { }

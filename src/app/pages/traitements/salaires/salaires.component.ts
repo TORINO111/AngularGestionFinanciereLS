@@ -1,5 +1,5 @@
 import { Component, OnInit,ViewChild,TemplateRef  } from '@angular/core';
-import {FormGroup,Validators,FormBuilder } from '@angular/forms';
+import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
@@ -18,9 +18,10 @@ import { filter, takeUntil } from 'rxjs/operators';
 import { ExerciceComptable } from '../../../models/exercice-comptable.model';
 import { ExerciceComptableService } from 'src/app/services/exercice-comptable.service';
 @Component({
-  selector: 'app-salaires',
-  templateUrl: './salaires.component.html',
-  styleUrls: ['./salaires.component.scss']
+    selector: 'app-salaires',
+    templateUrl: './salaires.component.html',
+    styleUrls: ['./salaires.component.scss'],
+    standalone: false
 })
 export class SalairesComponent implements OnInit {
 
@@ -29,14 +30,14 @@ export class SalairesComponent implements OnInit {
   selected?: Operation;
 
   // Utilisation de FormGroup[] avec typage clair
-  operations: FormGroup[] = [];
-  lignes: FormGroup[] = [];
+  operations: UntypedFormGroup[] = [];
+  lignes: UntypedFormGroup[] = [];
 
   natureOperations: Select2Data = [];
   tiers: Select2Data = [];
 
   selectedIndex: number | null = null;
-  operationForm!: FormGroup;
+  operationForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
 
   loading = false;
@@ -48,20 +49,21 @@ export class SalairesComponent implements OnInit {
   societeActive: Societe | null = null;
 
   exerciceEnCours?: ExerciceComptable;
-  exerciceId:number;
+  exerciceId?:number;
   message:string;
 
   constructor(
     private operationService: OperationService,
     private tiersService:TiersService,
     private natureOperationService:NatureOperationService,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private toastr: ToastrService,
     private societeSelectionService: SocieteSelectionService,
     private authService:AuthenticationService,
     private exerciceService: ExerciceComptableService
   ) {
-    this.user=JSON.parse(localStorage.getItem("user"));
+    const userJson = localStorage.getItem("user");
+    this.user = userJson ? JSON.parse(userJson) : null;
     this.operationForm = this.fb.group({
       id: [],
       montant: ['', Validators.required],
@@ -180,7 +182,7 @@ export class SalairesComponent implements OnInit {
       .subscribe((societe) => {
         this.societeActive = societe;
         this.message = '';
-        this.loadExerciceEnCours(societe.id);
+        this.loadExerciceEnCours(societe.id!);
       });
   }
   
@@ -208,67 +210,73 @@ export class SalairesComponent implements OnInit {
   }
 
   chargerToutesLesDonnees(): void {
-    this.result = false;
-    this.isLoading = true;
+  this.result = false;
+  this.isLoading = true;
 
-    const societeId = this.societeActive.id;
-  
-    forkJoin({
-      operations: this.operationService.getByFilters(societeId, 'SALAIRE', 'SALAIRE'),
-      tiers: this.tiersService.getBySocieteAndType(societeId, 'SALARIE'),
-      natureOperations: this.natureOperationService.getByFilters(societeId, 'SALAIRE', 'SALAIRE')
-    }).pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: ({ operations, tiers, natureOperations }) => {
-        console.log(operations)
-        // 👉 1. Préparer les lignes (formulaires dynamiques)
-        this.operations = operations.map(d =>
-          this.fb.group({
-            id: [d.id],
-            montant: [d.montant, Validators.required],
-            details: [d.details],
-            dateOperation: [d.dateOperation],
-            natureOperationId: [d.natureOperationId, Validators.required],
-            natureOperationLibelle: [d.natureOperationLibelle, Validators.required],
-            tiersId: [d.tiersId, Validators.required],
-            tiers: [d.tiers, Validators.required],
-            societeId:[d.societeId],
-            societeNom:[d.societeNom],
-            comptableId:[d.comptableId],
-            comptableNom:[d.comptableNom]
-          })
-        );
-        this.lignes = this.operations;
-  
-        // 👉 2. Charger les tiers dans dropdown
-        this.tiers = [{
-          label: '',
-          options: (tiers as Tiers[]).map(t => ({
-            value: t.id,
-            label: t.intitule
-          }))
-        }];
-  
-        // 👉 3. Charger les natureOperations dans dropdown
-        this.natureOperations = [{
-          label: '',
-          options: (natureOperations as NatureOperation[]).map(n => ({
-            value: n.id,
-            label: n.libelle
-          }))
-        }];
-  
-        this.result = true;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Erreur de chargement des données', error);
-        this.showError('Erreur lors du chargement des données');
-        this.result = true;
-        this.isLoading = false;
-      }
-    });
+  // Vérification que societeActive et son id existent
+  const societeId = this.societeActive?.id;
+  if (!societeId) {
+    this.message = "Aucune société active sélectionnée.";
+    this.isLoading = false;
+    return;
   }
+
+  forkJoin({
+    operations: this.operationService.getByFilters(societeId, 'SALAIRE', 'SALAIRE'),
+    tiers: this.tiersService.getBySocieteAndType(societeId, 'SALARIE'),
+    natureOperations: this.natureOperationService.getByFilters(societeId, 'SALAIRE', 'SALAIRE')
+  })
+  .pipe(takeUntil(this.destroy$))
+  .subscribe({
+    next: ({ operations, tiers, natureOperations }) => {
+      // 1️⃣ Préparer les lignes (formulaires dynamiques)
+      this.operations = operations.map(d =>
+        this.fb.group({
+          id: [d.id],
+          montant: [d.montant, Validators.required],
+          details: [d.details],
+          dateOperation: [d.dateOperation],
+          natureOperationId: [d.natureOperationId, Validators.required],
+          natureOperationLibelle: [d.natureOperationLibelle, Validators.required],
+          tiersId: [d.tiersId, Validators.required],
+          tiers: [d.tiers, Validators.required],
+          societeId: [d.societeId],
+          societeNom: [d.societeNom],
+          comptableId: [d.comptableId],
+          comptableNom: [d.comptableNom]
+        })
+      );
+      this.lignes = this.operations;
+
+      // 2️⃣ Charger les tiers dans dropdown
+      this.tiers = [{
+        label: '',
+        options: (tiers as Tiers[]).map(t => ({
+          value: t.id,
+          label: t.intitule
+        }))
+      }];
+
+      // 3️⃣ Charger les natureOperations dans dropdown
+      this.natureOperations = [{
+        label: '',
+        options: (natureOperations as NatureOperation[]).map(n => ({
+          value: n.id,
+          label: n.libelle
+        }))
+      }];
+
+      this.result = true;
+      this.isLoading = false;
+    },
+    error: (error) => {
+      console.error('Erreur de chargement des données', error);
+      this.showError('Erreur lors du chargement des données');
+      this.result = true;
+      this.isLoading = false;
+    }
+  });
+}
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -277,7 +285,15 @@ export class SalairesComponent implements OnInit {
 
   chargerOperations(): void {
     this.operations = [];
-    this.operationService.getByFilters(this.societeActive.id, 'SALAIRE', 'SALAIRE').subscribe({
+
+    const societeId = this.societeActive?.id;
+    if (!societeId) {
+      this.message = "Aucune société active sélectionnée.";
+      this.isLoading = false;
+      return;
+    }
+
+    this.operationService.getByFilters(societeId, 'SALAIRE', 'SALAIRE').subscribe({
       next: (data: Operation[]) => {
         console.log(data)
         this.operations = data.map(d =>
@@ -290,10 +306,10 @@ export class SalairesComponent implements OnInit {
             natureOperationLibelle: [d.natureOperationLibelle, Validators.required],
             tiersId: [d.tiersId, Validators.required],
             tiers: [d.tiers, Validators.required],
-            societeId:[d.societeId],
-            societeNom:[d.societeNom],
-            comptableId:[d.comptableId],
-            comptableNom:[d.comptableNom]
+            societeId: [d.societeId],
+            societeNom: [d.societeNom],
+            comptableId: [d.comptableId],
+            comptableNom: [d.comptableNom]
           })
         );
         this.lignes = this.operations;
@@ -302,47 +318,62 @@ export class SalairesComponent implements OnInit {
       },
       error: (error) => {
         this.isLoading = false;
-        console.error('Erreur lors du chargement des natures opérations', error);
+        console.error('Erreur lors du chargement des opérations', error);
         this.result = true;
-        
         this.showError('Erreur de chargement');
       }
     });
   }
 
-  chargerTiers() {
-    this.tiersService.getBySocieteAndType(this.societeActive.id,'SALARIE').subscribe(
-      (data:any) => {
-        for(let d of data){
-          console.log(data)
-          this.tiers = [{ label: '', options: (data as Tiers[]).map(d => ({ value: d.id, label: d.intitule })) }];
-        }
-        this.isLoading=true;
+
+  chargerTiers(): void {
+    const societeId = this.societeActive?.id;
+    if (!societeId) {
+      this.message = "Aucune société active sélectionnée.";
+      return;
+    }
+
+    this.tiersService.getBySocieteAndType(societeId, 'SALARIE').subscribe(
+      (data: Tiers[]) => {
+        console.log(data);
+        this.tiers = [{
+          label: '',
+          options: data.map(d => ({ value: d.id, label: d.intitule }))
+        }];
+        this.isLoading = false;
       },
       (error) => {
-        this.isLoading=true;
+        this.isLoading = false;
         console.error('Erreur lors du chargement des tiers', error);
-        this.showError("erreur..");
+        this.showError("Erreur lors du chargement des tiers");
       }
     );
   }
 
-  chargerNatureOperations() {
-    this.natureOperationService.getByFilters(this.societeActive.id,'SALAIRE','SALAIRE').subscribe(
-      (data:any) => {
-        for(let d of data){
-          //console.log(data)
-          this.natureOperations = [{ label: '', options: (data as NatureOperation[]).map(d => ({ value: d.id, label: d.libelle })) }];
-        }
-        this.isLoading=true;
+
+  chargerNatureOperations(): void {
+    const societeId = this.societeActive?.id;
+    if (!societeId) {
+      this.message = "Aucune société active sélectionnée.";
+      return;
+    }
+
+    this.natureOperationService.getByFilters(societeId, 'SALAIRE', 'SALAIRE').subscribe(
+      (data: NatureOperation[]) => {
+        this.natureOperations = [{
+          label: '',
+          options: data.map(d => ({ value: d.id, label: d.libelle }))
+        }];
+        this.isLoading = false;
       },
       (error) => {
-        this.isLoading=true;
-        console.error('Erreur lors du chargement des natures operations', error);
-        this.showError("erreur..");
+        this.isLoading = false;
+        console.error('Erreur lors du chargement des natures opérations', error);
+        this.showError("Erreur lors du chargement des natures opérations");
       }
     );
   }
+
 
   deleteOperation(operation: Operation): void {
     Swal.fire({

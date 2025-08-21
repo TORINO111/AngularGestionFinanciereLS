@@ -1,25 +1,26 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { AuthenticationService } from 'src/app/core/service/auth.service';
 
 @Component({
-  selector: 'app-lock-screen',
-  templateUrl: './lock-screen.component.html',
-  styleUrls: ['./lock-screen.component.scss']
+    selector: 'app-lock-screen',
+    templateUrl: './lock-screen.component.html',
+    styleUrls: ['./lock-screen.component.scss'],
+    standalone: false
 })
 export class LockScreenComponent implements OnInit {
 
-  lockScreenForm!: FormGroup;
+  lockScreenForm!: UntypedFormGroup;
   formSubmitted: boolean = false;
   error: string = '';
 
   constructor (
     private router: Router,
     private authenticationService: AuthenticationService,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private titleService: Title
   ) {
     titleService.setTitle("Lock Screen | GESTION FINANCIERE")

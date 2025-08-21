@@ -5,9 +5,10 @@ import { findAllParent, findMenuItem } from '../../shared/helper/utils';
 import { MenuItem } from '../../shared/models/menu.model';
 
 @Component({
-  selector: 'app-horizontal-topnav',
-  templateUrl: './topnav.component.html',
-  styleUrls: ['./topnav.component.scss']
+    selector: 'app-horizontal-topnav',
+    templateUrl: './topnav.component.html',
+    styleUrls: ['./topnav.component.scss'],
+    standalone: false
 })
 export class TopnavComponent implements OnInit {
 

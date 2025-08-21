@@ -12,12 +12,13 @@ export interface SortEvent {
 }
 
 @Directive({
-  selector: 'th[sortable]',
-  host: {
-    '[class.sorting_asc]': 'direction === "asc"',
-    '[class.sorting_desc]': 'direction === "desc"',
-    '(click)': 'rotate()'
-  }
+    selector: 'th[sortable]',
+    host: {
+        '[class.sorting_asc]': 'direction === "asc"',
+        '[class.sorting_desc]': 'direction === "desc"',
+        '(click)': 'rotate()'
+    },
+    standalone: false
 })
 export class NgbSortableHeaderDirective {
 

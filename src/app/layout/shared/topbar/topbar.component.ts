@@ -18,9 +18,10 @@ import { Router } from '@angular/router';
 import { ExerciceSelectionService } from 'src/app/services/exercice-selection.service';
 
 @Component({
-  selector: 'app-topbar',
-  templateUrl: './topbar.component.html',
-  styleUrls: ['./topbar.component.scss']
+    selector: 'app-topbar',
+    templateUrl: './topbar.component.html',
+    styleUrls: ['./topbar.component.scss'],
+    standalone: false
 })
 export class TopbarComponent implements OnInit {
 
@@ -48,7 +49,7 @@ export class TopbarComponent implements OnInit {
   searchText: string = '';
   selectedSociete: Societe | null = null;
   exerciceEnCours?: ExerciceComptable;
-  societeId!: number;
+  societeId?: number;
 
   constructor (
     private exerciceService: ExerciceComptableService,
@@ -104,9 +105,10 @@ export class TopbarComponent implements OnInit {
   loadExercice(): void {
     this.societeSelectionService.selectedSociete$.subscribe(societe => {
       //this.societeActive = societe;
-      if (societe) {
-        this.societeId=societe.id;
-        this.exerciceService.getExerciceEnCoursBySociete(this.societeId).subscribe({
+      if (societe!== undefined) {
+        this.societeId=societe!.id;
+        
+        this.exerciceService.getExerciceEnCoursBySociete(this.societeId!).subscribe({
           next: (data) => {
             //console.log(data)
               this.exerciceEnCours = data
@@ -123,7 +125,7 @@ export class TopbarComponent implements OnInit {
     this.societeSelectionService.selectedSociete$.subscribe(societe => {
       if (societe) {
         const societeId = societe.id;
-        this.exerciceService.getExerciceEnCoursBySociete(societeId).subscribe({
+        this.exerciceService.getExerciceEnCoursBySociete(societeId!).subscribe({
           next: (data) => {
             console.log(data)
               this.exerciceEnCours = data

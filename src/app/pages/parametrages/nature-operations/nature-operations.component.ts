@@ -2,30 +2,32 @@ import { Component, OnInit } from '@angular/core';
 import { NatureOperationService } from 'src/app/services/nature-operation.service';
 import { CategorieService } from 'src/app/services/categorie.service';
 import { PlanComptableService } from 'src/app/services/plan-comptable.service';
-import {FormGroup,Validators,FormBuilder } from '@angular/forms';
+import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { NatureOperation } from 'src/app/models/nature-operation.model';
 import { Select2Data } from 'ng-select2-component';
+import { CodeJournal } from 'src/app/models/code-journal.model';
 @Component({
-  selector: 'app-nature-operations',
-  templateUrl: './nature-operations.component.html',
-  styleUrls: ['./nature-operations.component.scss']
+    selector: 'app-nature-operations',
+    templateUrl: './nature-operations.component.html',
+    styleUrls: ['./nature-operations.component.scss'],
+    standalone: false
 })
 export class NatureOperationsComponent implements OnInit {
   natureList: NatureOperation[] = [];
-  selected?: NatureOperation;
+  selected?: NatureOperation | null;
 
   // Utilisation de FormGroup[] avec typage clair
-  natureOperations: FormGroup[] = [];
-  lignes: FormGroup[] = [];
+  natureOperations: UntypedFormGroup[] = [];
+  lignes: UntypedFormGroup[] = [];
 
   analytiques: Select2Data = [];
   comptables: Select2Data = [];
   categories:any[]=[];
   listeSens=[{id:'CREDIT',libelle:'CREDIT'},{id:'DEBIT',libelle:'DEBIT'}];
-  codesjournaux=[];
+  codesjournaux: CodeJournal[] =[];
 
   types=[{id:'RECETTE',libelle:'RECETTE'},{id:'EXPLOITATION',libelle:'EXPLOITATION'},
         {id:'IMMOBILISATION',libelle:'IMMOBILISATION'},{id:'SALAIRE',libelle:'SALAIRE'},
@@ -33,7 +35,7 @@ export class NatureOperationsComponent implements OnInit {
   selectedTypeNature='';
         
   selectedIndex: number | null = null;
-  natureOperationForm!: FormGroup;
+  natureOperationForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
 
   loading = false;
@@ -52,7 +54,7 @@ export class NatureOperationsComponent implements OnInit {
     private natureOperationService: NatureOperationService,
     private categorieService:CategorieService,
     private planComptableService:PlanComptableService,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private toastr: ToastrService
   ) {
     this.natureOperationForm = this.fb.group({
@@ -240,8 +242,8 @@ export class NatureOperationsComponent implements OnInit {
       DECAISSEMENT: '5'
     };
   
-    this.prefixe = prefixMap[currentData.typeNature] || '';
-    //console.log(this.prefixe)
+    this.prefixe = prefixMap[currentData.typeNature|| ''] || '';
+    //console.log(this.prefixe)|| ''] || ''
     if (this.prefixe) {
       this.comptables =[];
       this.chargerComptables();

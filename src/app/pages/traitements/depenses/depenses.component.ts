@@ -1,5 +1,5 @@
 import { Component, OnInit,ViewChild,TemplateRef  } from '@angular/core';
-import {FormGroup,Validators,FormBuilder } from '@angular/forms';
+import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
@@ -18,9 +18,10 @@ import { ExerciceComptable } from '../../../models/exercice-comptable.model';
 import { ExerciceComptableService } from 'src/app/services/exercice-comptable.service';
 import { filter, takeUntil } from 'rxjs/operators';
 @Component({
-  selector: 'app-depenses',
-  templateUrl: './depenses.component.html',
-  styleUrls: ['./depenses.component.scss']
+    selector: 'app-depenses',
+    templateUrl: './depenses.component.html',
+    styleUrls: ['./depenses.component.scss'],
+    standalone: false
 })
 export class DepensesComponent implements OnInit {
 
@@ -29,14 +30,14 @@ export class DepensesComponent implements OnInit {
   selected?: Operation;
 
   // Utilisation de FormGroup[] avec typage clair
-  operations: FormGroup[] = [];
-  lignes: FormGroup[] = [];
+  operations: UntypedFormGroup[] = [];
+  lignes: UntypedFormGroup[] = [];
 
-  natureOperations: Select2Data = [];
-  tiers: Select2Data = [];
+  natureOperations: { value: number, label: string }[] = [];
+  tiers: { value: number, label: string }[] = [];
 
   selectedIndex: number | null = null;
-  operationForm!: FormGroup;
+  operationForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
 
   loading = false;
@@ -44,24 +45,25 @@ export class DepensesComponent implements OnInit {
   result = false;
   formVisible = false;
   isComptable=false;
-  societeActive: Societe | null = null;
+  societeActive?: Societe;
 
   user:any;
 
   exerciceEnCours?: ExerciceComptable;
-  exerciceId:number;
+  exerciceId?:number;
   message:string;
   constructor(
     private operationService: OperationService,
     private tiersService:TiersService,
     private natureOperationService:NatureOperationService,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private toastr: ToastrService,
     private societeSelectionService: SocieteSelectionService,
     private authService:AuthenticationService,
     private exerciceService: ExerciceComptableService
   ) {
-    this.user=JSON.parse(localStorage.getItem("user"));
+    const userJson = localStorage.getItem("user");
+    this.user = userJson ? JSON.parse(userJson) : null;
     //console.log(this.user)
     this.operationForm = this.fb.group({
       id: [],
@@ -177,17 +179,18 @@ export class DepensesComponent implements OnInit {
   }
 
   private init(): void {
-    this.societeSelectionService.selectedSociete$
-      .pipe(
-        takeUntil(this.destroy$),
-        filter((s): s is Societe => !!s) // <- Type narrowing ici
-      )
-      .subscribe((societe) => {
-        this.societeActive = societe;
-        this.message = '';
-        this.loadExerciceEnCours(societe.id);
-      });
+  this.societeSelectionService.selectedSociete$
+    .pipe(
+      takeUntil(this.destroy$),
+      filter((s): s is Societe => !!s && s.id !== undefined) // on s'assure que l'id existe
+    )
+    .subscribe((societe) => {
+      this.societeActive = societe;
+      this.message = '';
+      this.loadExerciceEnCours(societe.id!); 
+    });
   }
+
   
   
   private loadExerciceEnCours(societeId: number): void {
@@ -216,8 +219,13 @@ export class DepensesComponent implements OnInit {
     this.result = false;
     this.isLoading = true;
 
-    const societeId = this.societeActive.id;
-  
+    const societeId = this.societeActive?.id;
+    if (societeId === undefined) {
+      this.message = "Aucune société active sélectionnée.";
+      this.isLoading = false;
+      return;
+    }
+
     forkJoin({
       operations: this.operationService.getByFilters(societeId, 'IMMOBILISATION', 'DEPENSE'),
       tiers: this.tiersService.getBySocieteAndType(societeId, 'FOURNISSEUR'),
@@ -244,24 +252,18 @@ export class DepensesComponent implements OnInit {
           })
         );
         this.lignes = this.operations;
-  
+        
         // 👉 2. Charger les tiers dans dropdown
-        this.tiers = [{
-          label: '',
-          options: (tiers as Tiers[]).map(t => ({
-            value: t.id,
-            label: t.intitule
-          }))
-        }];
-  
-        // 👉 3. Charger les natureOperations dans dropdown
-        this.natureOperations = [{
-          label: '',
-          options: (natureOperations as NatureOperation[]).map(n => ({
-            value: n.id,
-            label: n.libelle
-          }))
-        }];
+        this.tiers = (tiers as Tiers[]).map(t => ({
+        value: t.id!,
+        label: t.intitule
+      }));
+
+      // 👉 3. Charger les natureOperations dans dropdown
+      this.natureOperations = (natureOperations as NatureOperation[]).map(n => ({
+        value: n.id!,
+        label: n.libelle
+      }));
   
         this.result = true;
         this.isLoading = false;
@@ -282,7 +284,7 @@ export class DepensesComponent implements OnInit {
 
   chargerOperations(): void {
     this.operations = [];
-    this.operationService.getByFilters(this.societeActive.id, 'IMMOBILISATION', 'DEPENSE').subscribe({
+    this.operationService.getByFilters(this.societeActive?.id, 'IMMOBILISATION', 'DEPENSE').subscribe({
       next: (data: Operation[]) => {
        // console.log(data)
         this.operations = data.map(d =>
@@ -316,28 +318,48 @@ export class DepensesComponent implements OnInit {
   }
 
   chargerTiers() {
-    this.tiersService.getBySocieteAndType(this.societeActive.id,'FOURNISSEUR').subscribe(
-      (data:any) => {
-        for(let d of data){
-          console.log(data)
-          this.tiers = [{ label: '', options: (data as Tiers[]).map(d => ({ value: d.id, label: d.intitule })) }];
-        }
-        this.isLoading=true;
-      },
-      (error) => {
-        this.isLoading=true;
-        console.error('Erreur lors du chargement des tiers', error);
-        this.showError("erreur..");
-      }
-    );
+  const societeId = this.societeActive?.id;
+  if (societeId === undefined) {
+    this.message = "Aucune société active sélectionnée.";
+    this.isLoading = false;
+    return;
   }
 
+  this.tiersService.getBySocieteAndType(societeId, 'FOURNISSEUR')
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (data: Tiers[]) => {
+        this.tiers = (data as Tiers[]).map(t => ({
+        value: t.id ?? 0,
+        label: t.intitule
+      }));
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des tiers', error);
+        this.showError("Erreur lors du chargement des tiers.");
+        this.isLoading = false;
+      }
+    });
+}
+
+
   chargerNatureOperations() {
-    this.natureOperationService.getByFilters(this.societeActive.id,'IMMOBILISATION','DEPENSE').subscribe(
+    const societeId = this.societeActive?.id;
+    if (societeId === undefined) {
+      this.message = "Aucune société active sélectionnée.";
+      this.isLoading = false;
+      return;
+    }
+
+    this.natureOperationService.getByFilters(societeId,'IMMOBILISATION','DEPENSE').subscribe(
       (data:any) => {
         for(let d of data){
           //console.log(data)
-          this.natureOperations = [{ label: '', options: (data as NatureOperation[]).map(d => ({ value: d.id, label: d.libelle })) }];
+          this.natureOperations = (data as NatureOperation[]).map(n => ({
+            value: n.id ?? 0,
+            label: n.libelle
+          }));
         }
         this.isLoading=true;
       },

@@ -1,5 +1,5 @@
 import { Component, OnInit,ViewChild,TemplateRef  } from '@angular/core';
-import {FormGroup,Validators,FormBuilder } from '@angular/forms';
+import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
@@ -15,23 +15,24 @@ import { AuthenticationService } from 'src/app/core/service/auth.service';
 import { Societe } from 'src/app/models/societe.model';
 import { SocieteSelectionService } from 'src/app/services/societe-selection.service';
 @Component({
-  selector: 'app-retraits',
-  templateUrl: './retraits.component.html',
-  styleUrls: ['./retraits.component.scss']
+    selector: 'app-retraits',
+    templateUrl: './retraits.component.html',
+    styleUrls: ['./retraits.component.scss'],
+    standalone: false
 })
 export class RetraitsComponent implements OnInit {
   operationList: Operation[] = [];
   selected?: Operation;
 
   // Utilisation de FormGroup[] avec typage clair
-  operations: FormGroup[] = [];
-  lignes: FormGroup[] = [];
+  operations: UntypedFormGroup[] = [];
+  lignes: UntypedFormGroup[] = [];
 
   natureOperations: Select2Data = [];
   tiers: Select2Data = [];
 
   selectedIndex: number | null = null;
-  operationForm!: FormGroup;
+  operationForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
 
   loading = false;
@@ -45,12 +46,13 @@ export class RetraitsComponent implements OnInit {
     private operationService: OperationService,
     private tiersService:TiersService,
     private natureOperationService:NatureOperationService,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private toastr: ToastrService,
     private societeSelectionService: SocieteSelectionService,
     private authService:AuthenticationService
   ) {
-    this.user=JSON.parse(localStorage.getItem("user"));
+    const userJson = localStorage.getItem("user");
+    this.user = userJson ? JSON.parse(userJson) : null;
     this.operationForm = this.fb.group({
       id: [],
       montant: ['', Validators.required],

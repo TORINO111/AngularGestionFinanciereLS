@@ -1,146 +1,163 @@
 <!-- Topbar Start -->
 <div class="navbar-custom">
-    <div class="container-fluid">
-        <ul class="list-unstyled topnav-menu float-end mb-0">
-                
-
-            <!-- <li class="dropdown d-none d-lg-inline-block">
-                <a class="nav-link dropdown-toggle arrow-none maximize-icon" href="javascript:void(0)"
-                    (click)="toggleFullScreen()">
-                    <i data-feather="maximize" appFeatherIcon></i>
-                </a>
-            </li> -->
-            <li class="nav-item dropdown me-2" ngbDropdown>
-                <a class="nav-link dropdown-toggle d-flex align-items-center" href="javascript:void(0)" ngbDropdownToggle>
-                    <span *ngIf="exerciceEnCours" class="fw-bold">
-                        Exercice <strong>{{ exerciceEnCours.annee }}</strong>
-                    </span>
-                    <span (click)="ouvrirNouvelExercice()" *ngIf="!exerciceEnCours" class="fw-bold exercice-neant">
-                        Aucun exercice ouvert.<br>
-                        <!-- Aucun exercice ouvert pour la société actuelle.<br> -->
-                    <!-- <button class="btn btn-primary mt-2" (click)="ouvrirNouvelExercice()">Ouvrir un exercice</button> -->
-                    </span>
-                   </a>
-              </li>
-
-            <li class="nav-item dropdown me-2" ngbDropdown>
-                <a class="nav-link dropdown-toggle d-flex align-items-center" href="javascript:void(0)" ngbDropdownToggle>
-                  <i class="bi bi-building me-2"></i>
-                  <span class="fw-bold">{{ selectedSociete?.nom || 'Sélectionnez une société' }}</span>
-                </a>
-              
-                <div  class="dropdown-menu dropdown-menu-end p-2 shadow-lg" ngbDropdownMenu style="width: 300px;background-color: #075E54;">
-                  <div class="mb-2">
-                    <input type="text" class="form-control form-control-sm" placeholder="Rechercher..."
-                           [(ngModel)]="searchText" (input)="filterSocietes()">
-                  </div>
-              
-                  <div class="list-group list-group-flush max-height-300 scrollable-y">
-                    <button type="button"
-                            *ngFor="let societe of filteredSocietes"
-                            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                            [class.active]="societe.id === selectedSociete?.id"
-                            (click)="selectSociete(societe)">
-                      <i class="bi bi-arrow-right-circle me-2 text-primary" *ngIf="societe.id === selectedSociete?.id"></i>
-                      <!-- <img [src]="societe.logoUrl" alt="logo" width="24" height="24" class="me-2 rounded-circle" *ngIf="societe.logoUrl"> -->
-                      {{ societe.nom }}
-                    </button>
-              
-                    <div *ngIf="filteredSocietes.length === 0" class="text-center text-muted small py-2">
-                      Aucune société trouvée
-                    </div>
-                  </div>
-                </div>
-              </li>
-              
-              
-
-            <li class="notification-list topbar-dropdown" ngbDropdown>
-                <a class="nav-link dropdown-toggle nav-user me-0" href="javascript:void(0)" role="button"
-                    ngbDropdownToggle>
-                    <!-- <img src="assets/images/users/avatar-1.jpg" alt="user-image" class="rounded-circle"> -->
-                    <!-- <img [src]="loggedInUser.avatar" alt="user-image" class="rounded-circle"> -->
-                    <span class="pro-user-name ms-1">
-                        {{loggedInUser?.prenom}} {{loggedInUser?.nom}} <i class="uil uil-angle-down"></i>
-                        <!-- Nik Patel <i class="uil uil-angle-down"></i> -->
-                    </span>
-                </a>
-                <div ngbDropdownMenu aria-labelledby="profileMenuDropdown" class="dropdown-menu-end profile-dropdown">
-                    
-                    <!-- item -->
-                    <ng-container *ngFor="let option of profileOptions;let i=index">
-                        <div class="dropdown-divider" *ngIf="i===profileOptions.length-1"></div>
-                        <a class="notify-item" ngbDropdownItem>
-                            <i [attr.data-feather]="option.icon" appFeatherIcon class="icon-dual icon-xs me-1"></i>
-                            <span style="cursor: pointer;" [routerLink]="[option.redirectTo]">{{option.label}}</span>
-                        </a>
-                    </ng-container>
-
-                </div>
-            </li>
+  <div class="container-fluid">
+    <ul class="list-unstyled topnav-menu float-end mb-0">
 
 
-        </ul>
+      <!-- <li class="dropdown d-none d-lg-inline-block">
+      <a class="nav-link dropdown-toggle arrow-none maximize-icon" href="javascript:void(0)"
+        (click)="toggleFullScreen()">
+        <i data-feather="maximize" appFeatherIcon></i>
+      </a>
+    </li> -->
+    <li class="nav-item dropdown me-2" ngbDropdown>
+      <a class="nav-link dropdown-toggle d-flex align-items-center" href="javascript:void(0)" ngbDropdownToggle>
+        @if (exerciceEnCours) {
+          <span class="fw-bold">
+            Exercice <strong>{{ exerciceEnCours.annee }}</strong>
+          </span>
+        }
+        @if (!exerciceEnCours) {
+          <span (click)="ouvrirNouvelExercice()" class="fw-bold exercice-neant">
+            Aucun exercice ouvert.<br>
+            <!-- Aucun exercice ouvert pour la société actuelle.<br> -->
+            <!-- <button class="btn btn-primary mt-2" (click)="ouvrirNouvelExercice()">Ouvrir un exercice</button> -->
+          </span>
+        }
+      </a>
+    </li>
 
-        <!-- LOGO -->
-        <div class="logo-box">
-            <a [routerLink]="['traitements/graphiques']" class="logo logo-dark">
-                <span class="logo-sm">
-                    <img src="assets/images/logo-sm.png" alt="" height="34" width="30" class="rounded">
-                    <!-- <span class="logo-lg-text-light">Shreyu</span> -->
-                </span>
-                <span class="logo-lg">
-                    <img src="assets/images/logo-sm.png" alt="" height="44" width="70" class="rounded">
-                    <!-- <span class="logo-lg-text-light">S</span> -->
-                </span>
-            </a>
+    <li class="nav-item dropdown me-2" ngbDropdown>
+      <a class="nav-link dropdown-toggle d-flex align-items-center" href="javascript:void(0)" ngbDropdownToggle>
+        <i class="bi bi-building me-2"></i>
+        <span class="fw-bold">{{ selectedSociete?.nom || 'Sélectionnez une société' }}</span>
+      </a>
 
-            <a [routerLink]="['traitements/graphiques']" class="logo logo-light">
-                <span class="logo-sm">
-                    <img src="assets/images/logo-sm.png" alt="" height="44" width="70" class="rounded">
-                </span>
-                <span class="logo-lg">
-                    <img src="assets/images/logo-sm.png" alt="" height="44" width="70" class="rounded">
-                </span>
-            </a>
+      <div  class="dropdown-menu dropdown-menu-end p-2 shadow-lg" ngbDropdownMenu style="width: 300px;background-color: #075E54;">
+        <div class="mb-2">
+          <input type="text" class="form-control form-control-sm" placeholder="Rechercher..."
+            [(ngModel)]="searchText" (input)="filterSocietes()">
         </div>
 
-        <ul class="list-unstyled topnav-menu topnav-menu-left m-0">
-            <!-- <li>
-                <button class="button-menu-mobile" (click)="changeSidebarWidth()">
-                    <i data-feather="menu" appFeatherIcon></i>
-                </button>
-            </li> -->
-            <li>
-                <button class="button-menu-mobile  d-none d-lg-block" (click)="changeSidebarWidth()"
-                    *ngIf="layoutType!=='horizontal'">
-                    <i data-feather="menu" appFeatherIcon></i>
-                </button>
-            </li>
+        <div class="list-group list-group-flush max-height-300 scrollable-y">
+          @for (societe of filteredSocietes; track societe) {
+            <button type="button"
+              class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+              [class.active]="societe.id === selectedSociete?.id"
+              (click)="selectSociete(societe)">
+              @if (societe.id === selectedSociete?.id) {
+                <i class="bi bi-arrow-right-circle me-2 text-primary"></i>
+              }
+              <!-- <img [src]="societe.logoUrl" alt="logo" width="24" height="24" class="me-2 rounded-circle" *ngIf="societe.logoUrl"> -->
+              {{ societe.nom }}
+            </button>
+          }
 
-            <li>
-                <button class="button-menu-mobile open-left d-block d-lg-none " *ngIf="layoutType!=='horizontal'"
-                    (click)="toggleMobileMenu($event)">
-                    <i data-feather="menu" appFeatherIcon></i>
-                </button>
-            </li>
-
-            <li>
-                <!-- Mobile menu toggle (Horizontal Layout)-->
-                <a class="navbar-toggle nav-link" [ngClass]="{'open': topnavCollapsed}"
-                    (click)="toggleMobileMenu($event)" *ngIf="layoutType==='horizontal'">
-                    <div class="lines">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
-                </a>
-                <!-- End mobile menu toggle-->
-            </li>
+          @if (filteredSocietes.length === 0) {
+            <div class="text-center text-muted small py-2">
+              Aucune société trouvée
+            </div>
+          }
+        </div>
+      </div>
+    </li>
 
 
-        </ul>
-        <div class="clearfix"></div>
-    </div>
+
+    <li class="notification-list topbar-dropdown" ngbDropdown>
+      <a class="nav-link dropdown-toggle nav-user me-0" href="javascript:void(0)" role="button"
+        ngbDropdownToggle>
+        <!-- <img src="assets/images/users/avatar-1.jpg" alt="user-image" class="rounded-circle"> -->
+        <!-- <img [src]="loggedInUser.avatar" alt="user-image" class="rounded-circle"> -->
+        <span class="pro-user-name ms-1">
+          {{loggedInUser?.prenom}} {{loggedInUser?.nom}} <i class="uil uil-angle-down"></i>
+          <!-- Nik Patel <i class="uil uil-angle-down"></i> -->
+        </span>
+      </a>
+      <div ngbDropdownMenu aria-labelledby="profileMenuDropdown" class="dropdown-menu-end profile-dropdown">
+
+        <!-- item -->
+        @for (option of profileOptions; track option; let i = $index) {
+          @if (i===profileOptions.length-1) {
+            <div class="dropdown-divider"></div>
+          }
+          <a class="notify-item" ngbDropdownItem>
+            <i [attr.data-feather]="option.icon" appFeatherIcon class="icon-dual icon-xs me-1"></i>
+            <span style="cursor: pointer;" [routerLink]="[option.redirectTo]">{{option.label}}</span>
+          </a>
+        }
+
+      </div>
+    </li>
+
+
+  </ul>
+
+  <!-- LOGO -->
+  <div class="logo-box">
+    <a [routerLink]="['traitements/graphiques']" class="logo logo-dark">
+      <span class="logo-sm">
+        <img src="assets/images/logo-sm.png" alt="" height="34" width="30" class="rounded">
+        <!-- <span class="logo-lg-text-light">Shreyu</span> -->
+      </span>
+      <span class="logo-lg">
+        <img src="assets/images/logo-sm.png" alt="" height="44" width="70" class="rounded">
+        <!-- <span class="logo-lg-text-light">S</span> -->
+      </span>
+    </a>
+
+    <a [routerLink]="['traitements/graphiques']" class="logo logo-light">
+      <span class="logo-sm">
+        <img src="assets/images/logo-sm.png" alt="" height="44" width="70" class="rounded">
+      </span>
+      <span class="logo-lg">
+        <img src="assets/images/logo-sm.png" alt="" height="44" width="70" class="rounded">
+      </span>
+    </a>
+  </div>
+
+  <ul class="list-unstyled topnav-menu topnav-menu-left m-0">
+    <!-- <li>
+    <button class="button-menu-mobile" (click)="changeSidebarWidth()">
+      <i data-feather="menu" appFeatherIcon></i>
+    </button>
+  </li> -->
+  <li>
+    @if (layoutType!=='horizontal') {
+      <button class="button-menu-mobile  d-none d-lg-block" (click)="changeSidebarWidth()"
+        >
+        <i data-feather="menu" appFeatherIcon></i>
+      </button>
+    }
+  </li>
+
+  <li>
+    @if (layoutType!=='horizontal') {
+      <button class="button-menu-mobile open-left d-block d-lg-none "
+        (click)="toggleMobileMenu($event)">
+        <i data-feather="menu" appFeatherIcon></i>
+      </button>
+    }
+  </li>
+
+  <li>
+    <!-- Mobile menu toggle (Horizontal Layout)-->
+    @if (layoutType==='horizontal') {
+      <a class="navbar-toggle nav-link" [ngClass]="{'open': topnavCollapsed}"
+        (click)="toggleMobileMenu($event)">
+        <div class="lines">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </a>
+    }
+    <!-- End mobile menu toggle-->
+  </li>
+
+
+</ul>
+<div class="clearfix"></div>
+</div>
 </div>
 <!-- end Topbar -->

@@ -1,18 +1,19 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Salarie } from 'src/app/models/salarie.model';
 import { SalarieService } from 'src/app/services/salarie.service';
 @Component({
-  selector: 'app-salarie',
-  templateUrl: './salarie.component.html',
-  styleUrls: ['./salarie.component.scss']
+    selector: 'app-salarie',
+    templateUrl: './salarie.component.html',
+    styleUrls: ['./salarie.component.scss'],
+    standalone: false
 })
 export class SalarieComponent implements OnInit {
 
-  form!: FormGroup;
+  form!: UntypedFormGroup;
   salaries: Salarie[] = [];
 
-  constructor(private fb: FormBuilder, private salarieService: SalarieService) {}
+  constructor(private fb: UntypedFormBuilder, private salarieService: SalarieService) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({

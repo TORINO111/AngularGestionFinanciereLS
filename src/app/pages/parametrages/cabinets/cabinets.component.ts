@@ -1,5 +1,5 @@
 import { Component, OnInit ,ViewChild,TemplateRef } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { SocieteService } from 'src/app/services/societe.service';
 import { NgbModal,ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
@@ -8,23 +8,24 @@ import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.
 import { Societe } from 'src/app/models/societe.model';
 
 @Component({
-  selector: 'app-cabinets',
-  templateUrl: './cabinets.component.html',
-  styleUrls: ['./cabinets.component.scss']
+    selector: 'app-cabinets',
+    templateUrl: './cabinets.component.html',
+    styleUrls: ['./cabinets.component.scss'],
+    standalone: false
 })
 export class CabinetsComponent implements OnInit {
   @ViewChild('content', { static: true }) content: any;
   @ViewChild('editcontent', { static: true }) editcontent: any;
   closeResult:string='';
   cabinetsList: Societe[] = [];
-  selected: Societe;
+  selected?: Societe;
 
   // Utilisation de FormGroup[] avec typage clair
-  cabinets: FormGroup[] = [];
-  lignes: FormGroup[] = [];
+  cabinets: UntypedFormGroup[] = [];
+  lignes: UntypedFormGroup[] = [];
 
   selectedIndex: number | null = null;
-  cabinetForm!: FormGroup;
+  cabinetForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
 
   loading = false;
@@ -36,7 +37,7 @@ export class CabinetsComponent implements OnInit {
 
   constructor(
     private societeService: SocieteService,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private modalService: NgbModal,
     private toastr: ToastrService
   ) {
@@ -105,9 +106,11 @@ export class CabinetsComponent implements OnInit {
 
     const cabinet = this.cabinetForm.value as Societe;
 
-    const action$ = this.selected
-      ? this.societeService.updateCabinet(cabinet.id, cabinet)
-      : this.societeService.createCabinet(cabinet);
+    if (!cabinet) return; // sécurité si cabinet est null ou undefined
+
+  const action$ = (this.selected && this.selected.id !== undefined)
+  ? this.societeService.updateCabinet(this.selected.id, cabinet)
+  : this.societeService.createCabinet(cabinet);
 
     action$.subscribe({
       next: () => {

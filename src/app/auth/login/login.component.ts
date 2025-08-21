@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { first } from 'rxjs/operators';
@@ -7,15 +7,16 @@ import { AuthenticationService } from 'src/app/core/service/auth.service';
 import { SocieteSelectionService } from 'src/app/services/societe-selection.service';
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+    selector: 'app-login',
+    templateUrl: './login.component.html',
+    styleUrls: ['./login.component.scss'],
+    standalone: false
 })
 export class LoginComponent implements OnInit {
 
   loading: boolean = false;
   returnUrl: string = '/traitements/saisies-recettes';
-  loginForm!: FormGroup;
+  loginForm!: UntypedFormGroup;
   formSubmitted: boolean = false;
   error: string = '';
 
@@ -25,7 +26,7 @@ export class LoginComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private authenticationService: AuthenticationService,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private titleService: Title,
     private societeSelectionService: SocieteSelectionService
   ) {

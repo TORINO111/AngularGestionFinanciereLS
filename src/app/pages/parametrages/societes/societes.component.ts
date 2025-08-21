@@ -1,5 +1,5 @@
 import { Component, OnInit ,ViewChild,TemplateRef } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { SocieteService } from 'src/app/services/societe.service';
 import { NgbModal,ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
@@ -9,9 +9,10 @@ import { Societe } from 'src/app/models/societe.model';
 import { UtilisateurService } from 'src/app/services/utilisateur.service';
 
 @Component({
-  selector: 'app-societes',
-  templateUrl: './societes.component.html',
-  styleUrls: ['./societes.component.scss']
+    selector: 'app-societes',
+    templateUrl: './societes.component.html',
+    styleUrls: ['./societes.component.scss'],
+    standalone: false
 })
 export class SocietesComponent implements OnInit {
 
@@ -19,14 +20,14 @@ export class SocietesComponent implements OnInit {
   @ViewChild('editcontent', { static: true }) editcontent: any;
   closeResult:string='';
   societesList: Societe[] = [];
-  selected: Societe;
+  selected: Societe | undefined;
 
   // Utilisation de FormGroup[] avec typage clair
-  societes: FormGroup[] = [];
-  lignes: FormGroup[] = [];
+  societes: UntypedFormGroup[] = [];
+  lignes: UntypedFormGroup[] = [];
 
   selectedIndex: number | null = null;
-  societeForm!: FormGroup;
+  societeForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
 
   loading = false;
@@ -39,7 +40,7 @@ export class SocietesComponent implements OnInit {
 
   constructor(
     private societeService: SocieteService,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private modalService: NgbModal,
     private toastr: ToastrService,
     private utilisateurService:UtilisateurService
@@ -113,9 +114,15 @@ export class SocietesComponent implements OnInit {
 
     const societe = this.societeForm.value as Societe;
 
-    const action$ = this.selected
-      ? this.societeService.updateSociete(societe.id, societe)
-      : this.societeService.createSociete(societe);
+    let action$;
+
+    if (this.selected && societe.id !== undefined) {
+      // id existe : update
+      action$ = this.societeService.updateSociete(societe.id, societe);
+    } else {
+      // sinon : création
+      action$ = this.societeService.createSociete(societe);
+    }
 
     action$.subscribe({
       next: () => {

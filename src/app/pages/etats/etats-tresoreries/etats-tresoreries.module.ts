@@ -1,9 +1,9 @@
+import { NgSelectModule } from '@ng-select/ng-select';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PageTitleModule } from 'src/app/shared/page-title/page-title.module';
 import {EtatsTresoreriesRoutingModule } from './etats-tresoreries-routing.module';
 import { EtatsTresoreriesComponent } from './etats-tresoreries.component';
-import { Select2Module } from 'ng-select2-component';
 import { FormsModule,ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
@@ -12,9 +12,11 @@ import { FormsModule,ReactiveFormsModule } from '@angular/forms';
   ],
   imports: [
     CommonModule,
-    FormsModule,ReactiveFormsModule,
+    FormsModule,
+    ReactiveFormsModule,
     PageTitleModule,
-    EtatsTresoreriesRoutingModule,Select2Module
+    EtatsTresoreriesRoutingModule,
+    NgSelectModule
   ]
 })
 export class EtatsTresoreriesModule { }

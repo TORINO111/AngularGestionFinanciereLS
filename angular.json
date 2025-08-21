@@ -94,18 +94,16 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "shreyu-angular:build:production"
+              "buildTarget": "shreyu-angular:build:production"
             },
             "development": {
-              "browserTarget": "shreyu-angular:build:development"
+              "buildTarget": "shreyu-angular:build:development"
             },
             "fr": {
-              "browserTarget": "shreyu-angular:build:fr",
-              "optimization": false
+              "buildTarget": "shreyu-angular:build:fr"
             },
             "en": {
-              "browserTarget": "shreyu-angular:build:en",
-              "optimization": false
+              "buildTarget": "shreyu-angular:build:en"
             }
           },
           "defaultConfiguration": "development"
@@ -113,7 +111,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "shreyu-angular:build"
+            "buildTarget": "shreyu-angular:build"
           }
         },
         "test": {
@@ -136,6 +134,5 @@
         }
       }
     }
-  },
-  "defaultProject": "shreyu-angular"
+  }
 }

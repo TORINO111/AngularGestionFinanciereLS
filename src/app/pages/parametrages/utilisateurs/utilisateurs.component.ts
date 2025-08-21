@@ -1,15 +1,16 @@
 import { Component, OnInit,ViewChild,TemplateRef  } from '@angular/core';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
-import {FormGroup,Validators,FormBuilder } from '@angular/forms';
+import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { TresorerieService } from 'src/app/services/tresorerie.service';
 import { forkJoin } from 'rxjs';
 import { NgbModal,ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 @Component({
-  selector: 'app-utilisateurs',
-  templateUrl: './utilisateurs.component.html',
-  styleUrls: ['./utilisateurs.component.scss']
+    selector: 'app-utilisateurs',
+    templateUrl: './utilisateurs.component.html',
+    styleUrls: ['./utilisateurs.component.scss'],
+    standalone: false
 })
 export class UtilisateursComponent implements OnInit {
   @ViewChild('content', { static: true }) content: any;
@@ -17,7 +18,7 @@ export class UtilisateursComponent implements OnInit {
   closeResult:string='';
   pageTitle: BreadcrumbItem[] = [];
   subtitle: string;
-  utilisateurForm: FormGroup;
+  utilisateurForm: UntypedFormGroup;
   saveSuccess = false;
   saveFail = false;
   loading = false;
@@ -25,7 +26,7 @@ export class UtilisateursComponent implements OnInit {
   users: any[] = [];
   roles: any[] = [];
   superviseurs: any[] = [];
-  formsArr: FormGroup[] = [];
+  formsArr: UntypedFormGroup[] = [];
   admin = false;
   idAdmin: number;
   configPagination = { currentPage: 1, itemsPerPage: 10 };
@@ -34,10 +35,11 @@ export class UtilisateursComponent implements OnInit {
   constructor(
     private modalService: NgbModal,
     private tresorerieService: TresorerieService,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private toastr: ToastrService
   ) {
-    this.user=JSON.parse(localStorage.getItem("user"));
+    const userJson = localStorage.getItem("user");
+    this.user = userJson ? JSON.parse(userJson) : null;
     
     this.utilisateurForm = this.fb.group({
       id:[],
@@ -65,44 +67,38 @@ export class UtilisateursComponent implements OnInit {
   }
 
   chargerRoles() {
-    this.tresorerieService.allRoles().subscribe(
-      (data: any[]) => {
-       // console.log(data);
-        
-        if (this.user?.cabinet !== null || this.user?.cabinet !== undefined) {
-          // Par exemple : supprimer le rôle "ADMIN"
-          data = data.filter(role => role.libelle !== 'ADMIN');
-        }
-  
-        this.roles = data;
-        this.result = true;
-      },
-      error => {
-        this.result = true;
-        this.showError("Erreur lors du chargement des rôles.");
-        // if (environment.enableConsoleLogs) console.error(error);
+  this.tresorerieService.allRoles().subscribe(
+    (data: any) => { // <== utiliser 'any' ici
+      let roles: any[] = data as any[];
+
+      if (this.user?.cabinet !== null && this.user?.cabinet !== undefined) {
+        roles = roles.filter(role => role.libelle !== 'ADMIN');
       }
+
+      this.roles = roles;
+      this.result = true;
+    },
+    error => {
+      this.result = true;
+      this.showError("Erreur lors du chargement des rôles.");
+    }
     );
   }
 
   chargerSuperviseurs() {
-    this.tresorerieService.allSuperviseurs().subscribe(
-      (data: any[]) => {
-        //console.log(data);
-  
-        this.superviseurs = data;
-        this.result = true;
-      },
-      error => {
-        this.result = true;
-        this.showError("Erreur lors du chargement des superviseurs.");
-        // if (environment.enableConsoleLogs) console.error(error);
-      }
-    );
+  this.tresorerieService.allSuperviseurs().subscribe({
+    next: (data) => {
+      this.superviseurs = data;
+      this.result = true;
+    },
+    error: (err) => {
+      this.result = true;
+      this.showError("Erreur lors du chargement des superviseurs.");
+    }
+    });
   }
-  
 
-  onSaveUtilisateur(utilisateurFormValue){
+  onSaveUtilisateur(utilisateurFormValue: any){
     // console.log(utilisateurFormValue.value);
     // return;
     if(utilisateurFormValue.valid){
@@ -130,12 +126,13 @@ export class UtilisateursComponent implements OnInit {
   }
 
   loadUsers() {
-    this.formsArr = [];
-    this.tresorerieService.allUtilisateurs().subscribe((usersData: any[]) => {
+  this.formsArr = [];
+  this.tresorerieService.allUtilisateurs().subscribe({
+    next: (usersData) => {
       const role = sessionStorage.getItem('role');
       this.admin = role === 'a';
-      //console.log(usersData)
       this.users = usersData;
+
       for (let user of usersData) {
         let selected = [];
         let isAdmin = false;
@@ -159,13 +156,19 @@ export class UtilisateursComponent implements OnInit {
           adm: [isAdmin],
           modelRoles: [selected],
           cabinetId:[user?.cabinet?.id],
-          superviseurId:[]
+          superviseurId: []
         }));
       }
 
       this.result = true;
+    },
+    error: (err) => {
+      this.result = true;
+      this.showError("Erreur lors du chargement des utilisateurs.");
+    }
     });
   }
+
 
   openModal(content: any, size: 'sm' | 'lg' = 'lg', centered: boolean = false) {
     this.modalService.open(content, { size, centered });

@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { PageTitleModule } from 'src/app/shared/page-title/page-title.module';
 import { DepensesRoutingModule } from './depenses-routing.module';
 import { DepensesComponent } from './depenses.component';
-import { Select2Module } from 'ng-select2-component';
+import { NgSelectModule } from '@ng-select/ng-select'; 
+
 import { FormsModule,ReactiveFormsModule} from '@angular/forms';
 @NgModule({
   declarations: [
@@ -12,7 +13,10 @@ import { FormsModule,ReactiveFormsModule} from '@angular/forms';
   imports: [
     CommonModule,
     PageTitleModule,
-    DepensesRoutingModule,ReactiveFormsModule,Select2Module
+    DepensesRoutingModule,
+    ReactiveFormsModule,
+    NgSelectModule,
+    FormsModule
   ]
 })
 export class DepensesModule { }

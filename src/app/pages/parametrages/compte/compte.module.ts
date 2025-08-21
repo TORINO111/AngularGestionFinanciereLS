@@ -4,7 +4,7 @@ import { FormsModule,ReactiveFormsModule} from '@angular/forms';
 import { PageTitleModule } from 'src/app/shared/page-title/page-title.module';
 import {CompteRoutingModule } from './compte-routing.module';
 import { CompteComponent } from './compte.component';
-import { Select2Module } from 'ng-select2-component';
+import { NgSelectModule } from '@ng-select/ng-select'; 
 
 @NgModule({
   declarations: [
@@ -15,7 +15,8 @@ import { Select2Module } from 'ng-select2-component';
     FormsModule,
     PageTitleModule,
     ReactiveFormsModule,
-    CompteRoutingModule,Select2Module
+    CompteRoutingModule,
+    NgSelectModule
   ]
 })
 export class CompteModule { }

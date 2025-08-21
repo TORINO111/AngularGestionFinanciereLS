@@ -1,16 +1,17 @@
 import { Injectable } from '@angular/core';
-import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
-
+import { Router, ActivatedRouteSnapshot, RouterStateSnapshot, CanActivate } from '@angular/router';
 import { AuthenticationService } from '../service/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
-    constructor (
+    constructor(
         private router: Router,
         private authenticationService: AuthenticationService
-    ) { }
+    ) {}
 
-    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+        const expectedRoles: string[] = route.data['roles'] || [];
+        const userRoles: string[] = this.authenticationService.getRolesFromToken() || [];
         /*const currentUser = this.authenticationService.currentUser();
         if (currentUser) {
             return true;
@@ -19,17 +20,15 @@ export class AuthGuard implements CanActivate {
         this.router.navigate(['auth/login'], { queryParams: { returnUrl: state.url } });
         return false;*/
 
-        const expectedRoles = route.data['roles'];
-        const userRoles = this.authenticationService.getRolesFromToken();
-
-        const hasAccess = expectedRoles.some(role => userRoles.includes(role));
+        // Typage explicite du paramètre 'role'
+        const hasAccess = expectedRoles.some((role: string) => userRoles.includes(role));
 
         if (!hasAccess) {
-        this.router.navigate(
-            //['/unauthorized']
-            ['auth/login'], { queryParams: { returnUrl: state.url } }); // Redirection en cas d'accès refusé
-        return false;
+            // Redirection en cas d'accès refusé
+            this.router.navigate(['auth/login'], { queryParams: { returnUrl: state.url } });
+            return false;
         }
+
         return true;
     }
 }

@@ -1,19 +1,21 @@
 <!-- end page title -->
 <app-page-title [breadcrumbItems]="pageTitle" title="Dépenses"></app-page-title>
-<div class="loader-container" *ngIf="!result">
-  <div class="lds-dual-ring"></div>
-</div>
-<div class="card" *ngIf="result">
+@if (!result) {
+  <div class="loader-container">
+    <div class="lds-dual-ring"></div>
+  </div>
+}
+@if (result) {
+  <div class="card">
     <div class="card-header etat">État des Dépenses</div>
-  
     <div class="card-body">
-      <div *ngIf="message" class="alert alert-warning text-center animated fadeIn">
-        {{ message }}
-      </div>
-      
+      @if (message) {
+        <div class="alert alert-warning text-center animated fadeIn">
+          {{ message }}
+        </div>
+      }
       <form [formGroup]="filtreForm" (ngSubmit)="chargerDepenses()">
         <div class="row g-2 mb-3 align-items-end"> <!-- align-items-end ici pour tout aligner proprement -->
-      
           <!-- Filtres -->
           <div class="col-12 col-md-8">
             <div class="row g-2 align-items-end">
@@ -26,9 +28,11 @@
               <div class="col-12 col-md-4">
                 <select name="codeJournal" formControlName="codeJournal" class="form-select" id="codeJournal">
                   <option [value]="null" disabled>---Select Journal---</option>
-                  <option *ngFor="let cj of codesjournaux" [value]="cj.code">
-                    {{ cj.libelle }}
-                  </option>
+                  @for (cj of codesjournaux; track cj) {
+                    <option [value]="cj.code">
+                      {{ cj.libelle }}
+                    </option>
+                  }
                 </select>
               </div>
               <div class="col-12 col-md-2 d-grid">
@@ -38,7 +42,6 @@
               </div>
             </div>
           </div>
-      
           <!-- Boutons Export -->
           <div class="col-12 col-md-4">
             <div class="row g-2 align-items-end">
@@ -53,50 +56,56 @@
                 </button>
               </div>
             </div>
-            <div *ngIf="enCours" class="progress-container">
-              <div class="progress-bar" [style.width.%]="progression"></div>
-            </div>
+            @if (enCours) {
+              <div class="progress-container">
+                <div class="progress-bar" [style.width.%]="progression"></div>
+              </div>
+            }
           </div>
-      
         </div>
       </form>
-      
-      
       <div class="table-container">
-      <table class="table table-bordered table-hover" >
-        <thead class="table-light">
-          <tr>
-            <th>Date</th>
-            <th>Montant</th>
-            <th>Nature Opération</th>
-            <th>Tiers</th>
-            <th>Journal</th>
-          </tr>
-        </thead>
-        <tbody *ngIf="!loading">
-          <tr *ngFor="let r of depenses">
-            <td>{{ r.dateOperation | date }}</td>
-            <td>{{ r.montant | number:'1.2-2' }}</td>
-            <td>{{ r.libelleNature }}</td>
-            <td>{{ r.tiersNom }}</td>
-            <td>{{ r.codeJournal }}</td>
-          </tr>
-          <tr *ngIf="depenses?.length == 0 ">
-            <td  colspan="5"><h3 style="text-align: center;">Aucune dépense trouvée</h3></td>
-            
-          </tr>
-        </tbody>
-        <tbody *ngIf="loading">
-          <tr>
-            <td colspan="5" class="text-center">
-              <div class="spinner-border text-secondary" role="status">
-                <span class="visually-hidden">Chargement...</span>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <table class="table table-bordered table-hover" >
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Montant</th>
+              <th>Nature Opération</th>
+              <th>Tiers</th>
+              <th>Journal</th>
+            </tr>
+          </thead>
+          @if (!loading) {
+            <tbody>
+              @for (r of depenses; track r) {
+                <tr>
+                  <td>{{ r.dateOperation | date }}</td>
+                  <td>{{ r.montant | number:'1.2-2' }}</td>
+                  <td>{{ r.libelleNature }}</td>
+                  <td>{{ r.tiersNom }}</td>
+                  <td>{{ r.codeJournal }}</td>
+                </tr>
+              }
+              @if (depenses?.length == 0 ) {
+                <tr>
+                  <td  colspan="5"><h3 style="text-align: center;">Aucune dépense trouvée</h3></td>
+                </tr>
+              }
+            </tbody>
+          }
+          @if (loading) {
+            <tbody>
+              <tr>
+                <td colspan="5" class="text-center">
+                  <div class="spinner-border text-secondary" role="status">
+                    <span class="visually-hidden">Chargement...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          }
+        </table>
       </div>
-       </div>
+    </div>
   </div>
-  
+}

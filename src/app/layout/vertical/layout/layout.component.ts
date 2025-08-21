@@ -4,9 +4,10 @@ import { EventService } from 'src/app/core/service/event.service';
 import { changeBodyAttribute, getLayoutConfig } from '../../shared/helper/utils';
 
 @Component({
-  selector: 'app-vertical-layout',
-  templateUrl: './layout.component.html',
-  styleUrls: ['./layout.component.scss']
+    selector: 'app-vertical-layout',
+    templateUrl: './layout.component.html',
+    styleUrls: ['./layout.component.scss'],
+    standalone: false
 })
 export class VerticalLayoutComponent implements OnInit {
 

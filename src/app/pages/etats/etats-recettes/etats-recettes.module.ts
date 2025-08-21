@@ -3,9 +3,8 @@ import { CommonModule } from '@angular/common';
 import { PageTitleModule } from 'src/app/shared/page-title/page-title.module';
 import {EtatsRecettesRoutingModule } from './etats-recettes-routing.module';
 import { EtatsRecettesComponent } from './etats-recettes.component';
-import { Select2Module } from 'ng-select2-component';
 import { FormsModule,ReactiveFormsModule } from '@angular/forms';
-
+import { NgSelectModule } from '@ng-select/ng-select';
 @NgModule({
   declarations: [
     EtatsRecettesComponent
@@ -14,7 +13,8 @@ import { FormsModule,ReactiveFormsModule } from '@angular/forms';
     CommonModule,
     FormsModule,ReactiveFormsModule,
     PageTitleModule,
-    EtatsRecettesRoutingModule,Select2Module
+    EtatsRecettesRoutingModule,
+    NgSelectModule
   ]
 })
 export class EtatsRecettesModule { }

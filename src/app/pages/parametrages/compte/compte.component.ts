@@ -1,18 +1,19 @@
 import { Component, OnInit } from '@angular/core';
-import {  FormGroup,Validators,FormBuilder,FormControl } from '@angular/forms';
+import {  UntypedFormGroup,Validators,UntypedFormBuilder,UntypedFormControl } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthenticationService } from 'src/app/core/service/auth.service';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { TresorerieService } from 'src/app/services/tresorerie.service';
 @Component({
-  selector: 'app-compte',
-  templateUrl: './compte.component.html',
-  styleUrls: ['./compte.component.scss']
+    selector: 'app-compte',
+    templateUrl: './compte.component.html',
+    styleUrls: ['./compte.component.scss'],
+    standalone: false
 })
 export class CompteComponent implements OnInit {
-  passwordForm: FormGroup;
-  userForm: FormGroup;
+  passwordForm: UntypedFormGroup;
+  userForm: UntypedFormGroup;
   result=false;
   loading=false;
   userLoading=false;
@@ -20,8 +21,9 @@ export class CompteComponent implements OnInit {
   user:any;
   pageTitle: BreadcrumbItem[] = [];
   passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-])/;
-  constructor(private router: Router,private tresorerieService: TresorerieService,private authenticationService:AuthenticationService,private fb: FormBuilder,private toastr: ToastrService) {
-    this.user=JSON.parse(localStorage.getItem("user"));
+  constructor(private router: Router,private tresorerieService: TresorerieService,private authenticationService:AuthenticationService,private fb: UntypedFormBuilder,private toastr: ToastrService) {
+    const userJson = localStorage.getItem("user");
+    this.user = userJson ? JSON.parse(userJson) : null;
     this.loadAndInitUserForm();
 
     this.passwordForm = this.fb.group({
@@ -70,7 +72,7 @@ export class CompteComponent implements OnInit {
   }
 
   // Validator personnalisé
-validatePhoneNumber(control: FormControl): { [key: string]: any } | null {
+validatePhoneNumber(control: UntypedFormControl): { [key: string]: any } | null {
   if (!control.value) return null; // Ne valide pas si le champ est vide (optionnel)
 
   const cleaned = control.value.replace(/\D/g, '');

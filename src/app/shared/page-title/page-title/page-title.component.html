@@ -1,22 +1,26 @@
 <!-- start page title -->
 <div class="row">
-    <div class="col-12">
-        <div class="page-title-box">
-            <h4 class="page-title">{{title}}</h4>
-            <div class="page-title-right">
-                <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="javascript: void(0);">Gestion Financière</a>
-                    </li>
-                    <ng-container *ngFor="let item of breadcrumbItems">
-                        <li class="breadcrumb-item" *ngIf="!item.active"><a href="javascript: void(0);"
-                                routerLink="[item.path]">{{item.label}}</a>
-                        </li>
-                        <li class="breadcrumb-item active" *ngIf="item.active"><a
-                                routerLink="[item.path]">{{item.label}}</a></li>
-                    </ng-container>
-                </ol>
-            </div>
-        </div>
-    </div>
+  <div class="col-12">
+    <div class="page-title-box">
+      <h4 class="page-title">{{title}}</h4>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="javascript: void(0);">Gestion Financière</a>
+        </li>
+        @for (item of breadcrumbItems; track item) {
+          @if (!item.active) {
+            <li class="breadcrumb-item"><a href="javascript: void(0);"
+            routerLink="[item.path]">{{item.label}}</a>
+          </li>
+        }
+        @if (item.active) {
+          <li class="breadcrumb-item active"><a
+          routerLink="[item.path]">{{item.label}}</a></li>
+        }
+      }
+    </ol>
+  </div>
+</div>
+</div>
 </div>
 <!-- end page title -->

@@ -1,23 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { AuthenticationService } from 'src/app/core/service/auth.service';
 import { ToastrService } from 'ngx-toastr';
 @Component({
-  selector: 'app-confirm',
-  templateUrl: './confirm.component.html',
-  styleUrls: ['./confirm.component.scss']
+    selector: 'app-confirm',
+    templateUrl: './confirm.component.html',
+    styleUrls: ['./confirm.component.scss'],
+    standalone: false
 })
 export class ConfirmComponent implements OnInit {
 
   formSubmitted: boolean = false;
-  resetPasswordForm:FormGroup;
+  resetPasswordForm:UntypedFormGroup;
   token = '';
   constructor (private authenticationService:AuthenticationService,
     private titleService: Title,private route: ActivatedRoute,private _route:Router,
-    private fb: FormBuilder,private toastr: ToastrService) {
+    private fb: UntypedFormBuilder,private toastr: ToastrService) {
     this.resetPasswordForm = this.fb.group({
       password: ['', Validators.required],
       confirmation: ['', Validators.required]

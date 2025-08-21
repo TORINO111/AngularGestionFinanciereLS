@@ -9,9 +9,10 @@ import { findMenuItem, findAllParent } from '../../shared/helper/utils';
 import { MenuItem } from '../../shared/models/menu.model';
 
 @Component({
-  selector: 'app-two-column-left-sidebar',
-  templateUrl: './left-sidebar.component.html',
-  styleUrls: ['./left-sidebar.component.scss']
+    selector: 'app-two-column-left-sidebar',
+    templateUrl: './left-sidebar.component.html',
+    styleUrls: ['./left-sidebar.component.scss'],
+    standalone: false
 })
 export class LeftSidebarComponent implements OnInit {
 

@@ -1,9 +1,9 @@
+import { NgSelectModule } from '@ng-select/ng-select';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PageTitleModule } from 'src/app/shared/page-title/page-title.module';
-import {EtatsDepensesRoutingModule } from './etats-depenses-routing.module';
+import { EtatsDepensesRoutingModule } from './etats-depenses-routing.module';
 import { EtatsDepensesComponent } from './etats-depenses.component';
-import { Select2Module } from 'ng-select2-component';
 import { FormsModule,ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
@@ -14,7 +14,8 @@ import { FormsModule,ReactiveFormsModule } from '@angular/forms';
     CommonModule,
     FormsModule,ReactiveFormsModule,
     PageTitleModule,
-    EtatsDepensesRoutingModule,Select2Module
+    EtatsDepensesRoutingModule,
+    NgSelectModule
   ]
 })
 export class EtatsDepensesModule { }

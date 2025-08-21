@@ -1,5 +1,5 @@
 import { Component, OnInit,ViewChild,TemplateRef  } from '@angular/core';
-import {FormGroup,Validators,FormBuilder } from '@angular/forms';
+import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
@@ -17,12 +17,13 @@ import { SocieteSelectionService } from 'src/app/services/societe-selection.serv
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ExerciceComptableService } from 'src/app/services/exercice-comptable.service';
 import { ExerciceComptable } from 'src/app/models/exercice-comptable.model';
-import { filter, takeUntil } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators'; 
 
 @Component({
-  selector: 'app-recettes',
-  templateUrl: './recettes.component.html',
-  styleUrls: ['./recettes.component.scss']
+    selector: 'app-recettes',
+    templateUrl: './recettes.component.html',
+    styleUrls: ['./recettes.component.scss'],
+    standalone: false
 })
 export class RecettesComponent implements OnInit {
   private destroy$ = new Subject<void>();
@@ -34,14 +35,14 @@ export class RecettesComponent implements OnInit {
   selected?: Operation;
 
   // Utilisation de FormGroup[] avec typage clair
-  operations: FormGroup[] = [];
-  lignes: FormGroup[] = [];
+  operations: UntypedFormGroup[] = [];
+  lignes: UntypedFormGroup[] = [];
 
-  natureOperations: Select2Data = [];
-  tiers: Select2Data = [];
+  natureOperations: { value: number, label: string }[] = [];
+  tiers: { value: number, label: string }[] = [];
 
   selectedIndex: number | null = null;
-  operationForm!: FormGroup;
+  operationForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
 
   loading = false;
@@ -56,26 +57,27 @@ export class RecettesComponent implements OnInit {
 
   message:string;
 
-  modelImportForm: FormGroup;
+  modelImportForm: UntypedFormGroup;
   excelFile: File | null = null;
   fileError: string | null = null;
   errorMessage: string | null = null;
   importResult: ImportOperationResultDTO | null = null;
 
   exerciceEnCours?: ExerciceComptable;
-  exerciceId:number;
+  exerciceId:any;
   constructor(
     private operationService: OperationService,
     private tiersService:TiersService,
     private natureOperationService:NatureOperationService,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private toastr: ToastrService,
     private authService:AuthenticationService,
     private societeSelectionService: SocieteSelectionService,
     private modalService: NgbModal,
     private exerciceService: ExerciceComptableService
   ) {
-    this.user=JSON.parse(localStorage.getItem("user"));
+      const userJson = localStorage.getItem("user");
+      this.user = userJson ? JSON.parse(userJson) : null;
       this.operationForm = this.fb.group({
         id: [],
         montant: ['', Validators.required],
@@ -204,39 +206,48 @@ export class RecettesComponent implements OnInit {
       .subscribe((societe) => {
         this.societeActive = societe;
         this.message = '';
-        this.loadExerciceEnCours(societe.id);
+        this.loadExerciceEnCours(societe.id!);
       });
   }
   
   
   private loadExerciceEnCours(societeId: number): void {
-    this.exerciceService.getExerciceEnCoursBySociete(societeId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: exercice => {
-          if (exercice) {
-            this.exerciceEnCours = exercice;
-            this.exerciceId = exercice.id;
-            this.message = '';
-            this.chargerToutesLesDonnees();
-          } else {
-            this.exerciceEnCours = undefined;
-            this.message = "Aucun exercice en cours pour la société sélectionnée.";
-          }
-        },
-        error: () => {
-          
+  this.exerciceService.getExerciceEnCoursBySociete(societeId)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: exercice => {
+        if (exercice && exercice.id !== undefined) {
+          this.exerciceEnCours = exercice;
+          this.exerciceId = exercice.id;
+          this.message = '';
+          this.chargerToutesLesDonnees();
+        } else {
           this.exerciceEnCours = undefined;
-          this.message = "Erreur lors de la récupération de l'exercice en cours.";
+          this.exerciceId = undefined;
+          this.message = "Aucun exercice en cours pour la société sélectionnée.";
         }
-      });
-  }
+      },
+      error: () => {
+        this.exerciceEnCours = undefined;
+        this.exerciceId = undefined;
+        this.message = "Erreur lors de la récupération de l'exercice en cours.";
+      }
+    });
+}
+
   
   private chargerToutesLesDonnees(): void {
     this.result = false;
     this.isLoading = true;
-  
-    const societeId = this.societeActive.id;
+
+    // Vérification si societeActive existe et a un id
+    const societeId = this.societeActive?.id;
+    if (societeId === undefined) {
+      this.message = "Aucune société active sélectionnée.";
+      this.isLoading = false;
+      return;
+    }
+
     forkJoin({
       operations: this.operationService.getByFilters(societeId, 'RECETTE', 'RECETTE'),
       tiers: this.tiersService.getBySocieteAndType(societeId, 'CLIENT'),
@@ -260,16 +271,16 @@ export class RecettesComponent implements OnInit {
               comptableNom: [op.comptableNom]
             })
           );
-  
-          this.tiers = [{
-            label: '',
-            options: tiers.map(t => ({ value: t.id, label: t.intitule }))
-          }];
-  
-          this.natureOperations = [{
-            label: '',
-            options: natureOperations.map(n => ({ value: n.id, label: n.libelle }))
-          }];
+
+          this.tiers = (tiers as Tiers[])
+            .filter(t => t.id !== undefined)
+            .map(t => ({ value: t.id as number, label: t.intitule }));
+
+
+          this.natureOperations = (natureOperations as NatureOperation[])
+          .filter(n => n.id !== undefined)
+          .map(n => ({ value: n.id as number, label: n.libelle }));
+
           this.lignes = this.operations;
           this.result = true;
           this.isLoading = false;
@@ -282,6 +293,7 @@ export class RecettesComponent implements OnInit {
         }
       });
   }
+
   
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -290,7 +302,7 @@ export class RecettesComponent implements OnInit {
 
   chargerOperations(): void {
     this.operations = [];
-    this.operationService.getByFilters(this.societeActive.id, 'RECETTE', 'RECETTE')
+    this.operationService.getByFilters(this.societeActive?.id, 'RECETTE', 'RECETTE')
     .pipe(takeUntil(this.destroy$))
     .subscribe({
       next: (data: Operation[]) => {
@@ -325,42 +337,56 @@ export class RecettesComponent implements OnInit {
   }
 
   chargerTiers() {
-    this.tiersService.getBySocieteAndType(this.societeActive.id,'CLIENT')
-    .pipe(takeUntil(this.destroy$))
-    .subscribe(
-      (data:any) => {
-        for(let d of data){
-          console.log(data)
-          this.tiers = [{ label: '', options: (data as Tiers[]).map(d => ({ value: d.id, label: d.intitule })) }];
+    const societeId = this.societeActive?.id;
+    if (societeId === undefined) {
+      this.message = "Aucune société active sélectionnée.";
+      this.isLoading = false;
+      return;
+    }
+
+    this.tiersService.getBySocieteAndType(societeId, 'CLIENT')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data: Tiers[]) => {
+          this.tiers =  data
+          .filter(d => d.id !== undefined)
+          .map(d => ({ value: d.id as number, label: d.intitule }));
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Erreur lors du chargement des tiers', error);
+          this.showError("Erreur lors du chargement des tiers.");
+          this.isLoading = false;
         }
-        this.isLoading=true;
-      },
-      (error) => {
-        this.isLoading=true;
-        console.error('Erreur lors du chargement des tiers', error);
-        this.showError("erreur..");
-      }
-    );
+      });
   }
 
+
   chargerNatureOperations() {
-    this.natureOperationService.getByFilters(this.societeActive.id,'RECETTE','RECETTE')
-    .pipe(takeUntil(this.destroy$))
-    .subscribe(
-      (data:any) => {
-        for(let d of data){
-          //console.log(data)
-          this.natureOperations = [{ label: '', options: (data as NatureOperation[]).map(d => ({ value: d.id, label: d.libelle })) }];
+    const societeId = this.societeActive?.id;
+    if (societeId === undefined) {
+      this.message = "Aucune société active sélectionnée.";
+      this.isLoading = false;
+      return;
+    }
+
+    this.natureOperationService.getByFilters(societeId, 'RECETTE', 'RECETTE')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data: NatureOperation[]) => {
+          this.natureOperations = data
+            .filter(n => n.id !== undefined)
+            .map(n => ({ value: n.id as number, label: n.libelle }));
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Erreur lors du chargement des natures opérations', error);
+          this.showError("Erreur lors du chargement des natures opérations.");
+          this.isLoading = false;
         }
-        this.isLoading=true;
-      },
-      (error) => {
-        this.isLoading=true;
-        console.error('Erreur lors du chargement des natures operations', error);
-        this.showError("erreur..");
-      }
-    );
+      });
   }
+
 
   deleteOperation(operation: Operation): void {
     Swal.fire({

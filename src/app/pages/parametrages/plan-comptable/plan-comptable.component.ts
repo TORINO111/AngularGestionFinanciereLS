@@ -1,5 +1,5 @@
 import { Component, OnInit ,ViewChild,TemplateRef } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { PlanComptableService } from 'src/app/services/plan-comptable.service';
 import { PlanComptable } from './../../../models/plan-comptable.model';
 import { NgbModal,ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
@@ -22,9 +22,10 @@ export interface ImportPlanComptableResultDTO {
   erreurs: PlanComptableImportDTO[];
 } 
 @Component({
-  selector: 'app-plan-comptable',
-  templateUrl: './plan-comptable.component.html',
-  styleUrls: ['./plan-comptable.component.scss']
+    selector: 'app-plan-comptable',
+    templateUrl: './plan-comptable.component.html',
+    styleUrls: ['./plan-comptable.component.scss'],
+    standalone: false
 })
 export class PlanComptableComponent implements OnInit {
 
@@ -35,11 +36,11 @@ export class PlanComptableComponent implements OnInit {
   selected: boolean=false;
 
   // Utilisation de FormGroup[] avec typage clair
-  plansComptables: FormGroup[] = [];
-  lignes: FormGroup[] = [];
+  plansComptables: UntypedFormGroup[] = [];
+  lignes: UntypedFormGroup[] = [];
 
   selectedIndex: number | null = null;
-  planComptableForm!: FormGroup;
+  planComptableForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
 
   loading = false;
@@ -47,7 +48,7 @@ export class PlanComptableComponent implements OnInit {
   result = false;
   formVisible = false;
 
-  modelImportForm: FormGroup;
+  modelImportForm: UntypedFormGroup;
   excelFile: File | null = null;
   fileError: string | null = null;
   errorMessage: string | null = null;
@@ -55,7 +56,7 @@ export class PlanComptableComponent implements OnInit {
 
   constructor(
     private planComptableService: PlanComptableService,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private modalService: NgbModal,
     private toastr: ToastrService
   ) {
@@ -138,7 +139,7 @@ export class PlanComptableComponent implements OnInit {
         this.planComptableForm.reset();
         this.loading = false;
         this.selectedIndex = null;
-        this.selected = undefined;
+        this.selected = false;
         this.lignes = [];
         this.chargerPlanComptables();
       },

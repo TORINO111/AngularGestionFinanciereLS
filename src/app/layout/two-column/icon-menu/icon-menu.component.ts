@@ -3,9 +3,10 @@ import { Router } from '@angular/router';
 import { MenuItem } from '../../shared/models/menu.model';
 
 @Component({
-  selector: 'app-icon-menu',
-  templateUrl: './icon-menu.component.html',
-  styleUrls: ['./icon-menu.component.scss']
+    selector: 'app-icon-menu',
+    templateUrl: './icon-menu.component.html',
+    styleUrls: ['./icon-menu.component.scss'],
+    standalone: false
 })
 export class IconMenuComponent implements OnInit {
 

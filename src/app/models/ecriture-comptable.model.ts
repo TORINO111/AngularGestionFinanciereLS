@@ -1,5 +1,5 @@
 export interface EcritureComptableDTO {
-    id: number;
+    id?: number;
     montant: number;
     journal:string;
     datePiece:string;

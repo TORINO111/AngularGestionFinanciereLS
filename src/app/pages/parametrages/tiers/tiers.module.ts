@@ -4,7 +4,7 @@ import { FormsModule,ReactiveFormsModule} from '@angular/forms';
 import { PageTitleModule } from 'src/app/shared/page-title/page-title.module';
 import {TiersRoutingModule } from './tiers-routing.module';
 import { TiersComponent } from './tiers.component';
-import { Select2Module } from 'ng-select2-component';
+import { NgSelectModule } from '@ng-select/ng-select'; 
 
 @NgModule({
   declarations: [
@@ -15,7 +15,8 @@ import { Select2Module } from 'ng-select2-component';
     FormsModule,
     PageTitleModule,
     ReactiveFormsModule,
-    TiersRoutingModule,Select2Module
+    TiersRoutingModule,
+    NgSelectModule
   ]
 })
 export class TiersModule { }

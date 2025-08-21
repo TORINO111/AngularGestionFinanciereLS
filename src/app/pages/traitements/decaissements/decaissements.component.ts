@@ -1,6 +1,6 @@
 import { filter, takeUntil } from 'rxjs/operators';
 import { Component, OnInit,ViewChild,TemplateRef  } from '@angular/core';
-import {FormGroup,Validators,FormBuilder } from '@angular/forms';
+import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
@@ -20,9 +20,10 @@ import { ExerciceSelectionService } from 'src/app/services/exercice-selection.se
 import { ExerciceComptable } from '../../../models/exercice-comptable.model';
 
 @Component({
-  selector: 'app-decaissements',
-  templateUrl: './decaissements.component.html',
-  styleUrls: ['./decaissements.component.scss']
+    selector: 'app-decaissements',
+    templateUrl: './decaissements.component.html',
+    styleUrls: ['./decaissements.component.scss'],
+    standalone: false
 })
 export class DecaissementsComponent implements OnInit {
   private destroy$ = new Subject<void>();
@@ -31,14 +32,14 @@ export class DecaissementsComponent implements OnInit {
   selected?: Operation;
 
   // Utilisation de FormGroup[] avec typage clair
-  operations: FormGroup[] = [];
-  lignes: FormGroup[] = [];
+  operations: UntypedFormGroup[] = [];
+  lignes: UntypedFormGroup[] = [];
 
-  natureOperations: Select2Data = [];
-  tiers: Select2Data = [];
+  natureOperations: { value: number, label: string }[] = [];
+  tiers: { value: number, label: string }[] = [];
 
   selectedIndex: number | null = null;
-  operationForm!: FormGroup;
+  operationForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
 
   loading = false;
@@ -49,20 +50,22 @@ export class DecaissementsComponent implements OnInit {
   user:any;
   societeActive: Societe | null = null;
   exerciceEnCours?: ExerciceComptable;
-  exerciceId:number;
+  exerciceId?:number;
   message:string;
   constructor(
     private operationService: OperationService,
     private tiersService:TiersService,
     private natureOperationService:NatureOperationService,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private toastr: ToastrService,
     private authService:AuthenticationService,
     private societeSelectionService: SocieteSelectionService,
     private exerciceService: ExerciceComptableService,
     private exerciceSelectionService: ExerciceSelectionService
   ) {
-    this.user=JSON.parse(localStorage.getItem("user"));
+    const userJson = localStorage.getItem("user");
+    this.user = userJson ? JSON.parse(userJson) : null;
+    
     this.operationForm = this.fb.group({
       id: [],
       montant: ['', Validators.required],
@@ -183,7 +186,7 @@ export class DecaissementsComponent implements OnInit {
       .subscribe((societe) => {
         this.societeActive = societe;
         this.message = '';
-        this.loadExerciceEnCours(societe.id);
+        this.loadExerciceEnCours(societe.id!);
       });
   }
   
@@ -214,11 +217,11 @@ export class DecaissementsComponent implements OnInit {
     this.result = false;
     this.isLoading = true;
 
-    const societeId = this.societeActive.id;
+    const societeId = this.societeActive!.id;
   
     forkJoin({
       operations: this.operationService.getByFilters(societeId, 'DECAISSEMENT', 'TRESORERIE'),
-      tiers: this.tiersService.getBySocieteAndType(societeId, 'FOURNISSEUR'),
+      tiers: this.tiersService.getBySocieteAndType(societeId!, 'FOURNISSEUR'),
       natureOperations: this.natureOperationService.getByFilters(societeId, 'DECAISSEMENT', 'TRESORERIE')
     }).pipe(takeUntil(this.destroy$))
     .subscribe({
@@ -244,22 +247,16 @@ export class DecaissementsComponent implements OnInit {
         this.lignes = this.operations;
   
         // 👉 2. Charger les tiers dans dropdown
-        this.tiers = [{
-          label: '',
-          options: (tiers as Tiers[]).map(t => ({
-            value: t.id,
-            label: t.intitule
-          }))
-        }];
+        this.tiers = (tiers as Tiers[]).map(t => ({
+          value: t.id!,
+          label: t.intitule
+        }));
   
         // 👉 3. Charger les natureOperations dans dropdown
-        this.natureOperations = [{
-          label: '',
-          options: (natureOperations as NatureOperation[]).map(n => ({
-            value: n.id,
-            label: n.libelle
-          }))
-        }];
+        this.natureOperations = (natureOperations as NatureOperation[]).map(n => ({
+          value: n.id!,
+          label: n.libelle
+        }));
   
         this.result = true;
         this.isLoading = false;
@@ -280,7 +277,7 @@ export class DecaissementsComponent implements OnInit {
 
   chargerOperations(): void {
     this.operations = [];
-    this.operationService.getByFilters(this.societeActive.id, 'DECAISSEMENT', 'TRESORERIE').subscribe({
+    this.operationService.getByFilters(this.societeActive!.id, 'DECAISSEMENT', 'TRESORERIE').subscribe({
       next: (data: Operation[]) => {
         console.log(data)
         this.operations = data.map(d =>
@@ -314,38 +311,57 @@ export class DecaissementsComponent implements OnInit {
   }
 
   chargerTiers() {
-    this.tiersService.getBySocieteAndType(this.societeActive.id,'FOURNISSEUR').subscribe(
-      (data:any) => {
-        for(let d of data){
-          console.log(data)
-          this.tiers = [{ label: '', options: (data as Tiers[]).map(d => ({ value: d.id, label: d.intitule })) }];
-        }
-        this.isLoading=true;
+    const societeId = this.societeActive?.id;
+    if (societeId === undefined) {
+      this.message = "Aucune société active sélectionnée.";
+      this.isLoading = false;
+      return;
+    }
+
+    this.tiersService.getBySocieteAndType(societeId,'FOURNISSEUR').subscribe(
+      (data: Tiers[]) => {
+      // On filtre les éléments sans id et on crée le tableau directement
+      this.tiers = data
+        .filter(d => d.id !== undefined)
+        .map(d => ({ value: d.id!, label: d.intitule }));
+      
+      this.isLoading = true;
       },
-      (error) => {
-        this.isLoading=true;
+      error => {
+        this.isLoading = true;
         console.error('Erreur lors du chargement des tiers', error);
-        this.showError("erreur..");
+        this.showError("Erreur lors du chargement des tiers.");
       }
     );
   }
 
   chargerNatureOperations() {
-    this.natureOperationService.getByFilters(this.societeActive.id,'DECAISSEMENT','TRESORERIE').subscribe(
-      (data:any) => {
-        for(let d of data){
-          //console.log(data)
-          this.natureOperations = [{ label: '', options: (data as NatureOperation[]).map(d => ({ value: d.id, label: d.libelle })) }];
+    const societeId = this.societeActive?.id;
+    if (!societeId) {
+      this.message = "Aucune société active sélectionnée.";
+      this.isLoading = false;
+      return;
+    }
+
+    this.natureOperationService
+      .getByFilters(societeId, 'DECAISSEMENT', 'TRESORERIE')
+      .subscribe(
+        (data: NatureOperation[]) => {
+          // On filtre les éléments sans id et on crée un tableau plat
+          this.natureOperations = data
+            .filter(n => n.id !== undefined)
+            .map(n => ({ value: n.id!, label: n.libelle }));
+
+          this.isLoading = true;
+        },
+        (error) => {
+          this.isLoading = true;
+          console.error('Erreur lors du chargement des natures opérations', error);
+          this.showError("Erreur lors du chargement des natures opérations.");
         }
-        this.isLoading=true;
-      },
-      (error) => {
-        this.isLoading=true;
-        console.error('Erreur lors du chargement des natures operations', error);
-        this.showError("erreur..");
-      }
-    );
+      );
   }
+
 
   deleteOperation(operation: Operation): void {
     Swal.fire({

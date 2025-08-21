@@ -1,21 +1,22 @@
 import { Component, OnInit,ViewChild,TemplateRef } from '@angular/core';
 import { TresorerieService } from 'src/app/services/tresorerie.service';
 import { CategorieService } from 'src/app/services/categorie.service';
-import {FormGroup,Validators,FormBuilder } from '@angular/forms';
+import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { NgbModal,ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 @Component({
-  selector: 'app-categorie',
-  templateUrl: './categorie.component.html',
-  styleUrls: ['./categorie.component.scss']
+    selector: 'app-categorie',
+    templateUrl: './categorie.component.html',
+    styleUrls: ['./categorie.component.scss'],
+    standalone: false
 })
 export class CategorieComponent implements OnInit {
 
   categories:any[]=[];
-  categorieForm!: FormGroup;
-  sousCategorieForm!: FormGroup;
+  categorieForm!: UntypedFormGroup;
+  sousCategorieForm!: UntypedFormGroup;
   @ViewChild('content', { static: true }) content: any;
   @ViewChild('editcontent', { static: true }) editcontent: any;
   closeResult:string='';
@@ -27,7 +28,7 @@ export class CategorieComponent implements OnInit {
 
 ];
   constructor(private categorieService: CategorieService,
-    private modalService: NgbModal,private fb: FormBuilder,private toastr: ToastrService) {
+    private modalService: NgbModal,private fb: UntypedFormBuilder,private toastr: ToastrService) {
       this.categorieForm = this.fb.group({
         id:[],
         code: ['', [Validators.required]],
@@ -66,7 +67,7 @@ export class CategorieComponent implements OnInit {
     );
   }
 
-  onSaveCategorie(categorieFormValue){
+  onSaveCategorie(categorieFormValue: any){
     //console.log(categorieFormValue);
     if(categorieFormValue.valid){
     this.categorieService.creerCategorie(categorieFormValue.value).subscribe(
@@ -139,7 +140,7 @@ export class CategorieComponent implements OnInit {
 
   
 
-  onUpdateCategorie(categorieFormValue){
+  onUpdateCategorie(categorieFormValue: any){
     if(categorieFormValue.valid){
     this.categorieService.modifierCategorie(categorieFormValue.value.id,categorieFormValue.value).subscribe(
       {

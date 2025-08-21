@@ -1,25 +1,26 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { AuthenticationService } from 'src/app/core/service/auth.service';
 
 @Component({
-  selector: 'app-register',
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss']
+    selector: 'app-register',
+    templateUrl: './register.component.html',
+    styleUrls: ['./register.component.scss'],
+    standalone: false
 })
 export class RegisterComponent implements OnInit {
 
-  signUpForm!: FormGroup;
+  signUpForm!: UntypedFormGroup;
   formSubmitted: boolean = false;
   showPassword: boolean = false;
   loading: boolean = false;
   error: string = '';
 
   constructor (
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private router: Router,
     private authenticationService: AuthenticationService,
     private titleService: Title

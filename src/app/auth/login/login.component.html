@@ -1,79 +1,84 @@
 <app-default-layout>
-    <div class="auth-logo mx-auto">
-        <a [routerLink]="['']" class="logo logo-dark text-center">
-            <span class="logo-lg">
-                <img src="assets/images/logo-sm.png" alt="" height="44">
-            </span>
-        </a>
+  <div class="auth-logo mx-auto">
+    <a [routerLink]="['']" class="logo logo-dark text-center">
+      <span class="logo-lg">
+        <img src="assets/images/logo-sm.png" alt="" height="44">
+      </span>
+    </a>
 
-        <a [routerLink]="['']" class="logo logo-light text-center">
-            <span class="logo-lg">
-                <img src="assets/images/logo-light.png" alt="" height="24">
-            </span>
-        </a>
-    </div>
-    <h6 class="h5 mb-0 mt-3" i18n>Bienvenue !</h6>
-    <p class="text-muted mt-1 mb-4" i18n>
+    <a [routerLink]="['']" class="logo logo-light text-center">
+      <span class="logo-lg">
+        <img src="assets/images/logo-light.png" alt="" height="24">
+      </span>
+    </a>
+  </div>
+  <h6 class="h5 mb-0 mt-3" i18n>Bienvenue !</h6>
+  <p class="text-muted mt-1 mb-4" i18n>
         Saisissez votre username et votre mot de passe pour accéder à votre compte.
     </p>
 
-    <form name="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="authentication-form">
+  <form name="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="authentication-form">
 
-        <app-ui-preloader [display]="loading"></app-ui-preloader>
-        <ngb-alert type="danger" *ngIf="error" [dismissible]="false">{{ error }}</ngb-alert>
+    <app-ui-preloader [display]="loading"></app-ui-preloader>
+    @if (error) {
+      <ngb-alert type="danger" [dismissible]="false">{{ error }}</ngb-alert>
+    }
 
-        <div class="mb-3">
-            <label class="form-label" i18n>Username</label>
-            <div class="input-group">
-                <span class="input-group-text">
-                    <i class="icon-dual" data-feather="user" appFeatherIcon></i>
-                </span>
-                <input type="text" class="form-control" id="username"  placeholder="username"
-                    formControlName="username" [ngClass]="{'is-invalid': formSubmitted && formValues.username.invalid}"
-                    required>
+    <div class="mb-3">
+      <label class="form-label" i18n>Username</label>
+      <div class="input-group">
+        <span class="input-group-text">
+          <i class="icon-dual" data-feather="user" appFeatherIcon></i>
+        </span>
+        <input type="text" class="form-control" id="username"  placeholder="username"
+          formControlName="username" [ngClass]="{'is-invalid': formSubmitted && formValues.username.invalid}"
+          required>
 
-                <div *ngIf="formSubmitted && formValues.username.invalid" class="invalid-feedback">
-
-                    <div *ngIf="formValues.username.errors?.required" i18n>
+        @if (formSubmitted && formValues.username.invalid) {
+          <div class="invalid-feedback">
+            @if (formValues.username.errors?.required) {
+              <div i18n>
                         Username obligatoire.
                     </div>
-                   
+            }
+          </div>
+        }
+      </div>
+    </div>
 
-                </div>
-            </div>
-        </div>
+    <div class="mb-3">
+      <label class="form-label" i18n>Mot de passe</label>
 
-        <div class="mb-3">
-            <label class="form-label" i18n>Mot de passe</label>
-            
-            <div class="input-group">
-                <span class="input-group-text">
-                    <i class="icon-dual" data-feather="lock"></i>
-                </span>
-                <input type="password" class="form-control" id="password" i18n-placeholder
-                    placeholder="mot de passe" formControlName="password" required 
-                    [ngClass]="{'is-invalid': formSubmitted && formValues.password.invalid}">
+      <div class="input-group">
+        <span class="input-group-text">
+          <i class="icon-dual" data-feather="lock"></i>
+        </span>
+        <input type="password" class="form-control" id="password" i18n-placeholder
+          placeholder="mot de passe" formControlName="password" required
+          [ngClass]="{'is-invalid': formSubmitted && formValues.password.invalid}">
 
 
-                <div *ngIf="formSubmitted && formValues.password.invalid" class="invalid-feedback">
-
-                    <div *ngIf="formValues.password.errors?.required" i18n>
+        @if (formSubmitted && formValues.password.invalid) {
+          <div class="invalid-feedback">
+            @if (formValues.password.errors?.required) {
+              <div i18n>
                         Mot de passe obligatoire.
                     </div>
-                    <!-- <div *ngIf="formValues.password.errors?.minlength" i18n>
-                        Password length must be greater than 3.
-                    </div> -->
-
-                </div>
-            </div>
-            <a [routerLink]="['../recover-password']" class="float-end text-muted text-unline-dashed ms-1">
-                Mot de passe oublié?</a>
+            }
+            <!-- <div *ngIf="formValues.password.errors?.minlength" i18n>
+            Password length must be greater than 3.
+          </div> -->
         </div>
+      }
+    </div>
+    <a [routerLink]="['../recover-password']" class="float-end text-muted text-unline-dashed ms-1">
+    Mot de passe oublié?</a>
+  </div>
 
-        <div class="mb-3 text-center d-grid">
-            <button class="btn btn-primary" type="submit" i18n>Se Connecter</button>
-        </div>
-    </form>
-    
+  <div class="mb-3 text-center d-grid">
+    <button class="btn btn-primary" type="submit" i18n>Se Connecter</button>
+  </div>
+</form>
+
 
 </app-default-layout>

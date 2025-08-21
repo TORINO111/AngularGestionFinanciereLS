@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { HttpClient, HttpParams, HttpHeaders,HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 @Injectable({
   providedIn: 'root'
 })
@@ -77,21 +77,22 @@ getSocieteParId(id:number) {
   });
 }
 
-getSocietes() {
-  return this._http.get(this.host+'/api/societes',{
-    headers:new HttpHeaders().set('Content-Type','application/json')
+getSocietes(): Observable<any[]> {
+  return this._http.get<any[]>(this.host + '/api/societes', {
+    headers: new HttpHeaders().set('Content-Type','application/json')
   });
 }
+
 
 allRoles(){
   let headers=new HttpHeaders().set('Accept','application/json');
   return this._http.get(this.host+'/api/roles',{headers:headers});
 }
-allSuperviseurs(){
-  let headers=new HttpHeaders().set('Accept','application/json');
-  return this._http.get(this.host+'/api/superviseurs',{headers:headers});
-}
 
+allSuperviseurs(): Observable<any[]> {
+  const headers = new HttpHeaders().set('Accept', 'application/json');
+  return this._http.get<any[]>(this.host + '/api/superviseurs', { headers });
+}
 
 
 updateUtilisateur(id: number, value: any) {
@@ -112,10 +113,12 @@ addUser(data:any){
 
 
 
-allUtilisateurs(){
-  let headers=new HttpHeaders().set('Accept','application/json');
-  return this._http.get(this.host+'/api/utilisateurs',{headers:headers});
+// Dans ton service
+allUtilisateurs(): Observable<any[]> {
+  const headers = new HttpHeaders().set('Accept', 'application/json');
+  return this._http.get<any[]>(this.host + '/api/utilisateurs', { headers });
 }
+
 
 addData(data:any){
   return this._http.post(this.host+'/api/donnees',data,{

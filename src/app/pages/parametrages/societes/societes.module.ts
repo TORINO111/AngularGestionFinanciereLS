@@ -4,8 +4,7 @@ import { FormsModule,ReactiveFormsModule} from '@angular/forms';
 import { PageTitleModule } from 'src/app/shared/page-title/page-title.module';
 import {SocietesRoutingModule } from './societes-routing.module';
 import { SocietesComponent } from './societes.component';
-import { Select2Module } from 'ng-select2-component';
-
+import { NgSelectModule } from '@ng-select/ng-select';
 @NgModule({
   declarations: [
     SocietesComponent
@@ -15,7 +14,8 @@ import { Select2Module } from 'ng-select2-component';
     FormsModule,
     PageTitleModule,
     ReactiveFormsModule,
-    SocietesRoutingModule,Select2Module
+    SocietesRoutingModule,
+    NgSelectModule
   ]
 })
 export class SocietesModule { }

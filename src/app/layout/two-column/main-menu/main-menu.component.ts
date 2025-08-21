@@ -3,9 +3,10 @@ import { NgbCollapse } from '@ng-bootstrap/ng-bootstrap';
 import { MenuItem } from '../../shared/models/menu.model';
 
 @Component({
-  selector: 'app-main-menu',
-  templateUrl: './main-menu.component.html',
-  styleUrls: ['./main-menu.component.scss']
+    selector: 'app-main-menu',
+    templateUrl: './main-menu.component.html',
+    styleUrls: ['./main-menu.component.scss'],
+    standalone: false
 })
 export class MainMenuComponent implements OnInit {
 

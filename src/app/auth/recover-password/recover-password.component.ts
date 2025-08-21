@@ -1,24 +1,28 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { AuthenticationService } from 'src/app/core/service/auth.service';
 import { ToastrService } from 'ngx-toastr';
 @Component({
-  selector: 'app-recover-password',
-  templateUrl: './recover-password.component.html',
-  styleUrls: ['./recover-password.component.scss']
+    selector: 'app-recover-password',
+    templateUrl: './recover-password.component.html',
+    styleUrls: ['./recover-password.component.scss'],
+    standalone: false
 })
 export class RecoverPasswordComponent implements OnInit {
 
 
-  resetPasswordForm!: FormGroup;
+  resetPasswordForm!: UntypedFormGroup;
   formSubmitted: boolean = false;
   successMessage: string = "";
 
 
   constructor (private authenticationService:AuthenticationService,
-    private fb: FormBuilder, private titleService: Title,private toastr: ToastrService) {
+    private fb: UntypedFormBuilder, private titleService: Title,private toastr: ToastrService) {
     titleService.setTitle("Recover Password | GESTION FINANCIERE")
+    this.resetPasswordForm = this.fb.group({
+      telephone: ['', Validators.required]
+    });
   }
 
   ngOnInit(): void {
@@ -44,10 +48,6 @@ export class RecoverPasswordComponent implements OnInit {
     }
   }
 
-  resetForm = this.fb.group({
-    telephone: ['', Validators.required]
-  });
-  
   sendLink() {
     this.formSubmitted = true;
     if (!this.resetPasswordForm.valid) {

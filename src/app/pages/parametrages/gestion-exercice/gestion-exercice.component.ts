@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { AuthenticationService } from 'src/app/core/service/auth.service';
 import { ExerciceComptableService } from 'src/app/services/exercice-comptable.service';
 import { SocieteSelectionService } from 'src/app/services/societe-selection.service';
@@ -7,9 +7,10 @@ import { ExerciceComptable } from '../../../models/exercice-comptable.model';
 import { BreadcrumbItem } from '../../../shared/page-title/page-title/page-title.model';
 
 @Component({
-  selector: 'app-gestion-exercice',
-  templateUrl: './gestion-exercice.component.html',
-  styleUrls: ['./gestion-exercice.component.scss']
+    selector: 'app-gestion-exercice',
+    templateUrl: './gestion-exercice.component.html',
+    styleUrls: ['./gestion-exercice.component.scss'],
+    standalone: false
 })
 export class GestionExerciceComponent implements OnInit {
 
@@ -17,7 +18,7 @@ export class GestionExerciceComponent implements OnInit {
   societeId!: number;
   nouvelleAnnee: number = new Date().getFullYear();
   exerciceEnCours: boolean = false;
-  exerciceForm: FormGroup;
+  exerciceForm: UntypedFormGroup;
   loading = false;
   pageTitle: BreadcrumbItem[] = [];
   result=false;
@@ -27,7 +28,7 @@ export class GestionExerciceComponent implements OnInit {
   constructor(
     private exerciceService: ExerciceComptableService,
     private societeSelectionService: SocieteSelectionService,
-    private fb: FormBuilder
+    private fb: UntypedFormBuilder
   ) {
     this.exerciceForm = this.fb.group({
       annee: [this.nouvelleAnnee, [Validators.required, Validators.min(2024)]],
@@ -44,7 +45,7 @@ export class GestionExerciceComponent implements OnInit {
       
       this.exercices =[];
       if (societe) {
-        this.societeId=societe.id;
+        this.societeId=societe.id?? 0;
         this.loadExercices();
       }else{
         this.result=true;
@@ -109,7 +110,7 @@ export class GestionExerciceComponent implements OnInit {
   cloturerExercice(exercice:ExerciceComptable): void {
     if (!confirm('Voulez-vous vraiment clôturer cet exercice ?')) return;
 
-    this.exerciceService.cloturerExercice(exercice.id).subscribe({
+    this.exerciceService.cloturerExercice(exercice.id!).subscribe({
       next: () => {
         alert('Exercice clôturé.');
         this.loadExercices();

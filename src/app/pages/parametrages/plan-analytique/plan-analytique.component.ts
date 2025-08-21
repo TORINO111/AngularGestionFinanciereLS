@@ -1,5 +1,5 @@
 import { Component, OnInit ,ViewChild,TemplateRef } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { PlanComptableService } from 'src/app/services/plan-comptable.service';
 import { NgbModal,ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
@@ -22,9 +22,10 @@ export interface ImportPlanComptableResultDTO {
   erreurs: PlanComptableImportDTO[];
 } 
 @Component({
-  selector: 'app-plan-analytique',
-  templateUrl: './plan-analytique.component.html',
-  styleUrls: ['./plan-analytique.component.scss']
+    selector: 'app-plan-analytique',
+    templateUrl: './plan-analytique.component.html',
+    styleUrls: ['./plan-analytique.component.scss'],
+    standalone: false
 })
 export class PlanAnalytiqueComponent implements OnInit {
 
@@ -32,14 +33,14 @@ export class PlanAnalytiqueComponent implements OnInit {
   @ViewChild('editcontent', { static: true }) editcontent: any;
   closeResult:string='';
   plansAnalytiquesList: PlanAnalytique[] = [];
-  selected: boolean=false;
+  selected?: boolean=false;
 
   // Utilisation de FormGroup[] avec typage clair
-  plansAnalytiques: FormGroup[] = [];
-  lignes: FormGroup[] = [];
+  plansAnalytiques: UntypedFormGroup[] = [];
+  lignes: UntypedFormGroup[] = [];
 
   selectedIndex: number | null = null;
-  planAnalytiqueForm!: FormGroup;
+  planAnalytiqueForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
 
   loading = false;
@@ -47,7 +48,7 @@ export class PlanAnalytiqueComponent implements OnInit {
   result = false;
   formVisible = false;
 
-  modelImportForm: FormGroup;
+  modelImportForm: UntypedFormGroup;
   excelFile: File | null = null;
   fileError: string | null = null;
   errorMessage: string | null = null;
@@ -55,7 +56,7 @@ export class PlanAnalytiqueComponent implements OnInit {
 
   constructor(
     private planComptableService: PlanComptableService,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private modalService: NgbModal,
     private toastr: ToastrService
   ) {

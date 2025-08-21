@@ -4,9 +4,10 @@ import { EventService } from 'src/app/core/service/event.service';
 import { LAYOUT_DETACHED, LAYOUT_VERTICAL, LAYOUT_WIDTH_FLUID, LEFT_SIDEBAR_THEME_LIGHT, LEFT_SIDEBAR_TYPE_DEFAULT, MENU_POSITION_FIXED, TOPBAR_THEME_LIGHT } from '../config/layout.model';
 
 @Component({
-  selector: 'app-right-sidebar',
-  templateUrl: './right-sidebar.component.html',
-  styleUrls: ['./right-sidebar.component.scss']
+    selector: 'app-right-sidebar',
+    templateUrl: './right-sidebar.component.html',
+    styleUrls: ['./right-sidebar.component.scss'],
+    standalone: false
 })
 export class RightSidebarComponent implements OnInit {
 
