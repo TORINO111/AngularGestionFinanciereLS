@@ -10,12 +10,12 @@ import { NotificationItem } from '../models/notification.model';
 import { ProfileOptionItem } from '../models/profileoption.model';
 import { SearchResultItem, SearchUserItem } from '../models/search.model';
 import { Societe } from 'src/app/models/societe.model';
-import { SocieteService } from 'src/app/services/societe.service';
-import { SocieteSelectionService } from 'src/app/services/societe-selection.service';
-import { ExerciceComptableService } from '../../../services/exercice-comptable.service';
+import { SocieteService } from 'src/app/services/societe/societe.service';
+import { SocieteSelectionService } from 'src/app/services/societe-selection/societe-selection.service';
+import { ExerciceComptableService } from '../../../services/exercices-comptables/exercice-comptable.service';
 import { ExerciceComptable } from '../../../models/exercice-comptable.model';
 import { Router } from '@angular/router';
-import { ExerciceSelectionService } from 'src/app/services/exercice-selection.service';
+import { ExerciceSelectionService } from 'src/app/services/exercices-selection/exercice-selection.service';
 
 @Component({
     selector: 'app-topbar',

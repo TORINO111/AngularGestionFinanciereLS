@@ -4,19 +4,19 @@ import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { NatureOperation } from 'src/app/models/nature-operation.model';
-import { NatureOperationService } from 'src/app/services/nature-operation.service';
+import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
 import { Operation } from 'src/app/models/operation.model';
-import { OperationService } from 'src/app/services/operation.service';
+import { OperationService } from 'src/app/services/operations/operation.service';
 import { Tiers } from 'src/app/models/tiers.model';
-import { TiersService } from 'src/app/services/tiers.service';
+import { TiersService } from 'src/app/services/tiers/tiers.service';
 import { Select2Data } from 'ng-select2-component';
 import { forkJoin, Subject } from 'rxjs';
 import { AuthenticationService } from 'src/app/core/service/auth.service';
 import { Societe } from 'src/app/models/societe.model';
-import { SocieteSelectionService } from 'src/app/services/societe-selection.service';
+import { SocieteSelectionService } from 'src/app/services/societe-selection/societe-selection.service';
 import { filter, takeUntil } from 'rxjs/operators';
 import { ExerciceComptable } from '../../../models/exercice-comptable.model';
-import { ExerciceComptableService } from 'src/app/services/exercice-comptable.service';
+import { ExerciceComptableService } from 'src/app/services/exercices-comptables/exercice-comptable.service';
 @Component({
     selector: 'app-salaires',
     templateUrl: './salaires.component.html',

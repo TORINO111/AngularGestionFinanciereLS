@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { EtatService } from 'src/app/services/etat.service';
+import { EtatService } from 'src/app/services/etats/etat.service';
 import { OperationDetailDTO } from 'src/app/models/operation-detail.model'; 
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
-import { SocieteSelectionService } from 'src/app/services/societe-selection.service';
+import { SocieteSelectionService } from 'src/app/services/societe-selection/societe-selection.service';
 import { Societe } from 'src/app/models/societe.model';
 import { EcritureComptableDTO } from '../../../models/ecriture-comptable.model';
 import { Subject } from 'rxjs';
-import { ExerciceComptableService } from 'src/app/services/exercice-comptable.service';
+import { ExerciceComptableService } from 'src/app/services/exercices-comptables/exercice-comptable.service';
 @Component({
     selector: 'app-ecritures-comptables',
     templateUrl: './ecritures-comptables.component.html',

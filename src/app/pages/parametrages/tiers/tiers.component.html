@@ -81,7 +81,7 @@
                     <option value="null" disabled>---Select Année---</option>
                     <option *ngFor="let annee of annees" [value]="annee">{{annee}}</option>
                   </select>
-                </div> -->
+                  </div> -->
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
@@ -98,12 +98,24 @@
                 <div class="col-md-2">
                   <div class="form-group">
                     <label for="">Type Tiers</label>
-                    <select required name="type" formControlName="type"  class="form-select" id="type">
+                    <!-- <select required name="type" formControlName="type"  class="form-select" id="type">
                       <option  value="null" disabled>---Select Type Tiers---</option>
                       @for (type of types ; track type) {
                         <option [value]="type.id">{{type.libelle}}</option>
                       }
                     </select>
+                    -->
+                    <ng-select
+                      [items]="types"
+                      bindLabel="libelle"
+                      bindValue="id"
+                      formControlName="type"
+                      placeholder="Sélection type">
+                      [searchable]="true">
+                      <ng-template ng-notfound-tmp>
+                        Aucun journal disponible
+                      </ng-template>
+                    </ng-select>
                   </div>
                 </div>
                 <div class="col-12 col-md-2 mb-2">
@@ -161,6 +173,27 @@
                     }
                   </div>
                 </div>
+                <div class="form-group">
+                    <label for="">Société</label>
+                    <!-- <select required name="type" formControlName="type"  class="form-select" id="type">
+                      <option  value="null" disabled>---Select Type Tiers---</option>
+                      @for (type of types ; track type) {
+                        <option [value]="type.id">{{type.libelle}}</option>
+                      }
+                    </select>
+                    -->
+                    <ng-select
+                      [items]="types"
+                      bindLabel="libelle"
+                      bindValue="id"
+                      formControlName="type"
+                      placeholder="Sélection type">
+                      [searchable]="true">
+                      <ng-template ng-notfound-tmp>
+                        Aucun journal disponible
+                      </ng-template>
+                    </ng-select>
+                  </div>
                 <div class="col-12 col-md-2 mb-2">
                   <div class="form-group">
                     <label for="">Tel. Societe</label>

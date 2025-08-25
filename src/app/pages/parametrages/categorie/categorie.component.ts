@@ -1,6 +1,6 @@
 import { Component, OnInit,ViewChild,TemplateRef } from '@angular/core';
-import { TresorerieService } from 'src/app/services/tresorerie.service';
-import { CategorieService } from 'src/app/services/categorie.service';
+import { TresorerieService } from 'src/app/services/tresorerie/tresorerie.service';
+import { CategorieService } from 'src/app/services/categories/categorie.service';
 import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { NgbModal,ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';

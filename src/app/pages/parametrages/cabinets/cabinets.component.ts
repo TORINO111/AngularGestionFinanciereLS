@@ -1,6 +1,6 @@
 import { Component, OnInit ,ViewChild,TemplateRef } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { SocieteService } from 'src/app/services/societe.service';
+import { SocieteService } from 'src/app/services/societe/societe.service';
 import { NgbModal,ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';

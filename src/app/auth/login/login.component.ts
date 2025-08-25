@@ -4,7 +4,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { AuthenticationService } from 'src/app/core/service/auth.service';
-import { SocieteSelectionService } from 'src/app/services/societe-selection.service';
+import { SocieteSelectionService } from 'src/app/services/societe-selection/societe-selection.service';
 
 @Component({
     selector: 'app-login',

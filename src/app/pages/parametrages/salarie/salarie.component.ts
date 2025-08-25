@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Salarie } from 'src/app/models/salarie.model';
-import { SalarieService } from 'src/app/services/salarie.service';
+import { SalarieService } from 'src/app/services/salaries/salarie.service';
 @Component({
     selector: 'app-salarie',
     templateUrl: './salarie.component.html',

@@ -1,6 +1,9 @@
+import { TypeCategorie } from "./type-categorie.model";
+
 export interface Categorie {
     id?: number;
     libelle: string;
-    type: 'RECETTE' | 'DEPENSE' | 'SALAIRE';
+    //type: 'RECETTE' | 'DEPENSE' | 'SALAIRE';
+    type: TypeCategorie;
   }
   

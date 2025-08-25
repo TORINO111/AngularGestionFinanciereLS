@@ -1,8 +1,9 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { OperationDetailDTO } from '../models/operation-detail.model';
+import { OperationDetailDTO } from '../../models/operation-detail.model';
 import { Observable } from 'rxjs';
-import { EcritureComptableDTO } from '../models/ecriture-comptable.model';
+import { EcritureComptableDTO } from '../../models/ecriture-comptable.model';
+import { environment } from 'src/environments/environment';
 @Injectable({
   providedIn: 'root'
 })
@@ -10,7 +11,9 @@ export class EtatService {
 
   //private host:string='http://localhost:8082/gest-fin';
   //private host:string='//4.222.22.46:8082/gest-fin';
-  private host:string='http://localhost:8082';
+  //private host:string='http://localhost:8082';
+
+  private baseUrlEtate = `${environment.apiUrl}/api/etat`;
 
 
   constructor(private http: HttpClient) {}
@@ -23,7 +26,7 @@ export class EtatService {
       .set('from', from)
       .set('to', to);
 
-    return this.http.get<OperationDetailDTO[]>(`${this.host}/api/etat/recettes`, { params });
+    return this.http.get<OperationDetailDTO[]>(`${this.baseUrlEtate}/recettes`, { params });
   }
 
   getECrituresComptables(societeId: number, from: string, to: string): Observable<EcritureComptableDTO[]> {
@@ -32,7 +35,7 @@ export class EtatService {
       .set('from', from)
       .set('to', to);
 
-    return this.http.get<EcritureComptableDTO[]>(`${this.host}/api/ecritures-comptables`, { params });
+    return this.http.get<EcritureComptableDTO[]>(`${environment.apiUrl}/api/ecritures-comptables`, { params });
   }
 
   exportEtatExcel(type:string,societeId: number, from: string, to: string,codeJournal:string) {
@@ -42,7 +45,7 @@ export class EtatService {
       .set('codeJournal',codeJournal)
       .set('from', from)
       .set('to', to);
-    return this.http.get(this.host+'/api/etat/excel/', {params: params, responseType: 'blob' });
+    return this.http.get(`${this.baseUrlEtate}/excel/`, {params: params, responseType: 'blob' });
   }
 
   exportECrituresExcel(societeId: number, from: string, to: string) {
@@ -50,7 +53,7 @@ export class EtatService {
       .set('societeId', societeId)
       .set('from', from)
       .set('to', to);
-    return this.http.get(this.host+'/api/ecritures-comptables/excel/', {params: params, responseType: 'blob' });
+    return this.http.get(`${environment.apiUrl}/api/ecritures-comptables/excel/`, {params: params, responseType: 'blob' });
   }
 
   exportEtatPDF(type:string,societeId: number, from: string, to: string,codeJournal:string) {
@@ -60,6 +63,6 @@ export class EtatService {
       .set('codeJournal',codeJournal)
       .set('from', from)
       .set('to', to);
-    return this.http.get(this.host+'/api/etat/pdf/', {params: params, responseType: 'blob' });
+    return this.http.get(`${this.baseUrlEtate}/pdf/`, {params: params, responseType: 'blob' });
   }
 }

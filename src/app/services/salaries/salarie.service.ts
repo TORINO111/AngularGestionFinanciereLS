@@ -1,13 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Salarie } from '../models/salarie.model';
+import { Salarie } from '../../models/salarie.model';
 import { Observable } from 'rxjs';
+import { environment } from 'src/environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class SalarieService {
 
-  private baseUrl = 'http://localhost:8082/api/salaries';
+  private baseUrl = `${environment.apiUrl}/api/salaries`;
 
   constructor(private http: HttpClient) {}
 

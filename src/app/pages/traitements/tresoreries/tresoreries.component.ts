@@ -4,11 +4,11 @@ import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { NatureOperation } from 'src/app/models/nature-operation.model';
-import { NatureOperationService } from 'src/app/services/nature-operation.service';
+import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
 import { Operation } from 'src/app/models/operation.model';
 import { OperationService } from 'src/app/services/operation.service';
 import { Tiers } from 'src/app/models/tiers.model';
-import { TiersService } from 'src/app/services/tiers.service';
+import { TiersService } from 'src/app/services/tiers/tiers.service';
 import { Select2Data } from 'ng-select2-component';
 import { forkJoin } from 'rxjs';
 import { Societe } from 'src/app/models/societe.model';

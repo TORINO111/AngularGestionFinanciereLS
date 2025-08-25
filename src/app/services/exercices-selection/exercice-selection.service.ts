@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ExerciceComptable } from '../models/exercice-comptable.model';
+import { ExerciceComptable } from '../../models/exercice-comptable.model';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({

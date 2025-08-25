@@ -1,6 +1,6 @@
 import { Component, OnInit ,ViewChild,TemplateRef } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { PlanComptableService } from 'src/app/services/plan-comptable.service';
+import { PlanComptableService } from 'src/app/services/plan-comptable/plan-comptable.service';
 import { PlanComptable } from './../../../models/plan-comptable.model';
 import { NgbModal,ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';

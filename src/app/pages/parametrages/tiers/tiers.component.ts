@@ -1,7 +1,8 @@
+import { Societe } from './../../../models/societe.model';
 import { Component, OnInit ,ViewChild,TemplateRef} from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Tiers } from 'src/app/models/tiers.model';
-import { TiersService } from 'src/app/services/tiers.service';
+import { TiersService } from 'src/app/services/tiers/tiers.service';
 import { Categorie } from 'src/app/models/categorie.model';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
@@ -60,7 +61,7 @@ export class TiersComponent implements OnInit {
   importResult: ImportTiersResultDTO | null = null;
 
   types=[{id:'CLIENT',libelle:'CLIENT'},{id:'FOURNISSEUR',libelle:'FOURNISSEUR'},{id:'SALARIE',libelle:'SALARIE'}];
-
+  societes= [];
 
   constructor(
     private tiersService: TiersService,
@@ -136,10 +137,9 @@ export class TiersComponent implements OnInit {
       this.showWarning('Formulaire invalide');
       return;
     }
-
     this.isLoading = true;
-
     const natureOperation = this.tiersForm.value as Tiers;
+    natureOperation.societeId ;
     const action$ = this.selected?.id
       ? this.tiersService.update(this.selected.id, natureOperation)
       : this.tiersService.create(natureOperation);
@@ -160,7 +160,7 @@ export class TiersComponent implements OnInit {
       error: () => {
         this.isLoading = false;
         this.loading = false;
-        this.showError('Erreur serveur !!!');
+        this.showError("Une erreur est survenue lors de l'enregistrement du tiers!");
       }
     });
   }

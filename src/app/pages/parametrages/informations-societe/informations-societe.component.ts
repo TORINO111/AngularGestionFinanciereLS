@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { TresorerieService } from 'src/app/services/tresorerie.service';
+import { TresorerieService } from 'src/app/services/tresorerie/tresorerie.service';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 @Component({

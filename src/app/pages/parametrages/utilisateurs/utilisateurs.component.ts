@@ -3,9 +3,9 @@ import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.
 import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
-import { TresorerieService } from 'src/app/services/tresorerie.service';
-import { forkJoin } from 'rxjs';
+import { TresorerieService } from 'src/app/services/tresorerie/tresorerie.service';
 import { NgbModal,ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
+import { SocieteService } from 'src/app/services/societe/societe.service';
 @Component({
     selector: 'app-utilisateurs',
     templateUrl: './utilisateurs.component.html',
@@ -28,11 +28,13 @@ export class UtilisateursComponent implements OnInit {
   superviseurs: any[] = [];
   formsArr: UntypedFormGroup[] = [];
   admin = false;
+  societes: any[] = [];
   idAdmin: number;
   configPagination = { currentPage: 1, itemsPerPage: 10 };
   result = false;
   user:any;
   constructor(
+    private societeService: SocieteService,
     private modalService: NgbModal,
     private tresorerieService: TresorerieService,
     private fb: UntypedFormBuilder,
@@ -63,7 +65,18 @@ export class UtilisateursComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageTitle = [{ label: 'utilisateurs', path: '/', active: true }];
-    
+    this.loadSocietes();
+  }
+
+  private loadSocietes(): void {
+    this.societeService.getAllSociete().subscribe({
+      next: (data: any[]) => {
+        this.societes = data;
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des sociétés', err);
+      }
+    });
   }
 
   chargerRoles() {

@@ -1,17 +1,17 @@
 import { CodeJournal } from './../../../models/code-journal.model';
 import { Component, OnInit } from '@angular/core';
-import { EtatService } from 'src/app/services/etat.service';
+import { EtatService } from 'src/app/services/etats/etat.service';
 import { OperationDetailDTO } from 'src/app/models/operation-detail.model'; 
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
-import { NatureOperationService } from 'src/app/services/nature-operation.service';
-import { SocieteSelectionService } from 'src/app/services/societe-selection.service';
+import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
+import { SocieteSelectionService } from 'src/app/services/societe-selection/societe-selection.service';
 import { Societe } from 'src/app/models/societe.model';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { ExerciceComptable } from '../../../models/exercice-comptable.model';
-import { ExerciceComptableService } from 'src/app/services/exercice-comptable.service';
+import { ExerciceComptableService } from 'src/app/services/exercices-comptables/exercice-comptable.service';
 @Component({
     selector: 'app-etats-depenses',
     templateUrl: './etats-depenses.component.html',

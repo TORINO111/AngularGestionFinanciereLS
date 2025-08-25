@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { NatureOperationService } from 'src/app/services/nature-operation.service';
-import { CategorieService } from 'src/app/services/categorie.service';
-import { PlanComptableService } from 'src/app/services/plan-comptable.service';
+import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
+import { CategorieService } from 'src/app/services/categories/categorie.service';
+import { PlanComptableService } from 'src/app/services/plan-comptable/plan-comptable.service';
 import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';

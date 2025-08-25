@@ -4,7 +4,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthenticationService } from 'src/app/core/service/auth.service';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
-import { TresorerieService } from 'src/app/services/tresorerie.service';
+import { TresorerieService } from 'src/app/services/tresorerie/tresorerie.service';
 @Component({
     selector: 'app-compte',
     templateUrl: './compte.component.html',

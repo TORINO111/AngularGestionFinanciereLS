@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { AuthenticationService } from 'src/app/core/service/auth.service';
-import { ExerciceComptableService } from 'src/app/services/exercice-comptable.service';
-import { SocieteSelectionService } from 'src/app/services/societe-selection.service';
+import { ExerciceComptableService } from 'src/app/services/exercices-comptables/exercice-comptable.service';
+import { SocieteSelectionService } from 'src/app/services/societe-selection/societe-selection.service';
 import { ExerciceComptable } from '../../../models/exercice-comptable.model';
 import { BreadcrumbItem } from '../../../shared/page-title/page-title/page-title.model';
 
