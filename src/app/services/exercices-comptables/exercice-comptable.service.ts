@@ -42,7 +42,7 @@ export class ExerciceComptableService {
   }
 
   getExerciceEnCoursBySociete(societeId: number): Observable<ExerciceComptable> {
-    return this.http.get<ExerciceComptable>(`${environment.apiUrl}/exercice-en-cours/${societeId}`);
+    return this.http.get<ExerciceComptable>(`${environment.apiUrl}/api/exercice/exercice-en-cours/${societeId}`);
   }
   
   

@@ -1,27 +1,25 @@
-import { Component, OnInit ,ViewChild,TemplateRef } from '@angular/core';
+import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { SocieteService } from 'src/app/services/societe/societe.service';
-import { NgbModal,ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { Societe } from 'src/app/models/societe.model';
 
 @Component({
-    selector: 'app-cabinets',
-    templateUrl: './cabinets.component.html',
-    styleUrls: ['./cabinets.component.scss'],
-    standalone: false
+  selector: 'app-cabinets',
+  templateUrl: './cabinets.component.html',
+  styleUrls: ['./cabinets.component.scss'],
+  standalone: false
 })
 export class CabinetsComponent implements OnInit {
   @ViewChild('content', { static: true }) content: any;
   @ViewChild('editcontent', { static: true }) editcontent: any;
-  closeResult:string='';
+  closeResult: string = '';
   cabinetsList: Societe[] = [];
   selected?: Societe;
 
-  // Utilisation de FormGroup[] avec typage clair
-  cabinets: UntypedFormGroup[] = [];
   lignes: UntypedFormGroup[] = [];
 
   selectedIndex: number | null = null;
@@ -33,7 +31,7 @@ export class CabinetsComponent implements OnInit {
   result = false;
   formVisible = false;
 
-  pays:any[]=[];
+  pays: any[] = [];
 
   constructor(
     private societeService: SocieteService,
@@ -45,11 +43,11 @@ export class CabinetsComponent implements OnInit {
       id: [''],
       nom: ['', Validators.required],
       telephone: [],
-      email: ['', Validators.required],
-      adresse:[],
+      email: ['', [Validators.required, Validators.email]],
+      adresse: [],
       numeroIFU: [],
       paysId: [],
-      paysNom:['']
+      paysNom: ['']
     });
   }
 
@@ -63,6 +61,7 @@ export class CabinetsComponent implements OnInit {
     this.cabinetForm.reset();
     this.formVisible = true;
     this.selectedIndex = null;
+    this.selected = undefined;
   }
 
   modifier(): void {
@@ -72,15 +71,12 @@ export class CabinetsComponent implements OnInit {
   }
 
   supprimer(): void {
-    if (this.selectedIndex !== null) {
+    if (this.selectedIndex !== null && this.lignes[this.selectedIndex]) { // Correction : Vérifier l'existence de l'objet
       const currentData = this.lignes[this.selectedIndex].value as Societe;
       this.cabinetForm.setValue(currentData);
-      this.lignes.splice(this.selectedIndex, 1);
-      this.selectedIndex = null;
       this.deleteCabinet(currentData);
     }
   }
-
 
   fermer(): void {
     this.formVisible = false;
@@ -90,15 +86,20 @@ export class CabinetsComponent implements OnInit {
 
   selectLigne(index: number): void {
     this.selectedIndex = index;
-    const currentData = this.lignes[this.selectedIndex].value as Societe;
-    this.cabinetForm.setValue(currentData);
-    //console.log(currentData)
-    this.selected = currentData;
+    // Correction : Vérifier l'existence de l'objet avant d'y accéder
+    if (this.lignes[index]) {
+      const currentData = this.lignes[index].value as Societe;
+      this.cabinetForm.setValue(currentData);
+      this.selected = currentData;
+    } else {
+      console.error('Ligne non trouvée à l\'index :', index);
+    }
   }
 
   enregistrer(): void {
     if (this.cabinetForm.invalid) {
       this.showWarning('Formulaire invalide');
+      this.cabinetForm.markAllAsTouched();
       return;
     }
 
@@ -106,15 +107,15 @@ export class CabinetsComponent implements OnInit {
 
     const cabinet = this.cabinetForm.value as Societe;
 
-    if (!cabinet) return; // sécurité si cabinet est null ou undefined
+    const isUpdate = this.cabinetForm.value.id !== null && this.cabinetForm.value.id !== '';
 
-  const action$ = (this.selected && this.selected.id !== undefined)
-  ? this.societeService.updateCabinet(this.selected.id, cabinet)
-  : this.societeService.createCabinet(cabinet);
+    const action$ = isUpdate
+      ? this.societeService.updateCabinet(this.cabinetForm.value.id, cabinet)
+      : this.societeService.createCabinet(cabinet);
 
     action$.subscribe({
       next: () => {
-        const msg = this.selected ? 'Modifié' : 'Enregistré';
+        const msg = isUpdate ? 'Modifié' : 'Enregistré';
         this.showSuccess(`${msg} avec succès`);
         this.formVisible = false;
         this.cabinetForm.reset();
@@ -132,23 +133,21 @@ export class CabinetsComponent implements OnInit {
   }
 
   chargerCabinets(): void {
-    this.cabinets = [];
+    this.lignes = []; // Correction : Utilisation d'une seule variable pour la liste
     this.societeService.getAllCabinet().subscribe({
       next: (data: Societe[]) => {
-        //console.log(data)
-        this.cabinets = data.map(d =>
+        this.lignes = data.map(d =>
           this.fb.group({
             id: [d.id],
             nom: [d.nom, Validators.required],
             telephone: [d.telephone],
-            email: [d.email],
-            adresse:[d.adresse],
+            email: [d.email, [Validators.required, Validators.email]],
+            adresse: [d.adresse],
             numeroIFU: [d.numeroIFU],
             paysId: [d.paysId],
-            paysNom:[d.paysNom]
+            paysNom: [d.paysNom]
           })
         );
-        this.lignes = this.cabinets;
         this.result = true;
         this.loading = false;
         this.isLoading = false;
@@ -166,12 +165,12 @@ export class CabinetsComponent implements OnInit {
   chargerPays() {
     this.societeService.getAllPays().subscribe(
       {
-        next:(data:any) => {
-          this.pays=data;
-          this.result=true;
+        next: (data: any) => {
+          this.pays = data;
+          this.result = true;
         },
-        error:(error:any) => {
-          this.result=true;
+        error: (error: any) => {
+          this.result = true;
           console.log('Erreur lors du chargement des pays', error);
           this.showError("erreur lors du chargement des pays");
         }
@@ -198,12 +197,13 @@ export class CabinetsComponent implements OnInit {
       if (result.value) {
         this.societeService.deleteCabinet(cabinet.id!).subscribe({
           next: () => {
-            this.cabinets = [];
+            this.lignes = this.lignes.filter(f => f.value.id !== cabinet.id);
             this.chargerCabinets();
             Swal.fire('Succès', 'cabinet supprimé avec succès.', 'success');
           },
-          error: () => {
-            Swal.fire('Erreur', 'Une erreur s\'est produite.', 'error');
+          error: (err) => {
+            const msg = err.error?.message || err.message || 'Une erreur s\'est produite.';
+            Swal.fire('Erreur', msg, 'error');
           }
         });
       } else if (result.dismiss === Swal.DismissReason.cancel) {
@@ -212,46 +212,47 @@ export class CabinetsComponent implements OnInit {
     });
   }
 
-  
-
   openScrollableModal(content: TemplateRef<NgbModal>): void {
-    //this.codeBudgetaireForm.reset();
     this.modalService.open(content,
-       {size: 'lg', // set modal size
-        centered: true ,scrollable: true ,
-        backdrop: 'static', // disable modal from closing on click outside
+      {
+        size: 'lg',
+        centered: true, scrollable: true,
+        backdrop: 'static',
         keyboard: false,
-        ariaLabelledBy: 'modal-basic-title'}).result.then((result)=> { 
-           this.closeResult = `Closed with: ${result}`; 
-         }, (reason) => { 
-           this.closeResult =  
-              `Dismissed ${this.getDismissReason(reason)}`; 
-         });
+        ariaLabelledBy: 'modal-basic-title'
+      }).result.then((result) => {
+        this.closeResult = `Closed with: ${result}`;
+      }, (reason) => {
+        this.closeResult =
+          `Dismissed ${this.getDismissReason(reason)}`;
+      });
+  }
+
+  openEditModal(editcontent: TemplateRef<NgbModal>): void {
+    this.modalService.open(editcontent,
+      {
+        size: 'lg',
+        centered: true, scrollable: true,
+        backdrop: 'static',
+        keyboard: false,
+        ariaLabelledBy: 'modal-basic-title'
+      }).result.then((result) => {
+        this.closeResult = `Closed with: ${result}`;
+      }, (reason) => {
+        this.closeResult =
+          `Dismissed ${this.getDismissReason(reason)}`;
+      });
+  }
+
+  private getDismissReason(reason: any): string {
+    if (reason === ModalDismissReasons.ESC) {
+      return 'by pressing ESC';
+    } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
+      return 'by clicking on a backdrop';
+    } else {
+      return 'with: ${reason}';
     }
-
-    openEditModal(editcontent: TemplateRef<NgbModal>): void {
-      this.modalService.open(editcontent,
-         {size: 'lg', // set modal size
-          centered: true ,scrollable: true ,
-          backdrop: 'static', // disable modal from closing on click outside
-          keyboard: false,
-          ariaLabelledBy: 'modal-basic-title'}).result.then((result)=> { 
-             this.closeResult = `Closed with: ${result}`; 
-           }, (reason) => { 
-             this.closeResult =  
-                `Dismissed ${this.getDismissReason(reason)}`; 
-           });
-      }
-
-  private getDismissReason(reason: any): string { 
-    if (reason === ModalDismissReasons.ESC) { 
-      return 'by pressing ESC'; 
-    } else if (reason === ModalDismissReasons.BACKDROP_CLICK) { 
-      return 'by clicking on a backdrop'; 
-    } else { 
-      return 'with: ${reason}'; 
-    } 
-  } 
+  }
 
   showSuccess(message: string): void {
     this.toastr.success(message, 'Succès', {
@@ -280,5 +281,3 @@ export class CabinetsComponent implements OnInit {
     });
   }
 }
-
-

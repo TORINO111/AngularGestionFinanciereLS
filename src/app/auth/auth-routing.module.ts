@@ -7,11 +7,13 @@ const routes: Routes = [
   { path: 'register', loadChildren: () => import('./register/register.module').then(m => m.RegisterModule) },
   { path: 'recover-password', loadChildren: () => import('./recover-password/recover-password.module').then(m => m.RecoverPasswordModule) },
   { path: 'lock-screen', loadChildren: () => import('./lock-screen/lock-screen.module').then(m => m.LockScreenModule) },
-  { path: 'confirm', loadChildren: () => import('./confirm/confirm.module').then(m => m.ConfirmModule) }
+  { path: 'confirm', loadChildren: () => import('./confirm/confirm.module').then(m => m.ConfirmModule) },
+  { path: 'set-password', loadChildren: () => import('./set-password/set-password.module').then(m => m.SetPasswordModule) },
+  
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
 export class AuthRoutingModule { }
