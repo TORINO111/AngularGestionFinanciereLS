@@ -1,0 +1,43 @@
+{
+  "name": "ng-wizard",
+  "description": "Angular ng-wizard - Angular wizard | stepper",
+  "version": "1.3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abdulkadirgenc/ng-wizard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/abdulkadirgenc/ng-wizard/issues"
+  },
+  "author": "Abdulkadir Genç <gencakadir@gmail.com>",
+  "homepage": "https://github.com/abdulkadirgenc/ng-wizard",
+  "license": "MIT",
+  "private": false,
+  "peerDependencies": {
+    "@angular/common": "^8.2.5",
+    "@angular/core": "^8.2.5"
+  },
+  "keywords": [
+    "angular",
+    "wizard",
+    "stepper",
+    "ng-wizard",
+    "wizard-component",
+    "stepper-component",
+    "step-wizard",
+    "bootstrap"
+  ],
+  "main": "bundles/ng-wizard.umd.js",
+  "module": "fesm5/ng-wizard.js",
+  "es2015": "fesm2015/ng-wizard.js",
+  "esm5": "esm5/ng-wizard.js",
+  "esm2015": "esm2015/ng-wizard.js",
+  "fesm5": "fesm5/ng-wizard.js",
+  "fesm2015": "fesm2015/ng-wizard.js",
+  "typings": "ng-wizard.d.ts",
+  "metadata": "ng-wizard.metadata.json",
+  "sideEffects": false,
+  "dependencies": {
+    "tslib": "^1.10.0"
+  }
+}

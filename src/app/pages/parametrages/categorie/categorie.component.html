@@ -15,7 +15,7 @@
           <div class="mt-2 mt-md-0">
             <button (click)="openScrollableModal(categorieModal)" type="button"
               class="btn btn-success me-1 mb-2 mb-sm-0">
-              <i class="uil-plus me-1"></i> CREER UNE CATEGORIE
+              <i class="uil-plus me-1"></i> CREER UNE CATÉGORIE
             </button>
           </div>
         </div>
@@ -55,13 +55,15 @@
           <div class="col-md-5">
             <div class="form-group">
               <label for="type">Type</label>
-              <select name="type" formControlName="type" class="form-select" id="type" (change)="onSelected($event)">
-                <option [ngValue]="null" disabled>-- Choisir un type --</option>
-                <option *ngFor="let type of types" [ngValue]="type.id">{{type.libelle}}</option>
-              </select>
-              <!-- @if (categorieForm.get('type')?.hasError('required') && categorieForm.get('type')?.touched) {
-              <strong class="text-danger"> Champ obligatoire !</strong>
-              } -->
+
+              <ng-select formControlName="type" (change)="onSelected($event)" [items]="types" bindLabel="libelle"
+                bindValue="id" formControlName="type" placeholder="Sélection type">
+                [searchable]="true">
+                <ng-template ng-notfound-tmp>
+                  Aucun type disponible
+                </ng-template>
+              </ng-select>
+
             </div>
           </div>
         </div>
@@ -95,7 +97,7 @@
                   <td>{{ categorie.value.type?.libelle }}</td>
                   <td style="width: 50px;">
                     <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x mr-1 me-3"
-                      (click)="openEditModal(editModal)"></span>
+                      (click)="openEditModal(categorie, editModal)"></span>
                     <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x mr-1"
                       (click)="deleteCategorie(categorie.value)"></span>
 
@@ -137,8 +139,16 @@
                             </div>
                             <div class="col-md-4">
                               <div class="form-group">
-                                <label for="">Type</label>
-                                <select name="type" formControlName="type" class="form-select" id="type">
+                                <label for="type">Type</label>
+                                <!--Ng-select ajoutés partout sur le projet par Victorin-->
+                                <ng-select formControlName="type" [items]="types" bindLabel="libelle" bindValue="id"
+                                  formControlName="type" placeholder="Sélection type">
+                                  [searchable]="true">
+                                  <ng-template ng-notfound-tmp>
+                                    Aucun type disponible
+                                  </ng-template>
+                                </ng-select>
+                                <!-- <select name="type" formControlName="type" class="form-select" id="type">
                                   <option value="null" disabled>---Select Type---</option>
                                   @for (type of types ; track type) {
                                   <option [value]="type.id">{{type.libelle}}</option>
@@ -146,13 +156,14 @@
                                 </select>
                                 @if (categorie.get('type')?.hasError('required') && categorie.get('type')?.touched) {
                                 <strong class="text-danger"> Champ obligatoire !</strong>
-                                }
+                                } -->
                               </div>
                             </div>
                           </div>
                           <div class="modal-footer">
                             <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
-                            <button type="submit" class="btn btn-primary">Modifier</button>
+                            <button type="submit" class="btn btn-primary" [disabled]="!categorie.dirty || !categorie.valid">Modifier</button>
+
                           </div>
                         </form>
                       </div>

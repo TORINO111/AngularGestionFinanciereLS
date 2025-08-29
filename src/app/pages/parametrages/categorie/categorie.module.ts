@@ -4,6 +4,7 @@ import { FormsModule,ReactiveFormsModule } from '@angular/forms';
 import { PageTitleModule } from 'src/app/shared/page-title/page-title.module';
 import {CategorieRoutingModule } from './categorie-routing.module';
 import { CategorieComponent } from './categorie.component';
+import { NgSelectModule } from '@ng-select/ng-select'; 
 
 
 @NgModule({
@@ -15,7 +16,8 @@ import { CategorieComponent } from './categorie.component';
     FormsModule,
     PageTitleModule,
     CategorieRoutingModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NgSelectModule
   ]
 })
 export class CategorieModule { }

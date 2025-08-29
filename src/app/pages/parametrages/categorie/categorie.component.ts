@@ -16,6 +16,7 @@ import { TypeCategorieService } from 'src/app/services/type-categorie/type-categ
 export class CategorieComponent implements OnInit {
 
   categories: any[] = [];
+  categorie!: UntypedFormGroup;
   categorieForm!: UntypedFormGroup;
   @ViewChild('content', { static: true }) content: any;
   @ViewChild('editcontent', { static: true }) editcontent: any;
@@ -36,8 +37,14 @@ export class CategorieComponent implements OnInit {
   ) {
     this.categorieForm = this.fb.group({
       code: ['', [Validators.required]],
-      libelle: ['', [Validators.required, Validators.minLength(2)]],
+      libelle: ['', [Validators.required, Validators.minLength(5)]],
       type: ['null', [Validators.required]],
+    });
+
+    this.categorie = this.fb.group({
+      code: ['', Validators.required],
+      libelle: ['', [Validators.required, Validators.minLength(5)]],
+      type: [null, Validators.required]
     });
   }
 
@@ -47,36 +54,37 @@ export class CategorieComponent implements OnInit {
     this.chargerTypesCategorie();
   }
 
+
   onSelected(event: Event) {
-  // récupère l'id du type sélectionné
-  const selectedId = this.categorieForm.get('type')?.value;
-  console.log('selectedId:', selectedId);
-  this.selectedTypeId = selectedId;
-  // trouve le type dans ton tableau
-  const selectedType = this.types.find(t => t.id === selectedId);
-  console.log('selectedType:', selectedType);
-  
-  if (selectedType) {
-    // calcule le dernier id pour ce type dans categories
-    const idsForType = this.categories
-      .map(c => c.value)
-      .filter(c => c.type?.id === selectedId)
-      .map(c => Number(c.id));
+    // récupère l'id du type sélectionné
+    const selectedId = this.categorieForm.get('type')?.value;
+    console.log('selectedId:', selectedId);
+    this.selectedTypeId = selectedId;
+    // trouve le type dans ton tableau
+    const selectedType = this.types.find(t => t.id === selectedId);
+    console.log('selectedType:', selectedType);
 
-    const maxId = idsForType.length ? Math.max(...idsForType) : 0;
+    if (selectedType) {
+      // calcule le dernier id pour ce type dans categories
+      const idsForType = this.categories
+        .map(c => c.value)
+        .filter(c => c.type?.id === selectedId)
+        .map(c => Number(c.id));
 
-    this.lastTypeId = maxId + 1;
+      const maxId = idsForType.length ? Math.max(...idsForType) : 0;
 
-    // patch dans le formulaire
-    this.categorieForm.patchValue({
-      code: `${selectedType.code}${this.lastTypeId.toString().padStart(8, '0')}`,
-      // id: `${this.selected}`, 
-    });
+      this.lastTypeId = maxId + 1;
 
-    console.log('lastTypeId:', this.lastTypeId);
-    console.log('Form mis à jour:', this.categorieForm.value);
+      // patch dans le formulaire
+      this.categorieForm.patchValue({
+        code: `${selectedType.code}${this.lastTypeId.toString().padStart(8, '0')}`,
+        // id: `${this.selected}`, 
+      });
+
+      console.log('lastTypeId:', this.lastTypeId);
+      console.log('Form mis à jour:', this.categorieForm.value);
+    }
   }
-}
 
   chargerCategories() {
     this.categories = [];
@@ -163,7 +171,7 @@ export class CategorieComponent implements OnInit {
     });
   }
 
-  onUpdateCategorie(categorieFormValue: any) {
+onUpdateCategorie(categorieFormValue: any) {
     if (categorieFormValue.valid) {
       this.categorieService.modifierCategorie(categorieFormValue.value.id, categorieFormValue.value).subscribe({
         next: () => {
@@ -183,11 +191,12 @@ export class CategorieComponent implements OnInit {
     }
   }
 
+
   showSuccess(message: string) {
-    this.toastr.success(message + '!', 'Success', { timeOut: 5000, positionClass: 'toast-top-right', progressBar: true, closeButton: true });
+    this.toastr.success(message + '!', 'Succès', { timeOut: 5000, positionClass: 'toast-top-right', progressBar: true, closeButton: true });
   }
   showError(message: string) {
-    this.toastr.error(message + '!', 'Error', { timeOut: 5000, positionClass: 'toast-top-right', progressBar: true, closeButton: true });
+    this.toastr.error(message + '!', 'Erreur', { timeOut: 5000, positionClass: 'toast-top-right', progressBar: true, closeButton: true });
   }
   showWarning(message: string) {
     this.toastr.warning(message + '!', 'Warning', { timeOut: 5000, positionClass: 'toast-top-right', progressBar: true, closeButton: true });
@@ -201,12 +210,23 @@ export class CategorieComponent implements OnInit {
     });
   }
 
-  openEditModal(editcontent: TemplateRef<NgbModal>): void {
-    this.modalService.open(editcontent, {
-      size: 'lg', centered: true, scrollable: true,
-      backdrop: 'static', keyboard: false
-    });
-  }
+
+openEditModal(categorieData: any, editcontent: TemplateRef<NgbModal>): void {
+  this.categorie.reset(); // reset pour éviter d’avoir des dirty anciens
+  this.categorie.patchValue({
+    code: categorieData.code,
+    libelle: categorieData.libelle,
+    type: categorieData.type?.id ?? null
+  });
+
+  this.modalService.open(editcontent, {
+    size: 'lg',
+    centered: true,
+    scrollable: true,
+    backdrop: 'static',
+    keyboard: false
+  });
+}
 
   private getDismissReason(reason: any): string {
     if (reason === ModalDismissReasons.ESC) {
