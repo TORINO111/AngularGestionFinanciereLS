@@ -1,169 +1,178 @@
 <!-- end page title -->
 @if (!result) {
-  <div class="loader-container">
-    <div class="lds-dual-ring"></div>
-  </div>
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
 }
 <!-- start page title -->
 @if (result) {
-  <div class="">
-    <div class="row">
-      <div class="col-12">
-        <div class="page-title-box">
-          <h4 class="page-title">Catégorie</h4>
-          <div class="page-title-right">
-            <div class="mt-2 mt-md-0">
-              <button (click)="openScrollableModal(categorieModal)" type="button" class="btn btn-success me-1 mb-2 mb-sm-0">
-                <i class="uil-plus me-1"></i> CREER UNE CATEGORIE
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <ng-template #categorieModal let-modal>
-      <div class="modal-header" style="background-color: #128C7E;">
-        <h4 class="modal-title text-light" id="NewTaskModalLabel">RUBRIQUE</h4>
-        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
-      </div>
-      <div class="modal-body" >
-        <form (ngSubmit)="onSaveCategorie(categorieForm);modal.close('Close click')" [formGroup]="categorieForm"  class="p-2">
-          <div  class="row">
-            <div class="col-md-3">
-              <div class="form-group">
-                <label for="">Code</label>
-                <input type="text" id="code" name="code" formControlName="code" class="form-control"  placeholder="code" >
-                @if (categorieForm.get('code')?.hasError('required') && categorieForm.get('code')?.touched) {
-                  <strong class="text-danger"> Ce champ est obligatoire !</strong>
-                }
-              </div>
-            </div>
-            <div class="col-md-5">
-              <div class="form-group">
-                <label for="">Libelle</label>
-                <input type="text" id="libelle" name="libelle" formControlName="libelle" class="form-control"  placeholder="libelle" >
-                @if (categorieForm.get('libelle')?.hasError('required') && categorieForm.get('libelle')?.touched) {
-                  <strong class="text-danger"> Ce champ est obligatoire !</strong>
-                }
-                @if (categorieForm.get('libelle')?.hasError('minlength') && categorieForm.get('libelle')?.touched) {
-                  <strong class="text-danger"> Minimum 2 caractères !</strong>
-                }
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="">Type</label>
-                <select name="type" formControlName="type"  class="form-select" id="type">
-                  <option  value="null" disabled>---Select Type---</option>
-                  @for (type of types ; track type) {
-                    <option [value]="type.id">{{type.libelle}}</option>
-                  }
-                </select>
-                @if (categorieForm.get('type')?.hasError('required') && categorieForm.get('type')?.touched) {
-                  <strong class="text-danger"> Champ obligatoire !</strong>
-                }
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
-            <button type="submit"  class="btn btn-secondary">Enregistrer</button>
-          </div>
-        </form>
-      </div>
-    </ng-template>
-    <div class="card mb-1">
-      <div class="card-body">
-        <div class="row">
-          <div class="col-12 col-md-12 col-lg-12">
-            <h4>Liste des catégories</h4>
-            <div class="table-responsive mt-1">
-              <table class="table table-hover table-nowrap mb-0">
-                <thead>
-                  <tr>
-                    <th>Code </th>
-                    <th>Libellé</th>
-                    <th>Type</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (categorie of categories; track categorie; let i = $index) {
-                    <tr >
-                      <td>{{ categorie.value.code }}</td>
-                      <td>{{ categorie.value.libelle }}</td>
-                      <td>{{ categorie.value.type }}</td>
-                      <td>
-                        <span style="color:blue;cursor:pointer"  class="fa fa-edit fa-2x mr-1" (click)="openEditModal(editModal)"></span>
-                        <span style="color:red;cursor:pointer"  class="fa fa-trash fa-2x mr-1" (click)="deleteCategorie(categorie.value)"></span>
-                        <ng-template #editModal let-modal>
-                          <div class="modal-header" style="background-color: #128C7E;">
-                            <h4 class="modal-title text-light" id="NewTaskkModalLabel">RUBRIQUE</h4>
-                            <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
-                          </div>
-                          <div class="modal-body" >
-                            <form (ngSubmit)="onUpdateCategorie(categorie);modal.close('Close click')" [formGroup]="categorie"  class="p-2">
-                              <div class="row">
-                                <div class="col-md-3">
-                                  <div class="form-group">
-                                    <label for="">Code</label>
-                                    <input type="text" id="code" name="code" formControlName="code" class="form-control"  placeholder="code" >
-                                    @if (categorie.get('code')?.hasError('required') && categorie.get('code')?.touched) {
-                                      <strong class="text-danger"> Ce champ est obligatoire !</strong>
-                                    }
-                                    @if (categorie.get('code')?.hasError('minlength') && categorie.get('code')?.touched) {
-                                      <strong class="text-danger"> Minimum 2 caractères !</strong>
-                                    }
-                                  </div>
-                                </div>
-                                <div class="col-md-5">
-                                  <div class="form-group">
-                                    <label for="">Libelé</label>
-                                    <input type="text" id="libelle" name="libelle" formControlName="libelle" class="form-control"  placeholder="libelle" >
-                                    @if (categorie.get('libelle')?.hasError('required') && categorie.get('libelle')?.touched) {
-                                      <strong class="text-danger"> Ce champ est obligatoire !</strong>
-                                    }
-                                    @if (categorie.get('libelle')?.hasError('minlength') && categorie.get('libelle')?.touched) {
-                                      <strong class="text-danger"> Minimum 2 caractères !</strong>
-                                    }
-                                  </div>
-                                </div>
-                                <div class="col-md-4">
-                                  <div class="form-group">
-                                    <label for="">Type</label>
-                                    <select name="type" formControlName="type"  class="form-select" id="type">
-                                      <option  value="null" disabled>---Select Type---</option>
-                                      @for (type of types ; track type) {
-                                        <option [value]="type.id">{{type.libelle}}</option>
-                                      }
-                                    </select>
-                                    @if (categorie.get('type')?.hasError('required') && categorie.get('type')?.touched) {
-                                      <strong class="text-danger"> Champ obligatoire !</strong>
-                                    }
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="modal-footer">
-                                <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
-                                <button type="submit"  class="btn btn-primary">Modifier</button>
-                              </div>
-                            </form>
-                          </div>
-                        </ng-template>
-                      </td>
-                    </tr>
-                  }
-                  @if (categories?.length == 0) {
-                    <tr >
-                      <td  colspan="4"><h3 style="text-align: center;">Aucune donnée trouvée</h3></td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+<div class="">
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box">
+        <h4 class="page-title">Catégorie</h4>
+        <div class="page-title-right">
+          <div class="mt-2 mt-md-0">
+            <button (click)="openScrollableModal(categorieModal)" type="button"
+              class="btn btn-success me-1 mb-2 mb-sm-0">
+              <i class="uil-plus me-1"></i> CREER UNE CATEGORIE
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
+  <ng-template #categorieModal let-modal>
+    <div class="modal-header" style="background-color: #128C7E;">
+      <h4 class="modal-title text-light" id="NewTaskModalLabel">RUBRIQUE</h4>
+      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
+    </div>
+    <div class="modal-body">
+
+      <form (ngSubmit)="onSaveCategorie(categorieForm); modal.close('Close click')" [formGroup]="categorieForm"
+        class="p-2">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <div class="form-group">
+              <label for="">Code</label>
+              <input type="text" id="code" name="code" formControlName="code" class="form-control" readonly>
+            </div>
+          </div>
+
+          <div class="col-md-5">
+            <div class="form-group">
+              <label for="">Libelle</label>
+              <input type="text" id="libelle" name="libelle" formControlName="libelle" class="form-control"
+                placeholder="libelle">
+              @if (categorieForm.get('libelle')?.hasError('required') && categorieForm.get('libelle')?.touched) {
+              <strong class="text-danger"> Ce champ est obligatoire !</strong>
+              }
+              @if (categorieForm.get('libelle')?.hasError('minlength') && categorieForm.get('libelle')?.touched) {
+              <strong class="text-danger"> Minimum 2 caractères !</strong>
+              }
+            </div>
+          </div>
+          <div class="col-md-5">
+            <div class="form-group">
+              <label for="type">Type</label>
+              <select name="type" formControlName="type" class="form-select" id="type" (change)="onSelected($event)">
+                <option [ngValue]="null" disabled>-- Choisir un type --</option>
+                <option *ngFor="let type of types" [ngValue]="type.id">{{type.libelle}}</option>
+              </select>
+              <!-- @if (categorieForm.get('type')?.hasError('required') && categorieForm.get('type')?.touched) {
+              <strong class="text-danger"> Champ obligatoire !</strong>
+              } -->
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
+          <button type="submit" class="btn btn-secondary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </ng-template>
+  <div class="card mb-1">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-12 col-md-12 col-lg-12">
+          <h4>Liste des catégories</h4>
+          <div class="table-responsive mt-1">
+            <table class="table table-hover table-nowrap mb-0">
+              <thead>
+                <tr>
+                  <th>Code </th>
+                  <th>Libellé</th>
+                  <th>Type</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (categorie of categories; track categorie; let i = $index) {
+                <tr>
+                  <td>{{ categorie.value.code }}</td>
+                  <td>{{ categorie.value.libelle }}</td>
+                  <td>{{ categorie.value.type?.libelle }}</td>
+                  <td style="width: 50px;">
+                    <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x mr-1 me-3"
+                      (click)="openEditModal(editModal)"></span>
+                    <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x mr-1"
+                      (click)="deleteCategorie(categorie.value)"></span>
+
+                    <ng-template #editModal let-modal>
+                      <div class="modal-header" style="background-color: #128C7E;">
+                        <h4 class="modal-title text-light" id="NewTaskkModalLabel">RUBRIQUE</h4>
+                        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
+                      </div>
+                      <div class="modal-body">
+                        <form (ngSubmit)="onUpdateCategorie(categorie);modal.close('Close click')"
+                          [formGroup]="categorie" class="p-2">
+                          <div class="row">
+                            <div class="col-md-3">
+                              <div class="form-group">
+                                <label for="">Code</label>
+                                <input type="text" id="code" name="code" formControlName="code" class="form-control"
+                                  [value]="categorieForm.get('code')?.value" readonly>
+                                @if (categorieForm.get('code')?.hasError('required') &&
+                                categorieForm.get('code')?.touched) {
+                                <strong class="text-danger"> Ce champ est obligatoire !</strong>
+                                }
+                              </div>
+                            </div>
+
+                            <div class="col-md-5">
+                              <div class="form-group">
+                                <label for="">Libelé</label>
+                                <input type="text" id="libelle" name="libelle" formControlName="libelle"
+                                  class="form-control" placeholder="libelle">
+                                @if (categorie.get('libelle')?.hasError('required') &&
+                                categorie.get('libelle')?.touched) {
+                                <strong class="text-danger"> Ce champ est obligatoire !</strong>
+                                }
+                                @if (categorie.get('libelle')?.hasError('minlength') &&
+                                categorie.get('libelle')?.touched) {
+                                <strong class="text-danger"> Minimum 2 caractères !</strong>
+                                }
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label for="">Type</label>
+                                <select name="type" formControlName="type" class="form-select" id="type">
+                                  <option value="null" disabled>---Select Type---</option>
+                                  @for (type of types ; track type) {
+                                  <option [value]="type.id">{{type.libelle}}</option>
+                                  }
+                                </select>
+                                @if (categorie.get('type')?.hasError('required') && categorie.get('type')?.touched) {
+                                <strong class="text-danger"> Champ obligatoire !</strong>
+                                }
+                              </div>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
+                            <button type="submit" class="btn btn-primary">Modifier</button>
+                          </div>
+                        </form>
+                      </div>
+                    </ng-template>
+                  </td>
+                </tr>
+                }
+                @if (categories?.length == 0) {
+                <tr>
+                  <td colspan="4">
+                    <h3 style="text-align: center;">Aucune donnée trouvée</h3>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 }
