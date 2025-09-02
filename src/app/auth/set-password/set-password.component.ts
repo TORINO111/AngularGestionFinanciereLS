@@ -109,7 +109,7 @@ export class SetPasswordComponent implements OnInit {
 
     this.http.post(`${environment.apiUrl}/api/auth/set-password`, formData, {
       observe: 'response',
-      responseType: 'json'  // <- essentiel pour que Angular parse le JSON automatiquement
+      responseType: 'json'
     }).subscribe({
       next: resp => {
         const body: any = resp.body;

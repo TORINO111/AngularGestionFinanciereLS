@@ -4,11 +4,13 @@ import { CategorieService } from 'src/app/services/categories/categorie.service'
 import { PlanComptableService } from 'src/app/services/plan-comptable/plan-comptable.service';
 import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { NatureOperation } from 'src/app/models/nature-operation.model';
 import { Select2Data } from 'ng-select2-component';
 import { CodeJournal } from 'src/app/models/code-journal.model';
+import { NotificationService } from 'src/app/services/notifications/notifications-service';
+import { TypeCategorieService } from 'src/app/services/type-categorie/type-categorie.service';
+import { TypeCategorie } from 'src/app/models/type-categorie.model';
 @Component({
     selector: 'app-nature-operations',
     templateUrl: './nature-operations.component.html',
@@ -29,9 +31,8 @@ export class NatureOperationsComponent implements OnInit {
   listeSens=[{id:'CREDIT',libelle:'CREDIT'},{id:'DEBIT',libelle:'DEBIT'}];
   codesjournaux: CodeJournal[] =[];
 
-  types=[{id:'RECETTE',libelle:'RECETTE'},{id:'EXPLOITATION',libelle:'EXPLOITATION'},
-        {id:'IMMOBILISATION',libelle:'IMMOBILISATION'},{id:'SALAIRE',libelle:'SALAIRE'},
-        {id:'ENCAISSEMENT',libelle:'ENCAISSEMENT'},{id:'DECAISSEMENT',libelle:'DECAISSEMENT'}];      
+  types: any[] = [];
+
   selectedTypeNature='';
         
   selectedIndex: number | null = null;
@@ -48,14 +49,17 @@ export class NatureOperationsComponent implements OnInit {
   isTresorerie = false;
   prefixe:string;
   selectedCategorie: any; // pour stocker l'objet complet sélectionné
-  typesFiltres: any[] = [];
+  typesFiltres: TypeCategorie[] = [];
+  lastTypeId: any;
 
   constructor(
     private natureOperationService: NatureOperationService,
     private categorieService:CategorieService,
     private planComptableService:PlanComptableService,
     private fb: UntypedFormBuilder,
-    private toastr: ToastrService
+    private notification: NotificationService,
+    private typeCategorieService: TypeCategorieService
+    
   ) {
     this.natureOperationForm = this.fb.group({
       id: [],
@@ -80,9 +84,21 @@ export class NatureOperationsComponent implements OnInit {
     this.chargerCategories();
     this.chargerAnalytiques();
     this.chargerCodeJournal();
-    
+    this.chargerTypesCategorie;
   }
 
+  chargerTypesCategorie() {
+    this.typeCategorieService.getAll().subscribe({
+      next: (data: any[]) => {
+        this.types = data.map(t => ({ id: t.id, code: t.code, libelle: t.libelle }));
+        this.lastTypeId = data[data.length - 1].id;
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des types', err);
+        this.notification.showError("Erreur lors du chargement des types");
+      }
+    });
+  }
   onTypePrincipalChange(): void {
     const type = this.selectedCategorie?.type;
   
@@ -131,7 +147,7 @@ export class NatureOperationsComponent implements OnInit {
     this.prefixe = prefixMap[this.selectedTypeNature] || '';
     if (this.prefixe) {
       this.comptables = [];
-       this.chargerComptables(); // décommenter si nécessaire
+      this.chargerComptables(); // décommenter si nécessaire
     }
   }
   
@@ -255,7 +271,7 @@ export class NatureOperationsComponent implements OnInit {
     //   console.log(this.natureOperationForm.value)
     //  return;
     if (this.natureOperationForm.invalid) {
-      this.showWarning('Formulaire invalide');
+      this.notification.showWarning('Formulaire invalide');
       return;
     }
 
@@ -270,7 +286,7 @@ export class NatureOperationsComponent implements OnInit {
     action$.subscribe({
       next: () => {
         const msg = this.selected?.id ? 'Modifié' : 'Enregistré';
-        this.showSuccess(`${msg} avec succès`);
+        this.notification.showSuccess(`${msg} avec succès`);
         this.formVisible = false;
         this.natureOperationForm.reset();
         this.loading = false;
@@ -281,7 +297,7 @@ export class NatureOperationsComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
-        this.showError('Erreur serveur !!!');
+        this.notification.showError('Erreur serveur !!!');
       }
     });
   }
@@ -316,7 +332,7 @@ export class NatureOperationsComponent implements OnInit {
         console.error('Erreur lors du chargement des natures opérations', error);
         this.result = true;
         this.isLoading = false;
-        this.showError('Erreur de chargement');
+        this.notification.showError('Erreur de chargement');
       }
     });
   }
@@ -331,7 +347,7 @@ export class NatureOperationsComponent implements OnInit {
         error:(error:any) => {
           this.result=true;
           console.log('Erreur lors du chargement des codes journaux', error);
-          this.showError("erreur lors du chargement des codes journaux");
+          this.notification.showError("erreur lors du chargement des codes journaux");
         }
       }
     );
@@ -347,14 +363,13 @@ export class NatureOperationsComponent implements OnInit {
         error:(error:any) => {
           this.result=true;
           console.log('Erreur lors du chargement des categories', error);
-          this.showError("erreur lors du chargement des categories");
+          this.notification.showError("erreur lors du chargement des categories");
         }
       }
     );
   }
 
   chargerComptables() {
-    
     this.planComptableService.getAllParPrefixe(this.prefixe).subscribe(
       (data:any) => {
         for(let d of data){
@@ -366,7 +381,7 @@ export class NatureOperationsComponent implements OnInit {
       (error) => {
         //this.isLoading=true;
         console.error('Erreur lors du chargement des comptes comptables', error);
-        this.showError("erreur..");
+        this.notification.showError("erreur..");
       }
     );
   }
@@ -382,7 +397,7 @@ export class NatureOperationsComponent implements OnInit {
       (error) => {
         //this.isLoading=true;
         console.error('Erreur lors du chargement des tiers', error);
-        this.showError("erreur..");
+        this.notification.showError("erreur..");
       }
     );
   }
@@ -420,30 +435,4 @@ export class NatureOperationsComponent implements OnInit {
     });
   }
 
-  showSuccess(message: string): void {
-    this.toastr.success(message, 'Succès', {
-      timeOut: 5000,
-      positionClass: 'toast-top-right',
-      progressBar: true,
-      closeButton: true
-    });
-  }
-
-  showError(message: string): void {
-    this.toastr.error(message, 'Erreur', {
-      timeOut: 5000,
-      positionClass: 'toast-top-right',
-      progressBar: true,
-      closeButton: true
-    });
-  }
-
-  showWarning(message: string): void {
-    this.toastr.warning(message, 'Attention', {
-      timeOut: 5000,
-      positionClass: 'toast-top-right',
-      progressBar: true,
-      closeButton: true
-    });
-  }
 }

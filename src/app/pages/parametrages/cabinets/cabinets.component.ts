@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { Societe } from 'src/app/models/societe.model';
+import { NotificationService } from 'src/app/services/notifications/notifications-service';
 
 @Component({
   selector: 'app-cabinets',
@@ -37,7 +38,7 @@ export class CabinetsComponent implements OnInit {
     private societeService: SocieteService,
     private fb: UntypedFormBuilder,
     private modalService: NgbModal,
-    private toastr: ToastrService
+    private notification: NotificationService
   ) {
     this.cabinetForm = this.fb.group({
       id: [''],
@@ -98,7 +99,7 @@ export class CabinetsComponent implements OnInit {
 
   enregistrer(): void {
     if (this.cabinetForm.invalid) {
-      this.showWarning('Formulaire invalide');
+      this.notification.showWarning('Formulaire invalide');
       this.cabinetForm.markAllAsTouched();
       return;
     }
@@ -116,7 +117,7 @@ export class CabinetsComponent implements OnInit {
     action$.subscribe({
       next: () => {
         const msg = isUpdate ? 'Modifié' : 'Enregistré';
-        this.showSuccess(`${msg} avec succès`);
+        this.notification.showSuccess(`${msg} avec succès`);
         this.formVisible = false;
         this.cabinetForm.reset();
         this.loading = false;
@@ -127,7 +128,7 @@ export class CabinetsComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
-        this.showError('Erreur serveur !!!');
+        this.notification.showError('Erreur serveur !!!');
       }
     });
   }
@@ -157,7 +158,7 @@ export class CabinetsComponent implements OnInit {
         this.result = true;
         this.isLoading = false;
         this.loading = false;
-        this.showError('Erreur de chargement');
+        this.notification.showError('Erreur de chargement');
       }
     });
   }
@@ -172,7 +173,7 @@ export class CabinetsComponent implements OnInit {
         error: (error: any) => {
           this.result = true;
           console.log('Erreur lors du chargement des pays', error);
-          this.showError("erreur lors du chargement des pays");
+          this.notification.showError("erreur lors du chargement des pays");
         }
       }
     );
@@ -254,30 +255,5 @@ export class CabinetsComponent implements OnInit {
     }
   }
 
-  showSuccess(message: string): void {
-    this.toastr.success(message, 'Succès', {
-      timeOut: 5000,
-      positionClass: 'toast-top-right',
-      progressBar: true,
-      closeButton: true
-    });
-  }
 
-  showError(message: string): void {
-    this.toastr.error(message, 'Erreur', {
-      timeOut: 5000,
-      positionClass: 'toast-top-right',
-      progressBar: true,
-      closeButton: true
-    });
-  }
-
-  showWarning(message: string): void {
-    this.toastr.warning(message, 'Attention', {
-      timeOut: 5000,
-      positionClass: 'toast-top-right',
-      progressBar: true,
-      closeButton: true
-    });
-  }
 }

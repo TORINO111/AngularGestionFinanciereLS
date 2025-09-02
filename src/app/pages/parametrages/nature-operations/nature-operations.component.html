@@ -2,229 +2,218 @@
 <app-page-title [breadcrumbItems]="pageTitle" title="Nature Opération"></app-page-title>
 
 @if (!result) {
-  <div class="loader-container">
-    <div class="lds-dual-ring"></div>
-  </div>
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
 }
 <!-- start page title -->
 @if (result) {
-  <div class="mt-2 card">
-    <div class="card-body">
-      <form [formGroup]="natureOperationForm">
-        <!-- Toolbar responsive -->
-        <div class="toolbar d-flex flex-wrap gap-2 mb-3">
-          <button type="button" class="btn btn-success" (click)="ajouter()">Nouveau</button>
-          <button type="button" class="btn btn-success" (click)="modifier()" [disabled]="selectedIndex === null">Modifier</button>
-          <button type="button" class="btn btn-danger" (click)="supprimer()" [disabled]="selectedIndex === null">Supprimer</button>
-          <button type="button" class="btn btn-success" (click)="enregistrer()" [disabled]="!formVisible">Enregistrer</button>
-          <button type="button" class="btn btn-success" (click)="fermer()" [disabled]="!formVisible">Fermer</button>
-          <button type="button" class="btn btn-success" >Importer</button>
-        </div>
-        <div class="container-fluid">
-          <!-- Formulaire principal -->
-          @if (formVisible) {
-            <div class="row mb-3">
-              <div class="row" >
-                <div class="col-md-2">
-                  <div class="form-group">
-                    <label for="">Catégorie</label>
-                    <select required name="categorieId"
-                      formControlName="categorieId"
-                      class="form-select"
-                      id="categorieId"
-                      (change)="onCategorieChange()">
-                      <option [value]="null" disabled>---Select Catégorie---</option>
-                      @for (categorie of categories; track categorie) {
-                        <option [value]="categorie.id">
-                          {{ categorie.libelle }}
-                        </option>
-                      }
-                    </select>
-                  </div>
-                </div>
-                @if (isType) {
-                  <div class="col-md-2">
-                    <div class="form-group">
-                      <label for="">Type</label>
-                      <select (change)="onTypeChange()" name="typeNature"
-                        formControlName="typeNature"
-                        class="form-select"
-                        id="typeNature">
-                        <option [value]="null" disabled>---Select Type---</option>
-                        @for (type of typesFiltres; track type) {
-                          <option [value]="type.id">
-                            {{ type.libelle }}
-                          </option>
-                        }
-                      </select>
-                    </div>
-                  </div>
-                }
-                <div class="col-md-2" >
-                  <div class="form-group">
-                    <label for="">Code journal</label>
-                    <!-- <select  name="codeJournal"
-                      formControlName="codeJournal"
-                      class="form-select"
-                      id="codeJournal">
-                      <option [value]="null" disabled>Sélection Journal</option>
-                      @for (cj of codesjournaux; track cj) {
-                        <option [value]="cj.code">
-                          {{ cj.libelle }}
-                        </option>
-                      }
-                    </select> -->
-                    <ng-select
-                      [items]="codesjournaux"
-                      bindLabel="libelle"
-                      bindValue="code"
-                      formControlName="codeJournal"
-                      placeholder="Sélection Journal">
-                      [searchable]="true">
-                      <ng-template ng-notfound-tmp>
-                        Aucun journal disponible
-                      </ng-template>
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-12 col-md-2 mb-2">
-                  <div class="form-group">
-                    <label for="">Code</label>
-                    <input type="text" id="code" name="code" formControlName="code" class="form-control" placeholder="code">
-                    @if (natureOperationForm.get('code')?.hasError('required') && natureOperationForm.get('code')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-                <div class="col-12 col-md-4 mb-2">
-                  <div class="form-group">
-                    <label for="">Libélle</label>
-                    <input type="text" id="libelle" name="libelle" formControlName="libelle" class="form-control" placeholder="libelle">
-                    @if (natureOperationForm.get('libelle')?.hasError('required') && natureOperationForm.get('libelle')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-                <div class="col-12 col-md-3 mb-2">
-                  <div class="form-group">
-                    <label for="">Compte Comptable</label>
-                    <ng-select
-                      [items]="comptables"
-                      bindLabel="label"
-                      bindValue="value"
-                      placeholder="Sélection Comptable"
-                      formControlName="compteComptableId"
-                      id="compteComptableId"
-                      style="width: 100%;">
-                    </ng-select>
-                    <strong class="text-danger" *ngIf="natureOperationForm.get('compteComptable')?.hasError('required') && natureOperationForm.get('compteComptable')?.touched">
-                      Champ obligatoire !
-                    </strong>
-
-                  </div>
-                </div>
-                @if (isExploitation) {
-                  <div class="col-12 col-md-3 mb-2">
-                    <div class="form-group">
-                      <label for="">Section Analytique</label>
-                      <ng-select
-                      [items]="analytiques"
-                      bindLabel="label"
-                      bindValue="value"
-                      placeholder="Select Analytique"
-                      formControlName="sectionAnalytiqueId"
-                      id="sectionAnalytiqueId"
-                      style="width: 100%;">
-                    </ng-select>
-                      @if (natureOperationForm.get('sectionAnalytique')?.hasError('required') && natureOperationForm.get('sectionAnalytique')?.touched) {
-                        <strong class="text-danger">
-                          Champ obligatoire !
-                        </strong>
-                      }
-                    </div>
-                  </div>
-                }
-                <div class="col-md-2">
-                  <div class="form-group">
-                    <label for="">Sens</label>
-                    <select required name="sensParDefaut"
-                      formControlName="sensParDefaut"
-                      class="form-select"
-                      id="sensParDefaut">
-                      <option [value]="null" disabled>---Select Sens---</option>
-                      @for (ls of listeSens; track ls) {
-                        <option [value]="ls.id">
-                          {{ ls.libelle }}
-                        </option>
-                      }
-                    </select>
-                  </div>
-                </div>
-                @if (isTresorerie) {
-                  <div class="col-12 col-md-3 mb-2">
-                    <div class="form-group">
-                      <label for="">Contre-Partie</label>
-                      <input type="text" id="compteContrePartie" name="compteContrePartie" formControlName="compteContrePartie" class="form-control" placeholder="Contre Partie">
-                    </div>
-                  </div>
+<div class="mt-2 card">
+  <div class="card-body">
+    <form [formGroup]="natureOperationForm">
+      <!-- Toolbar responsive -->
+      <div class="toolbar d-flex flex-wrap gap-2 mb-3">
+        <button type="button" class="btn btn-success" (click)="ajouter()">Nouveau</button>
+        <button type="button" class="btn btn-success" (click)="modifier()"
+          [disabled]="selectedIndex === null">Modifier</button>
+        <button type="button" class="btn btn-danger" (click)="supprimer()"
+          [disabled]="selectedIndex === null">Supprimer</button>
+        <button type="button" class="btn btn-success" (click)="enregistrer()"
+          [disabled]="!formVisible">Enregistrer</button>
+        <button type="button" class="btn btn-success" (click)="fermer()" [disabled]="!formVisible">Fermer</button>
+        <button type="button" class="btn btn-success">Importer</button>
+      </div>
+      <div class="container-fluid">
+        <!-- Formulaire principal -->
+        @if (formVisible) {
+        <div class="row mb-3">
+          <div class="row">
+            <div class="col-md-2">
+              <div class="form-group">
+                <label for="">Catégorie</label>
+                <select required name="categorieId" formControlName="categorieId" class="form-select" id="categorieId"
+                  (change)="onCategorieChange()">
+                  <option [value]="null" disabled>---Select Catégorie---</option>
+                  @for (categorie of categories; track categorie) {
+                  <option [value]="categorie.id">
+                    {{ categorie.libelle }}
+                  </option>
+                  }
+                </select>
+              </div>
+            </div>
+            @if (isType) {
+            <div class="col-md-2">
+              <div class="form-group">
+                <label for="type">Type</label>
+                <!-- <select (change)="onTypeChange()" name="typeNature" formControlName="typeNature" class="form-select"
+                  id="typeNature">
+                  <option [value]="null" disabled>---Select Type---</option>
+                  @for (type of typesFiltres; track type) {
+                  <option [value]="type.id">
+                    {{ type.libelle }}
+                  </option>
+                  }
+                </select> -->
+                <ng-select (change)="onTypeChange()" [items]="typesFiltres" bindLabel="libelle" bindValue="id" formControlName="typeNature"
+                  placeholder="Sélection Journal">
+                  [searchable]="true">
+                  <ng-template ng-notfound-tmp>
+                    Aucun journal disponible
+                  </ng-template>
+                </ng-select>
+              </div>
+            </div>
+            }
+            <div class="col-md-2">
+              <div class="form-group">
+                <label for="">Code journal</label>
+                <ng-select [items]="codesjournaux" bindLabel="libelle" bindValue="code" formControlName="codeJournal"
+                  placeholder="Sélection Journal">
+                  [searchable]="true">
+                  <ng-template ng-notfound-tmp>
+                    Aucun journal disponible
+                  </ng-template>
+                </ng-select>
+              </div>
+            </div>
+            <div class="col-12 col-md-2 mb-2">
+              <div class="form-group">
+                <label for="">Code</label>
+                <input type="text" id="code" name="code" formControlName="code" class="form-control" placeholder="code">
+                @if (natureOperationForm.get('code')?.hasError('required') && natureOperationForm.get('code')?.touched)
+                {
+                <strong class="text-danger">
+                  Champ obligatoire !
+                </strong>
                 }
               </div>
             </div>
-          }
+            <div class="col-12 col-md-4 mb-2">
+              <div class="form-group">
+                <label for="">Libélle</label>
+                <input type="text" id="libelle" name="libelle" formControlName="libelle" class="form-control"
+                  placeholder="libelle">
+                @if (natureOperationForm.get('libelle')?.hasError('required') &&
+                natureOperationForm.get('libelle')?.touched) {
+                <strong class="text-danger">
+                  Champ obligatoire !
+                </strong>
+                }
+              </div>
+            </div>
+            <div class="col-12 col-md-3 mb-3">
+              <div class="form-group">
+                <label for="">Compte Comptable</label>
+                <ng-select [items]="comptables" bindLabel="label" bindValue="value" placeholder="Sélection Compte Comptable"
+                  formControlName="compteComptableId" id="compteComptableId" style="width: 100%;" >
+                  [searchable]="true">
+                  <ng-template ng-notfound-tmp>
+                    Aucun compte comptable disponible
+                  </ng-template>
+                </ng-select>
+                <strong class="text-danger"
+                  *ngIf="natureOperationForm.get('compteComptable')?.hasError('required') && natureOperationForm.get('compteComptable')?.touched">
+                  Champ obligatoire !
+                </strong>
+
+              </div>
+            </div>
+            @if (isExploitation) {
+            <div class="col-12 col-md-3 mb-2">
+              <div class="form-group">
+                <label for="">Section Analytique</label>
+                <ng-select [items]="analytiques" bindLabel="label" bindValue="value" placeholder="Select Analytique"
+                  formControlName="sectionAnalytiqueId" id="sectionAnalytiqueId" style="width: 100%;">
+                  <ng-template ng-notfound-tmp>
+                    Aucun section analytique disponible
+                  </ng-template>
+                </ng-select>
+                @if (natureOperationForm.get('sectionAnalytique')?.hasError('required') &&
+                natureOperationForm.get('sectionAnalytique')?.touched) {
+                <strong class="text-danger">
+                  Champ obligatoire !
+                </strong>
+                }
+              </div>
+            </div>
+            }
+            <div class="col-md-2">
+              <div class="form-group">
+                <label for="">Sens</label>
+                <select required name="sensParDefaut" formControlName="sensParDefaut" class="form-select"
+                  id="sensParDefaut">
+                  <option [value]="null" disabled>---Select Sens---</option>
+                  @for (ls of listeSens; track ls) {
+                  <option [value]="ls.id">
+                    {{ ls.libelle }}
+                  </option>
+                  }
+                </select>
+              </div>
+            </div>
+            @if (isTresorerie) {
+            <div class="col-12 col-md-3 mb-2">
+              <div class="form-group">
+                <label for="">Contre-Partie</label>
+                <input type="text" id="compteContrePartie" name="compteContrePartie"
+                  formControlName="compteContrePartie" class="form-control" placeholder="Contre Partie">
+              </div>
+            </div>
+            }
+          </div>
         </div>
-      </form>
-      <div class="table-container">
-        <table class="table table-bordered table-sm custom-table">
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Libellé</th>
-              <th>Compte comptable</th>
-              <th>Section Analytique</th>
-              <th>Catégorie</th>
-              <th>Code journal</th>
-              <th>Sens</th>
-            </tr>
-          </thead>
-          @if (!isLoading) {
-            <tbody>
-              @for (natureopertion of natureOperations; track natureopertion; let i = $index) {
-                <tr
-                  (click)="selectLigne(i)"
-                  [class.selected]="i === selectedIndex">
-                  <td>{{ natureopertion.value.code }}</td>
-                  <td>{{ natureopertion.value.libelle }}</td>
-                  <td>{{ natureopertion.value.compteComptable }}</td>
-                  <td>{{ natureopertion.value.sectionAnalytique }}</td>
-                  <td>{{ natureopertion.value.categorieLibelle }}</td>
-                  <td>{{ natureopertion.value.codeJournal }}</td>
-                  <td>{{ natureopertion.value.sensParDefaut }}</td>
-                </tr>
-              }
-              @if (natureOperations?.length == 0) {
-                <tr >
-                  <td  colspan="7"><h3 style="text-align: center;">Aucune donnée trouvée</h3></td>
-                </tr>
-              }
-            </tbody>
-          }
-          @if (isLoading) {
-            <tbody>
-              <tr>
-                <td colspan="7" class="text-center">
-                  <div class="spinner-border text-secondary" role="status">
-                    <span class="visually-hidden">Chargement...</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          }
-        </table>
+        }
       </div>
+    </form>
+    <div class="table-container">
+      <table class="table table-bordered table-sm custom-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Libellé</th>
+            <th>Compte comptable</th>
+            <th>Section Analytique</th>
+            <th>Catégorie</th>
+            <th>Code journal</th>
+            <th>Sens</th>
+          </tr>
+        </thead>
+        @if (!isLoading) {
+        <tbody>
+          @for (natureopertion of natureOperations; track natureopertion; let i = $index) {
+          <tr (click)="selectLigne(i)" [class.selected]="i === selectedIndex">
+            <td>{{ natureopertion.value.code }}</td>
+            <td>{{ natureopertion.value.libelle }}</td>
+            <td>{{ natureopertion.value.compteComptable }}</td>
+            <td>{{ natureopertion.value.sectionAnalytique }}</td>
+            <td>{{ natureopertion.value.categorieLibelle }}</td>
+            <td>{{ natureopertion.value.codeJournal }}</td>
+            <td>{{ natureopertion.value.sensParDefaut }}</td>
+          </tr>
+          }
+          @if (natureOperations?.length == 0) {
+          <tr>
+            <td colspan="7">
+              <h3 style="text-align: center;">Aucune donnée trouvée</h3>
+            </td>
+          </tr>
+          }
+        </tbody>
+        }
+        @if (isLoading) {
+        <tbody>
+          <tr>
+            <td colspan="7" class="text-center">
+              <div class="spinner-border text-secondary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+        }
+      </table>
     </div>
   </div>
+</div>
 }

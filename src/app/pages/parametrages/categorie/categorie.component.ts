@@ -1,11 +1,13 @@
+import { Categorie } from './../../../models/categorie.model';
 import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
 import { CategorieService } from 'src/app/services/categories/categorie.service';
-import { UntypedFormGroup, Validators, UntypedFormBuilder } from '@angular/forms';
+import { UntypedFormGroup, Validators, UntypedFormBuilder, FormGroup } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { TypeCategorieService } from 'src/app/services/type-categorie/type-categorie.service';
+import { NotificationService } from 'src/app/services/notifications/notifications-service';
 
 @Component({
   selector: 'app-categorie',
@@ -18,6 +20,7 @@ export class CategorieComponent implements OnInit {
   categories: any[] = [];
   categorie!: UntypedFormGroup;
   categorieForm!: UntypedFormGroup;
+  categorieUpdateForm!: UntypedFormGroup
   @ViewChild('content', { static: true }) content: any;
   @ViewChild('editcontent', { static: true }) editcontent: any;
   closeResult: string = '';
@@ -28,20 +31,29 @@ export class CategorieComponent implements OnInit {
   lastTypeId: number;
   selectedTypeId: number;
 
+  initialLibelle: string = '';
+  initialTypeId: number | null = null;
+
+  currentLibelle: string = '';
+  currentTypeId: number | null = null;
+
+  canModify: boolean = false;
+  errorMessage: string;
+
   constructor(
     private categorieService: CategorieService,
     private modalService: NgbModal,
     private fb: UntypedFormBuilder,
-    private toastr: ToastrService,
-    private typeCategorieService: TypeCategorieService
+    private typeCategorieService: TypeCategorieService,
+    private notification: NotificationService
   ) {
     this.categorieForm = this.fb.group({
-      code: ['', [Validators.required]],
       libelle: ['', [Validators.required, Validators.minLength(5)]],
       type: ['null', [Validators.required]],
     });
 
     this.categorie = this.fb.group({
+      id: [null],
       code: ['', Validators.required],
       libelle: ['', [Validators.required, Validators.minLength(5)]],
       type: [null, Validators.required]
@@ -60,50 +72,24 @@ export class CategorieComponent implements OnInit {
     const selectedId = this.categorieForm.get('type')?.value;
     console.log('selectedId:', selectedId);
     this.selectedTypeId = selectedId;
-    // trouve le type dans ton tableau
-    const selectedType = this.types.find(t => t.id === selectedId);
-    console.log('selectedType:', selectedType);
-
-    if (selectedType) {
-      // calcule le dernier id pour ce type dans categories
-      const idsForType = this.categories
-        .map(c => c.value)
-        .filter(c => c.type?.id === selectedId)
-        .map(c => Number(c.id));
-
-      const maxId = idsForType.length ? Math.max(...idsForType) : 0;
-
-      this.lastTypeId = maxId + 1;
-
-      // patch dans le formulaire
-      this.categorieForm.patchValue({
-        code: `${selectedType.code}${this.lastTypeId.toString().padStart(8, '0')}`,
-        // id: `${this.selected}`, 
-      });
-
-      console.log('lastTypeId:', this.lastTypeId);
-      console.log('Form mis à jour:', this.categorieForm.value);
-    }
   }
 
   chargerCategories() {
     this.categories = [];
     this.categorieService.getAllCategories().subscribe({
-      next: (data: any) => {
-        for (let d of data) {
-          this.categories.push(this.fb.group({
-            id: d.id,
-            code: d.code,
-            libelle: d.libelle,
-            type: d.type
-          }));
-        }
+      next: (data: Categorie[]) => {
+        this.categories = data.map(d => ({
+          id: d.id,
+          code: d.code,
+          libelle: d.libelle,
+          type: d.type
+        }));
         this.result = true;
       },
       error: (error: any) => {
         this.result = true;
         console.log('Erreur lors du chargement des categories', error);
-        this.showError("Erreur lors du chargement des catégories");
+        this.notification.showError("Erreur lors du chargement des catégories");
       }
     });
   }
@@ -116,33 +102,36 @@ export class CategorieComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erreur lors du chargement des types', err);
-        this.showError("Erreur lors du chargement des types");
+        this.notification.showError("Erreur lors du chargement des types");
       }
     });
   }
 
   onSaveCategorie(categorieFormValue: UntypedFormGroup) {
-    categorieFormValue.patchValue({ type: this.selectedTypeId });
+    // categorieFormValue.patchValue({ type: this.selectedTypeId });
 
     if (categorieFormValue.valid) {
       this.categorieService.creerCategorie(categorieFormValue.value).subscribe({
         next: (response: any) => {
-          this.showSuccess('Enregistré avec succès');
+          this.notification.showSuccess('Enregistré avec succès');
           this.loading = false;
           this.chargerCategories();
         },
         error: (error) => {
           console.log(error);
           this.loading = false;
-          this.showError('Erreur serveur');
+          this.notification.showError('Erreur serveur');
         }
       });
     } else {
-      this.showWarning('Formulaire invalide');
+      this.notification.showWarning('Formulaire invalide');
     }
   }
 
   deleteCategorie(categorieFormValue: any) {
+    
+    console.log(categorieFormValue);
+
     Swal.fire({
       title: 'Supprimer la Catégorie',
       html: `<p><strong></strong> <span style="color: #009879;font-size: 1.5em;">${categorieFormValue.libelle}</span></p>`,
@@ -171,36 +160,33 @@ export class CategorieComponent implements OnInit {
     });
   }
 
-onUpdateCategorie(categorieFormValue: any) {
+  onUpdateCategorie(categorieFormValue: FormGroup) {
+    console.log('Form values:', categorieFormValue.value); // contient les modifications
+
     if (categorieFormValue.valid) {
-      this.categorieService.modifierCategorie(categorieFormValue.value.id, categorieFormValue.value).subscribe({
-        next: () => {
-          this.showSuccess('Modifié avec succès');
-          this.loading = false;
-          this.chargerCategories();
-          this.result = true;
-        },
-        error: (error) => {
-          console.log(error);
-          this.loading = false;
-          this.showError('Erreur serveur');
-        }
-      });
-    } else {
-      this.showWarning('Formulaire invalide');
-    }
-  }
+    const formValue = categorieFormValue.value;
+    this.categorieService.modifierCategorie(formValue.id, formValue).subscribe(
+      {
+      next: resp => {
+        const body: any = resp;
 
+        this.notification.showSuccess('Modifié avec succès');
+        this.loading = false;
+        this.chargerCategories();
+        this.result = true;
+      },
+      error: (error) => {
+        console.log("err :", error);
+        this.notification.showError(JSON.stringify(error));
 
-  showSuccess(message: string) {
-    this.toastr.success(message + '!', 'Succès', { timeOut: 5000, positionClass: 'toast-top-right', progressBar: true, closeButton: true });
+        console.log(error);
+        this.loading = false;
+      }
+    });
+  } else {
+    this.notification.showWarning('Formulaire invalide');
   }
-  showError(message: string) {
-    this.toastr.error(message + '!', 'Erreur', { timeOut: 5000, positionClass: 'toast-top-right', progressBar: true, closeButton: true });
-  }
-  showWarning(message: string) {
-    this.toastr.warning(message + '!', 'Warning', { timeOut: 5000, positionClass: 'toast-top-right', progressBar: true, closeButton: true });
-  }
+}
 
   openScrollableModal(content: TemplateRef<NgbModal>): void {
     this.categorieForm.reset();
@@ -210,15 +196,35 @@ onUpdateCategorie(categorieFormValue: any) {
     });
   }
 
+  openEditModal(categorie: Categorie, editcontent: TemplateRef<any>): void {
+  if (!categorie) {
+    console.error('Categorie undefined dans openEditModal');
+    return;
+  }
 
-openEditModal(categorieData: any, editcontent: TemplateRef<NgbModal>): void {
-  this.categorie.reset(); // reset pour éviter d’avoir des dirty anciens
-  this.categorie.patchValue({
-    code: categorieData.code,
-    libelle: categorieData.libelle,
-    type: categorieData.type?.id ?? null
+  console.log('Categorie reçue :', categorie);
+
+  // Création du FormGroup à partir de l'objet métier
+  this.categorieUpdateForm = this.fb.group({
+    id:[categorie.id],
+    libelle: [categorie.libelle?.trim() ?? '', [Validators.required, Validators.minLength(5)]],
+    type: [categorie.type?.id ?? categorie.type ?? null, Validators.required]
   });
 
+  // Initialisation des valeurs de référence pour comparaison
+  this.initialLibelle = categorie.libelle?.trim() ?? '';
+  this.initialTypeId = categorie.type?.id ?? categorie.type ?? null;
+
+  // Valeurs actuelles (seront mises à jour via listenToChanges)
+  this.currentLibelle = this.initialLibelle;
+  this.currentTypeId = this.initialTypeId;
+
+  this.canModify = false;
+
+  // Écoute des changements pour activer/désactiver le bouton Modifier
+  this.listenToChanges();
+
+  // Ouverture du modal
   this.modalService.open(editcontent, {
     size: 'lg',
     centered: true,
@@ -227,6 +233,23 @@ openEditModal(categorieData: any, editcontent: TemplateRef<NgbModal>): void {
     keyboard: false
   });
 }
+
+  listenToChanges(): void {
+    this.categorie.get('libelle')?.valueChanges.subscribe(value => {
+      this.currentLibelle = value?.trim();
+      this.evaluateCanModify();
+    });
+
+    this.categorie.get('type')?.valueChanges.subscribe(value => {
+      this.currentTypeId = value;
+      this.evaluateCanModify();
+    });
+  }
+  evaluateCanModify(): void {
+    this.canModify =
+      this.currentLibelle !== this.initialLibelle ||
+      this.currentTypeId !== this.initialTypeId;
+  }
 
   private getDismissReason(reason: any): string {
     if (reason === ModalDismissReasons.ESC) {
