@@ -1,6 +1,6 @@
 import { MenuItem } from '../models/menu.model';
 
-// menu items for vertcal and detached layout
+// menu items for vertical and detached layout
 const MENU_ITEMS: MenuItem[] = [
     { key: 'traitements-recettes', label: 'RECETTES', isTitle: true ,roles: ['SUPERVISEUR','COMPTABLE']},
     {
@@ -130,12 +130,21 @@ const MENU_ITEMS: MenuItem[] = [
 
     {
         key: 'categories',
-        label: 'Categorie',
+        label: 'Categories',
         link: '/parametrages/categories',
         icon: 'package',
         isTitle: false,
         roles: ['ADMIN']
     },
+    {
+        key: 'comptescomptables',
+        label: 'Comptes Comptable',
+        link: '/parametrages/comptes-comptables',
+        icon: 'package',
+        isTitle: false,
+        roles: ['ADMIN']
+    }
+    ,
     {
         key: 'natureoperations',
         label: 'Nature Opération',

@@ -9,5 +9,5 @@ export interface Societe {
     numeroIFU: string;
     comptableId?: string;
     comptableNom?:string;
-  }
+}
   

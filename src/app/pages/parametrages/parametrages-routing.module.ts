@@ -64,6 +64,13 @@ const routes: Routes = [
   }
   ,
   { 
+    path: 'comptes-comptables',
+    loadChildren: () => import('./comptes-comptables/comptes-comptables.module').then(m => m.CompteComptableModule) ,
+    canActivate: [AuthGuard],
+    data: { roles: ['ADMIN'] }
+  }
+  ,
+  { 
     path: 'plan-analytique',
     loadChildren: () => import('./plan-analytique/plan-analytique.module').then(m => m.PlanAnalytiqueModule) ,
     canActivate: [AuthGuard],

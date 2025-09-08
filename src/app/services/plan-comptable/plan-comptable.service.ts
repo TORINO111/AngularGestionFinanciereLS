@@ -25,13 +25,14 @@ export class PlanComptableService {
   //private host:string='//4.222.22.46:8082/gest-fin';
   ///private host:string='http://localhost:8082';
 
-  private baseUrlCompteComptable = `${environment.apiUrl}/api/compte-comptable`;
+  private baseUrlPlanComptables = `${environment.apiUrl}/api/planComptables`;
+  private baseUrlPlanComptable = `${environment.apiUrl}/api/planComptable`;
   private baseUrlPlanAnalytique = `${environment.apiUrl}/api/plan-analytique`;
   
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<PlanComptable[]> {
-    return this.http.get<PlanComptable[]>(`${environment.apiUrl}/api/comptes-comptables`);
+    return this.http.get<PlanComptable[]>(this.baseUrlPlanComptables);
   }
 
   getAllParPrefixe(prefixe:string): Observable<PlanComptable[]> {
@@ -39,16 +40,16 @@ export class PlanComptableService {
     return this.http.get<PlanComptable[]>(`${environment.apiUrl}/api/plans-comptables/par-prefixe`, { params });
   }
 
-  create(tiers: PlanComptable): Observable<PlanComptable> {
-    return this.http.post<PlanComptable>(this.baseUrlCompteComptable, tiers);
+  create(plan: PlanComptable): Observable<PlanComptable> {
+    return this.http.post<PlanComptable>(this.baseUrlPlanComptable, plan);
   }
 
-  update(compte: string, tiers: PlanComptable): Observable<PlanComptable> {
-    return this.http.put<PlanComptable>(`${this.baseUrlCompteComptable}/${compte}`, tiers);
+  update(id: number, plan: PlanComptable): Observable<PlanComptable> {
+    return this.http.put<PlanComptable>(`${this.baseUrlPlanComptable}/${id}`, plan);
   }
 
-  delete(compte: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrlCompteComptable}/${compte}`);
+  delete(compte: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrlPlanComptable}/${compte}`);
   }
 
   importerPlanComptable(formData: FormData) {
@@ -63,7 +64,7 @@ export class PlanComptableService {
     return this.http.post<PlanAnalytique>(this.baseUrlPlanAnalytique, plananalytique);
   }
 
-  updatePlanAnalytique(sectionAnalytique: string, plananalytique: PlanAnalytique): Observable<PlanAnalytique> {
+  updatePlanAnalytique(sectionAnalytique: number, plananalytique: PlanAnalytique): Observable<PlanAnalytique> {
     return this.http.put<PlanAnalytique>(`${this.baseUrlPlanAnalytique}/${sectionAnalytique}`, plananalytique);
   }
 

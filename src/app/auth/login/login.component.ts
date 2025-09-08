@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators, ControlEvent } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { first } from 'rxjs/operators';
@@ -69,21 +69,22 @@ export class LoginComponent implements OnInit {
         .subscribe(
           {
           next:(data: any) => {
+
             let jwt=data.headers.get('Authorization');
             this.authenticationService.saveToken(jwt);
             this.authenticationService.getUserByUsername(this.loginForm.value.username).subscribe((data:any)=>{
-              //console.log(data)
+              console.log(data)
               if(!data.enabled){
                 this.error='Compte inactif,Merci de contacter l\'administrateur';
                 this.loading=false;
-                //this.router.navigate(['/auth/signin']);
+                this.router.navigate(['/auth/signin']);
               }else{
                 if(this.authenticationService.isAdmin()){
-                  this.returnUrl='/parametrages/cabinets'
+                  this.returnUrl='/parametrages/cabinets';
                 }
-                //localStorage.setItem("token", JSON.stringify(jwt));
                 localStorage.setItem("user", JSON.stringify(data));
                 sessionStorage.setItem("currentUser", JSON.stringify(data));
+                console.log('Redirection vers :', this.returnUrl);
                 this.router.navigate([this.returnUrl]); 
               }
               

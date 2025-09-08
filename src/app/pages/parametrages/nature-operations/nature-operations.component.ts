@@ -11,6 +11,10 @@ import { CodeJournal } from 'src/app/models/code-journal.model';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
 import { TypeCategorieService } from 'src/app/services/type-categorie/type-categorie.service';
 import { TypeCategorie } from 'src/app/models/type-categorie.model';
+import { SectionAnalytique } from 'src/app/models/section-analytique';
+import { SectionAnalytiqueService } from 'src/app/services/section-analytique/section-analytique.service';
+import { Categorie } from 'src/app/models/categorie.model';
+
 @Component({
     selector: 'app-nature-operations',
     templateUrl: './nature-operations.component.html',
@@ -31,6 +35,7 @@ export class NatureOperationsComponent implements OnInit {
   listeSens=[{id:'CREDIT',libelle:'CREDIT'},{id:'DEBIT',libelle:'DEBIT'}];
   codesjournaux: CodeJournal[] =[];
 
+  sectionsAnalytiques: SectionAnalytique[] = [];
   types: any[] = [];
 
   selectedTypeNature='';
@@ -58,8 +63,8 @@ export class NatureOperationsComponent implements OnInit {
     private planComptableService:PlanComptableService,
     private fb: UntypedFormBuilder,
     private notification: NotificationService,
-    private typeCategorieService: TypeCategorieService
-    
+    private typeCategorieService: TypeCategorieService,
+    private sectionAnalytiqueService: SectionAnalytiqueService  
   ) {
     this.natureOperationForm = this.fb.group({
       id: [],
@@ -84,7 +89,8 @@ export class NatureOperationsComponent implements OnInit {
     this.chargerCategories();
     this.chargerAnalytiques();
     this.chargerCodeJournal();
-    this.chargerTypesCategorie;
+    this.chargerTypesCategorie();
+    this.chargerSectionsAnalytiques()
   }
 
   chargerTypesCategorie() {
@@ -99,6 +105,7 @@ export class NatureOperationsComponent implements OnInit {
       }
     });
   }
+
   onTypePrincipalChange(): void {
     const type = this.selectedCategorie?.type;
   
@@ -354,21 +361,44 @@ export class NatureOperationsComponent implements OnInit {
   }
 
   chargerCategories() {
-    this.categorieService.getAllCategories().subscribe(
+      this.categorieService.getAllCategories().subscribe({
+        next: (data: Categorie[]) => {
+          this.categories = data.map(d => ({
+            id: d.id,
+            code: d.code,
+            libelle: d.libelle,
+            type: d.type
+          }));
+          this.result = true;
+        },
+        error: (error: any) => {
+          this.result = true;
+          console.log('Erreur lors du chargement des categories', error);
+          this.notification.showError("Erreur lors du chargement des catégories");
+        }
+      });
+    }
+
+  chargerSectionsAnalytiques() {
+    this.sectionAnalytiqueService.getAllSectionAnalytiques().subscribe(
       {
-        next:(data:any) => {
-          this.categories=data;
+        next:(data: SectionAnalytique[]) => {
+          this.sectionsAnalytiques=data.map(d => ({
+          id: d.id,
+          code: d.code,
+          libelle: d.libelle,
+        }));
           this.result=true;
         },
         error:(error:any) => {
           this.result=true;
-          console.log('Erreur lors du chargement des categories', error);
-          this.notification.showError("erreur lors du chargement des categories");
+          console.log('Erreur lors du chargement des sections analytiques', error);
+          this.notification.showError("erreur lors du chargement des sections analytiques");
         }
       }
     );
   }
-
+  
   chargerComptables() {
     this.planComptableService.getAllParPrefixe(this.prefixe).subscribe(
       (data:any) => {

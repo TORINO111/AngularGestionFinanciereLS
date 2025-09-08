@@ -1,0 +1,87 @@
+<app-page-title [breadcrumbItems]="pageTitle" title="Comptes Comptables"></app-page-title>
+
+@if (!result) {
+<div class="loader-container">
+    <div class="lds-dual-ring"></div>
+</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="toolbar d-flex gap-2 mb-3">
+            <button type="button" class="btn btn-success" (click)="ajouter()">Nouveau</button>
+            <button type="button" class="btn btn-success" (click)="modifier()"
+                [disabled]="selectedIndex === null">Modifier</button>
+            <button type="button" class="btn btn-danger" (click)="supprimer()"
+                [disabled]="selectedIndex === null">Supprimer</button>
+            <button type="button" class="btn btn-success" (click)="enregistrer()"
+                [disabled]="!formVisible">Enregistrer</button>
+            <button type="button" class="btn btn-secondary" (click)="fermer()" [disabled]="!formVisible">Fermer</button>
+        </div>
+
+        <form [formGroup]="compteForm" *ngIf="formVisible">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label>Numéro</label>
+                    <input formControlName="numero" class="form-control">
+                    @if (compteForm.get('numero')?.hasError('required') &&
+                    compteForm.get('numero')?.touched) {
+                    <strong class="text-danger">
+                        Champ obligatoire !
+                    </strong>
+                    }
+                </div>
+                <div class="col-md-4">
+                    <label>Intitulé</label>
+                    <input formControlName="intitule" class="form-control">
+                    @if (compteForm.get('intitule')?.hasError('required') &&
+                    compteForm.get('intitule')?.touched) {
+                    <strong class="text-danger">
+                        Champ obligatoire !
+                    </strong>
+                    }
+                </div>
+                <div class="col-md-4">
+                    <label>Plan comptable</label>
+                    <ng-select formControlName="planComptableId" [items]="plansComptables" bindLabel="nom"
+                        bindValue="id" placeholder="Sélectionner un plan">
+                    </ng-select>
+                </div>
+                <div class="col-md-4 mt-2">
+                    <label>Classe</label>
+                    <ng-select formControlName="classeCompte" [items]="classeComptes" bindLabel="label"
+                        bindValue="value" placeholder="Sélectionner une classe">
+                    </ng-select>
+                    <div *ngIf="compteForm.get('classeCompte')?.hasError('required') &&
+            compteForm.get('classeCompte')?.touched" class="text-danger">
+                        Champ obligatoire !
+                    </div>
+
+                </div>
+            </div>
+        </form>
+
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Numéro</th>
+                    <th>Intitulé</th>
+                    <th>Plan Comptable</th>
+                    <th>Classe</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let compte of lignes; let i = index" (click)="selectLigne(i)"
+                    [class.table-active]="i === selectedIndex">
+                    <td>{{compte.value.numero}}</td>
+                    <td>{{compte.value.intitule}}</td>
+                    <td>{{compte.value.planComptableLibelle}}</td>
+                    <td>{{compte.value.classeCompte}}</td>
+                </tr>
+                <tr *ngIf="lignes.length === 0">
+                    <td colspan="4" class="text-center">Aucun compte comptable</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

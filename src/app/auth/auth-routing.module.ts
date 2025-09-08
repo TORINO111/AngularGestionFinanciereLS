@@ -9,7 +9,6 @@ const routes: Routes = [
   { path: 'lock-screen', loadChildren: () => import('./lock-screen/lock-screen.module').then(m => m.LockScreenModule) },
   { path: 'confirm', loadChildren: () => import('./confirm/confirm.module').then(m => m.ConfirmModule) },
   { path: 'set-password', loadChildren: () => import('./set-password/set-password.module').then(m => m.SetPasswordModule) },
-  
 ];
 
 @NgModule({

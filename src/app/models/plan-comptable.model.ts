@@ -1,5 +1,7 @@
+import { Societe } from 'src/app/models/societe.model';
 export interface PlanComptable {
-    compte: string;
+    id?: number;
+    societe: number;
     intitule: string;
-    societeId?: string;
+    societeId?: number
   }

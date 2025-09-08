@@ -2,164 +2,183 @@
 <app-page-title [breadcrumbItems]="pageTitle" title="Plan Comptable"></app-page-title>
 
 @if (!result) {
-  <div class="loader-container">
-    <div class="lds-dual-ring"></div>
-  </div>
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
 }
 <!-- start page title -->
 @if (result) {
-  <div class="mt-2 card">
-    <div class="card-body">
-      @if (errorMessage) {
-        <div class="error-message">
-          <span class="error-icon">⚠️</span> {{ errorMessage }}
-        </div>
-      }
-      @if (importResult) {
-        <div class="result-container">
-          <div [ngClass]="{ 'success-message': importResult.success, 'error-message': !importResult.success }">
-            <span class="result-icon">{{ importResult.success ? '✓' : '⚠️' }}</span>
-            {{ importResult.message }}
-            @if (importResult.success) {
-              <span> - {{ importResult.lignesImportees }} comptes importés</span>
-            }
-          </div>
-          @if (importResult.erreurs!.length > 0) {
-            <table class="error-table">
-              <thead>
-                <tr>
-                  <th>Ligne</th>
-                  <th>Compte</th>
-                  <th>Intitulé</th>
-                  <th>Erreur</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (err of importResult.erreurs; track err) {
-                  <tr>
-                    <td>{{ err.ligne }}</td>
-                    <td>{{ err.compte }}</td>
-                    <td>{{ err.intitule }}</td>
-                    <td>{{ err.erreur }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+<div class="mt-2 card">
+  <div class="card-body">
+    @if (errorMessage) {
+    <div class="error-message">
+      <span class="error-icon">⚠️</span> {{ errorMessage }}
+    </div>
+    }
+    @if (importResult) {
+    <div class="result-container">
+      <div [ngClass]="{ 'success-message': importResult.success, 'error-message': !importResult.success }">
+        <span class="result-icon">{{ importResult.success ? '✓' : '⚠️' }}</span>
+        {{ importResult.message }}
+        @if (importResult.success) {
+        <span> - {{ importResult.lignesImportees }} comptes importés</span>
+        }
+      </div>
+      @if (importResult.erreurs!.length > 0) {
+      <table class="error-table">
+        <thead>
+          <tr>
+            <th>Ligne</th>
+            <th>Compte</th>
+            <th>Intitulé</th>
+            <th>Erreur</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (err of importResult.erreurs; track err) {
+          <tr>
+            <td>{{ err.ligne }}</td>
+            <td>{{ err.compte }}</td>
+            <td>{{ err.intitule }}</td>
+            <td>{{ err.erreur }}</td>
+          </tr>
           }
-        </div>
+        </tbody>
+      </table>
       }
-      <br>
-        <form [formGroup]="planComptableForm">
-          <!-- Toolbar responsive -->
-          <div class="toolbar d-flex flex-wrap gap-2 mb-3">
-            <button type="button" class="btn btn-success" (click)="ajouter()">Nouveau</button>
-            <button type="button" class="btn btn-success" (click)="modifier()" [disabled]="selectedIndex === null">Modifier</button>
-            <button type="button" class="btn btn-danger" (click)="supprimer()" [disabled]="selectedIndex === null">Supprimer</button>
-            <button type="button" class="btn btn-success" (click)="enregistrer()" [disabled]="!formVisible">Enregistrer</button>
-            <button type="button" class="btn btn-success" (click)="fermer()" [disabled]="!formVisible">Fermer</button>
-            <button type="button" class="btn btn-success" (click)="openScrollableModal(importExcelModal)">Importer</button>
-          </div>
-          <!-- Modal -->
-          <ng-template #importExcelModal let-modal>
-            <div class="modal-header" style="background-color: #128C7E;">
-              <h4 class="modal-title text-light" id="NewTaskModalLabel">IMPORT EXCEL</h4>
-              <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
-            </div>
-            <div class="modal-body">
-              <form (ngSubmit)="onSubmit();modal.close('Close click')" enctype="multipart/form-data" [formGroup]="modelImportForm" class="p-2">
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label>Fichier Excel</label>
-                    <input required type="file" accept=".xls,.xlsx" class="form-control" (change)="onExcelFileSelected($event)">
-                    @if (fileError) {
-                      <div class="text-danger">{{ fileError }}</div>
-                    }
-                  </div>
-                  <!-- <div class="col-md-6 mb-3">
+    </div>
+    }
+    <br>
+    <form [formGroup]="planComptableForm">
+      <!-- Toolbar responsive -->
+      <div class="toolbar d-flex flex-wrap gap-2 mb-3">
+        <button type="button" class="btn btn-success" (click)="ajouter()">Nouveau</button>
+        <button type="button" class="btn btn-success" (click)="modifier()"
+          [disabled]="selectedIndex === null">Modifier</button>
+        <button type="button" class="btn btn-danger" (click)="supprimer()"
+          [disabled]="selectedIndex === null">Supprimer</button>
+        <button type="button" class="btn btn-success" (click)="enregistrer()"
+          [disabled]="!formVisible">Enregistrer</button>
+        <button type="button" class="btn btn-success" (click)="fermer()" [disabled]="!formVisible">Fermer</button>
+        <button type="button" class="btn btn-success" (click)="openScrollableModal(importExcelModal)">Importer</button>
+      </div>
+      <!-- Modal -->
+      <ng-template #importExcelModal let-modal>
+        <div class="modal-header" style="background-color: #128C7E;">
+          <h4 class="modal-title text-light" id="NewTaskModalLabel">IMPORT EXCEL</h4>
+          <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="onSubmit();modal.close('Close click')" enctype="multipart/form-data"
+            [formGroup]="modelImportForm" class="p-2">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label>Fichier Excel</label>
+                <input required type="file" accept=".xls,.xlsx" class="form-control"
+                  (change)="onExcelFileSelected($event)">
+                @if (fileError) {
+                <div class="text-danger">{{ fileError }}</div>
+                }
+              </div>
+              <!-- <div class="col-md-6 mb-3">
                   <label>Année</label>
                   <select required name="annee" formControlName="annee" class="form-select" id="annee">
                     <option value="null" disabled>---Select Année---</option>
                     <option *ngFor="let annee of annees" [value]="annee">{{annee}}</option>
                   </select>
                 </div> -->
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
-                <button type="submit" class="btn btn-secondary">Valider</button>
-              </div>
-            </form>
-          </div>
-        </ng-template>
-        <div class="container-fluid">
-          <!-- Formulaire principal -->
-          @if (formVisible) {
-            <div class="row mb-3">
-              <div class="row" >
-                <div class="col-12 col-md-2 mb-2">
-                  <div class="form-group">
-                    <label for="">Compte</label>
-                    <input type="text" id="compte" name="compte" formControlName="compte" class="form-control" placeholder="Compte">
-                    @if (planComptableForm.get('compte')?.hasError('required') && planComptableForm.get('compte')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-                <div class="col-12 col-md-4 mb-2">
-                  <div class="form-group">
-                    <label for="">Intitule</label>
-                    <input type="text" id="intitule" name="intitule" formControlName="intitule" class="form-control" placeholder="intitule">
-                    @if (planComptableForm.get('intitule')?.hasError('required') && planComptableForm.get('intitule')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
+              <button type="submit" class="btn btn-secondary">Valider</button>
+            </div>
+          </form>
+        </div>
+      </ng-template>
+      <div class="container-fluid">
+        <!-- Formulaire principal -->
+        @if (formVisible) {
+        <div class="row mb-3">
+          <div class="row">
+            <div class="col-12 col-md-5 mb-3">
+              <div class="form-group">
+                <input type="hidden" formControlName="id">
+                
+                <label for="societe">Société</label>
+                <ng-select formControlName="societeId" [items]="societes" bindLabel="nom" bindValue="id"
+                  [clearable]="false" placeholder="Sélection Société" [searchable]="true">
+                  <ng-template ng-notfound-tmp>
+                    Aucune société disponible
+                  </ng-template>
+                </ng-select>
+                @if (planComptableForm.get('societe')?.hasError('required') &&
+                planComptableForm.get('societe')?.touched) {
+                <strong class="text-danger">
+                  Champ obligatoire !
+                </strong>
+                }
               </div>
             </div>
-          }
+            <div class="col-12 col-md-4 mb-3">
+              <div class="form-group">
+                <label for="">Intitulé</label>
+                <input type="text" id="intitule" name="intitule" formControlName="intitule" class="form-control"
+                  placeholder="Intitulé" pattern="^[a-zA-Z0-9 -]+$">
+                @if (planComptableForm.get('intitule')?.hasError('required') &&
+                planComptableForm.get('intitule')?.touched) {
+                <strong class="text-danger">
+                  Champ obligatoire !
+                </strong>
+                }
+                @if (planComptableForm.get('intitule')?.hasError('pattern') &&
+                planComptableForm.get('intitule')?.touched) {
+                <strong class="text-danger">Seuls lettres, chiffres et tirets sont autorisés !</strong>
+                }
+              </div>
+            </div>
+          </div>
         </div>
-      </form>
-      <div class="table-container">
-        <table class="table table-bordered table-sm custom-table">
-          <thead>
-            <tr>
-              <th>Compte</th>
-              <th>Intitulé</th>
-            </tr>
-          </thead>
-          @if (!isLoading) {
-            <tbody>
-              @for (plancomptable of plansComptables; track plancomptable; let i = $index) {
-                <tr
-                  (click)="selectLigne(i)"
-                  [class.selected]="i === selectedIndex">
-                  <td>{{ plancomptable.value.compte }}</td>
-                  <td>{{ plancomptable.value.intitule }}</td>
-                </tr>
-              }
-              @if (plansComptables?.length == 0) {
-                <tr >
-                  <td  colspan="5"><h3 style="text-align: center;">Aucune donnée trouvée</h3></td>
-                </tr>
-              }
-            </tbody>
-          }
-          @if (isLoading) {
-            <tbody>
-              <tr>
-                <td colspan="5" class="text-center">
-                  <div class="spinner-border text-secondary" role="status">
-                    <span class="visually-hidden">Chargement...</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          }
-        </table>
+        }
       </div>
+    </form>
+    <div class="table-container">
+      <table class="table table-bordered table-sm custom-table">
+        <thead>
+          <tr>
+            <th>Intitulé</th>
+            <th>Société</th>
+          </tr>
+        </thead>
+        @if (!isLoading) {
+        <tbody>
+          @for (plancomptable of plansComptables; track plancomptable; let i = $index) {
+          <tr (click)="selectLigne(i)" [class.selected]="i === selectedIndex">
+            <td>{{ plancomptable.value.intitule }}</td>
+            <td>{{ plancomptable.value.societe }}</td>
+          </tr>
+          }
+          @if (plansComptables?.length == 0) {
+          <tr>
+            <td colspan="5">
+              <h3 style="text-align: center;">AUCUN PLAN COMPTABLE ENREGISTRÉ</h3>
+            </td>
+          </tr>
+          }
+        </tbody>
+        }
+        @if (isLoading) {
+        <tbody>
+          <tr>
+            <td colspan="5" class="text-center">
+              <div class="spinner-border text-secondary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+        }
+      </table>
     </div>
   </div>
+</div>
 }
