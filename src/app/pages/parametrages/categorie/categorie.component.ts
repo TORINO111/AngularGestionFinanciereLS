@@ -78,6 +78,7 @@ export class CategorieComponent implements OnInit {
     this.categories = [];
     this.categorieService.getAllCategories().subscribe({
       next: (data: Categorie[]) => {
+        console.log(data);
         this.categories = data.map(d => ({
           id: d.id,
           code: d.code,
@@ -97,7 +98,8 @@ export class CategorieComponent implements OnInit {
   chargerTypesCategorie() {
     this.typeCategorieService.getAll().subscribe({
       next: (data: any[]) => {
-        this.types = data.map(t => ({ id: t.id, code: t.code, libelle: t.libelle }));
+        this.types = data.map(t => ({ id: t, libelle: t }));
+        console.log(this.types)
         this.lastTypeId = data[data.length - 1].id;
       },
       error: (err) => {
@@ -118,9 +120,8 @@ export class CategorieComponent implements OnInit {
           this.chargerCategories();
         },
         error: (error) => {
-          console.log(error);
           this.loading = false;
-          this.notification.showError('Erreur serveur');
+          this.notification.showError(error);
         }
       });
     } else {
@@ -208,12 +209,11 @@ export class CategorieComponent implements OnInit {
   this.categorieUpdateForm = this.fb.group({
     id:[categorie.id],
     libelle: [categorie.libelle?.trim() ?? '', [Validators.required, Validators.minLength(5)]],
-    type: [categorie.type?.id ?? categorie.type ?? null, Validators.required]
+    type: [categorie.type ?? categorie.type ?? null, Validators.required]
   });
 
   // Initialisation des valeurs de référence pour comparaison
   this.initialLibelle = categorie.libelle?.trim() ?? '';
-  this.initialTypeId = categorie.type?.id ?? categorie.type ?? null;
 
   // Valeurs actuelles (seront mises à jour via listenToChanges)
   this.currentLibelle = this.initialLibelle;

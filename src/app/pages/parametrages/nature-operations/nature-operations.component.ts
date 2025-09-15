@@ -1,45 +1,62 @@
+import { PlanAnalytiqueDTO } from './../../../models/plan-analytique.model';
+import { PlansAnalytiquesService } from './../../../services/plans-analytiques/plans-analytiques.service';
 import { Component, OnInit } from '@angular/core';
 import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
 import { CategorieService } from 'src/app/services/categories/categorie.service';
 import { PlanComptableService } from 'src/app/services/plan-comptable/plan-comptable.service';
-import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
+import { UntypedFormGroup, Validators, UntypedFormBuilder, FormGroup } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import Swal from 'sweetalert2';
-import { NatureOperation } from 'src/app/models/nature-operation.model';
 import { Select2Data } from 'ng-select2-component';
 import { CodeJournal } from 'src/app/models/code-journal.model';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
 import { TypeCategorieService } from 'src/app/services/type-categorie/type-categorie.service';
-import { TypeCategorie } from 'src/app/models/type-categorie.model';
 import { SectionAnalytique } from 'src/app/models/section-analytique';
 import { SectionAnalytiqueService } from 'src/app/services/section-analytique/section-analytique.service';
 import { Categorie } from 'src/app/models/categorie.model';
+import { CompteComptableService } from 'src/app/services/comptes-comptables/comptes-comptables.service';
+import { CompteComptableDTO } from 'src/app/models/compte-comptable';
+import { PlanComptable } from 'src/app/models/plan-comptable.model';
+import { NatureOperationDto } from 'src/app/models/nature-operation.model';
 
 @Component({
-    selector: 'app-nature-operations',
-    templateUrl: './nature-operations.component.html',
-    styleUrls: ['./nature-operations.component.scss'],
-    standalone: false
+  selector: 'app-nature-operations',
+  templateUrl: './nature-operations.component.html',
+  styleUrls: ['./nature-operations.component.scss'],
+  standalone: false
 })
 export class NatureOperationsComponent implements OnInit {
-  natureList: NatureOperation[] = [];
-  selected?: NatureOperation | null;
+  natureList: NatureOperationDto[] = [];
+  selected?: NatureOperationDto | null;
 
   // Utilisation de FormGroup[] avec typage clair
   natureOperations: UntypedFormGroup[] = [];
   lignes: UntypedFormGroup[] = [];
 
+  plansAnalytiques: UntypedFormGroup[] = [];
   analytiques: Select2Data = [];
-  comptables: Select2Data = [];
-  categories:any[]=[];
-  listeSens=[{id:'CREDIT',libelle:'CREDIT'},{id:'DEBIT',libelle:'DEBIT'}];
-  codesjournaux: CodeJournal[] =[];
+  comptables: PlanComptable[] = [];  // Fait référence aux Plans comptables
+  categories: any[] = [];
+  comptes: any[] = [];
+  listeSens = [{ id: 'CREDIT', libelle: 'CREDIT' }, { id: 'DEBIT', libelle: 'DEBIT' }];
+  codesjournaux: CodeJournal[] = [];
+
+  typeNatures = [
+    { label: 'Dépense', value: 'DEPENSE' },
+    { label: 'Exploitation', value: 'EXPLOITATION' },
+    { label: 'Immobilisation', value: 'IMMOBILISATION' },
+    { label: 'Recette', value: 'RECETTE' },
+    { label: 'Salaire', value: 'SALAIRE' },
+    { label: 'Encaissement', value: 'ENCAISSEMENT' },
+    { label: 'Décaissement', value: 'DECAISSEMENT' },
+    { label: 'Capitaux propres', value: 'CAPITAUX_PROPRES' }
+  ];
 
   sectionsAnalytiques: SectionAnalytique[] = [];
   types: any[] = [];
 
-  selectedTypeNature='';
-        
+  selectedTypeNature = '';
+
   selectedIndex: number | null = null;
   natureOperationForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
@@ -52,45 +69,45 @@ export class NatureOperationsComponent implements OnInit {
   isExploitation = false;
   isType = false;
   isTresorerie = false;
-  prefixe:string;
-  selectedCategorie: any; // pour stocker l'objet complet sélectionné
-  typesFiltres: TypeCategorie[] = [];
+  prefixe: string;
+  selectedCategorie: any;
   lastTypeId: any;
 
   constructor(
     private natureOperationService: NatureOperationService,
-    private categorieService:CategorieService,
-    private planComptableService:PlanComptableService,
+    private categorieService: CategorieService,
+    private planComptableService: PlanComptableService,
+    private compteComptableService: CompteComptableService,
+    private planAnalytiqueService: PlansAnalytiquesService,
     private fb: UntypedFormBuilder,
     private notification: NotificationService,
     private typeCategorieService: TypeCategorieService,
-    private sectionAnalytiqueService: SectionAnalytiqueService  
+    private sectionAnalytiqueService: SectionAnalytiqueService
   ) {
     this.natureOperationForm = this.fb.group({
       id: [],
       code: ['', Validators.required],
       libelle: ['', [Validators.required, Validators.minLength(2)]],
-      compteComptable: ['',Validators.required],
-      sectionAnalytique: [''],
-      codeJournal:[],
+      compteComptableId: ['', Validators.required],
+      sectionAnalytiqueId: [null],
+      codeJournalId: [null, Validators.required],
       categorieId: [null, Validators.required],
-      categorieLibelle:[''],
-      categorieType:[''],
-      societeId: [1],
-      typeNature:[null],
-      sensParDefaut:[],
-      compteContrePartie:['']
+      societeId: [null, Validators.required],
+      typeNature: [null],
+      sensParDefaut: ['', Validators.required],
+      compteContrePartie: [null]
     });
   }
 
   ngOnInit(): void {
     this.pageTitle = [{ label: 'Vos natures opérations', path: '/', active: true }];
-    this.chargerNatureOperations();
+    this.chargerNatureOperationDtos();
     this.chargerCategories();
-    this.chargerAnalytiques();
+    this.chargerPlansAnalytiques();
     this.chargerCodeJournal();
     this.chargerTypesCategorie();
-    this.chargerSectionsAnalytiques()
+    this.chargerSectionsAnalytiques();
+    this.chargerComptesComptables()
   }
 
   chargerTypesCategorie() {
@@ -106,105 +123,44 @@ export class NatureOperationsComponent implements OnInit {
     });
   }
 
-  onTypePrincipalChange(): void {
-    const type = this.selectedCategorie?.type;
-  
-    const directTypes = ['RECETTE', 'SALAIRE'];
-    const depenseTypes = ['EXPLOITATION', 'IMMOBILISATION'];
-    const tresorerieTypes = ['DECAISSEMENT', 'ENCAISSEMENT'];
-  
-    if (directTypes.includes(type)) {
-      this.natureOperationForm.patchValue({ typeNature: type });
-      this.selectedTypeNature = type;
-      this.isType = false;
-      this.typesFiltres = [];
-    } else if (type === 'DEPENSE') {
-      this.isType = true;
-      this.typesFiltres = this.types.filter(t => depenseTypes.includes(t.id));
-    } else if (type === 'TRESORERIE') {
-      this.isType = true;
-      this.isTresorerie=true;
-      this.typesFiltres = this.types.filter(t => tresorerieTypes.includes(t.id));
-    } else {
-      this.selectedTypeNature = '';
-      this.isType = false;
-      this.typesFiltres = [];
-    }
-  }
-  
-
-  onTypeChange(): void {
-    const selected = this.natureOperationForm.get('typeNature')?.value;
-    this.selectedTypeNature = selected;
-    this.isExploitation = selected === 'EXPLOITATION';
-    console.log(selected)
-    if (selected !== 'EXPLOITATION') {
-      this.natureOperationForm.patchValue({ sectionAnalytique: '' });
-    }
-    // Définir le préfixe selon le type sélectionné
-    const prefixMap: { [key: string]: string } = {
-      DEPENSE: '62',
-      EXPLOITATION: '6',
-      IMMOBILISATION: '2',
-      RECETTE: '7',
-      SALAIRE: '4',
-      ENCAISSEMENT: '5',
-      DECAISSEMENT: '5'
-    };
-    this.prefixe = prefixMap[this.selectedTypeNature] || '';
-    if (this.prefixe) {
-      this.comptables = [];
-      this.chargerComptables(); // décommenter si nécessaire
-    }
-  }
-  
-  
   onCategorieChange(): void {
-    // Reset du champ secondaire
-    this.natureOperationForm.patchValue({
-      typeNature: null,
-      sectionAnalytique: ''
-    });
-  
-    this.onTypeChange(); // met à jour isExploitation
-  
     const selectedId = this.natureOperationForm.get('categorieId')?.value;
     if (!selectedId) return;
-  
-    // Récupération de la catégorie sélectionnée
+
     this.selectedCategorie = this.categories.find(c => c.id === +selectedId);
     if (!this.selectedCategorie) return;
-  
-    console.log('Catégorie sélectionnée :', this.selectedCategorie.type);
-  
-    // Mise à jour des types liés
-    this.onTypePrincipalChange();
-  
-    // Mise à jour du champ form
-    this.natureOperationForm.patchValue({ categorieId: selectedId });
-  
-    // Définir le préfixe selon le type sélectionné
-    const prefixMap: { [key: string]: string } = {
-      DEPENSE: '62',
-      EXPLOITATION: '6',
-      IMMOBILISATION: '2',
-      RECETTE: '7',
-      SALAIRE: '4',
-      ENCAISSEMENT: '5',
-      DECAISSEMENT:'5'
-    };
-  
-    this.prefixe = prefixMap[this.selectedTypeNature] || '';
-    console.log('Préfixe:', this.prefixe);
-  
-    if (this.prefixe) {
-      this.comptables = [];
-       this.chargerComptables(); // décommenter si nécessaire
-    }
+
+    this.selectedTypeNature = this.selectedCategorie.type || '';
+    this.isExploitation = this.selectedTypeNature === 'EXPLOITATION';
+
+    this.natureOperationForm.patchValue({
+      typeNature: this.selectedTypeNature,
+      sectionAnalytiqueId: this.isExploitation ? this.natureOperationForm.get('sectionAnalytiqueId')?.value : null
+    });
+
+    this.chargerComptables(this.selectedTypeNature);
   }
-  
-  
-  
+
+  onTypeChange(): void {
+    const selectedType = this.natureOperationForm.get('typeNature')?.value;
+    if (!selectedType) {
+      this.selectedTypeNature = '';
+      this.isExploitation = false;
+      this.comptables = [];
+      return;
+    }
+
+    this.selectedTypeNature = selectedType;
+    this.isExploitation = selectedType === 'EXPLOITATION';
+
+    if (!this.isExploitation) {
+      this.natureOperationForm.patchValue({ sectionAnalytiqueId: null });
+    }
+
+    // Recharge les plans comptables pour ce type
+    this.chargerComptables(selectedType);
+  }
+
   ajouter(): void {
     this.natureOperationForm.reset();
     this.natureOperationForm.patchValue({
@@ -215,7 +171,7 @@ export class NatureOperationsComponent implements OnInit {
     // });
     this.formVisible = true;
     this.selectedIndex = null;
-    this.selected =null;
+    this.selected = null;
   }
 
   modifier(): void {
@@ -226,15 +182,15 @@ export class NatureOperationsComponent implements OnInit {
 
   supprimer(): void {
     if (this.selectedIndex !== null) {
-      const currentData = this.lignes[this.selectedIndex].value as NatureOperation;
+      const currentData = this.lignes[this.selectedIndex].value as NatureOperationDto;
       this.natureOperationForm.setValue(currentData);
       this.lignes.splice(this.selectedIndex, 1);
       this.selectedIndex = null;
-      this.deleteNatureOperation(currentData);
+      this.deleteNatureOperationDto(currentData);
     }
   }
 
-  edit(nature: NatureOperation): void {
+  edit(nature: NatureOperationDto): void {
     this.selected = { ...nature };
     this.natureOperationForm.patchValue(this.selected);
     this.formVisible = true;
@@ -248,31 +204,19 @@ export class NatureOperationsComponent implements OnInit {
 
   selectLigne(index: number): void {
     this.selectedIndex = index;
-    const currentData = this.lignes[this.selectedIndex].value as NatureOperation;
-    //console.log(currentData)
-    this.natureOperationForm.setValue(currentData);
+    const currentData = this.lignes[this.selectedIndex].value as NatureOperationDto;
+    this.selected = currentData;
+
     this.natureOperationForm.patchValue({
+      ...currentData,
       categorieId: currentData.categorieId
     });
-    
-    const prefixMap: { [key: string]: string } = {
-      DEPENSE: '62',
-      EXPLOITATION: '6',
-      IMMOBILISATION: '2',
-      RECETTE: '7',
-      SALAIRE: '4',
-      ENCAISSEMENT: '5',
-      DECAISSEMENT: '5'
-    };
-  
-    this.prefixe = prefixMap[currentData.typeNature|| ''] || '';
-    //console.log(this.prefixe)|| ''] || ''
-    if (this.prefixe) {
-      this.comptables =[];
-      this.chargerComptables();
-    }
-    this.selected = currentData;
+
+    // Chargement des comptes selon typeNature
+    console.log(currentData.typeNature);
+    this.chargerComptables(currentData.typeNature);
   }
+
 
   enregistrer(): void {
     //   console.log(this.natureOperationForm.value)
@@ -284,7 +228,7 @@ export class NatureOperationsComponent implements OnInit {
 
     this.isLoading = true;
 
-    const natureOperation = this.natureOperationForm.value as NatureOperation;
+    const natureOperation = this.natureOperationForm.value as NatureOperationDto;
 
     const action$ = this.selected?.id
       ? this.natureOperationService.update(this.selected.id, natureOperation)
@@ -300,7 +244,7 @@ export class NatureOperationsComponent implements OnInit {
         this.selectedIndex = null;
         this.selected = undefined;
         this.lignes = [];
-        this.chargerNatureOperations();
+        this.chargerNatureOperationDtos();
       },
       error: () => {
         this.loading = false;
@@ -309,26 +253,37 @@ export class NatureOperationsComponent implements OnInit {
     });
   }
 
-  chargerNatureOperations(): void {
+  chargerNatureOperationDtos(): void {
     this.natureOperations = [];
     this.natureOperationService.getAll().subscribe({
-      next: (data: NatureOperation[]) => {
-        //console.log(data)
+      next: (data: NatureOperationDto[]) => {
         this.natureOperations = data.map(d =>
           this.fb.group({
             id: [d.id],
             code: [d.code],
             libelle: [d.libelle],
-            compteComptable: [d.compteComptable],
-            sectionAnalytique: [d.sectionAnalytique],
-            codeJournal:[d.codeJournal],
+
+            // Relations pour création/modification
+            compteComptableId: [d.compteComptableId],
+            compteContrePartieId: [d.compteContrePartieId],
+            sectionAnalytiqueId: [d.sectionAnalytiqueId],
             categorieId: [d.categorieId],
-            categorieLibelle:[d.categorieLibelle],
-            categorieType:[d.categorieType],
-            societeId:[d.societeId],
-            typeNature:[d.typeNature],
-            sensParDefaut:[d.sensParDefaut],
-            compteContrePartie:[d.compteContrePartie]
+            codeJournalId: [d.codeJournalId],
+            societeId: [d.societeId],
+
+            // Relations pour affichage lisible
+            compteComptableLibelle: [d.compteComptableLibelle],
+            compteContrePartieLibelle: [d.compteContrePartieLibelle],
+            sectionAnalytiqueLibelle: [d.sectionAnalytiqueLibelle],
+            categorieLibelle: [d.categorieLibelle],
+            categorieType: [d.categorieType],
+            codeJournal: [d.codeJournal],
+            libelleJournal: [d.libelleJournal],
+            societeLibelle: [d.societeLibelle],
+
+            typeNature: [d.typeNature],
+            sensParDefaut: [d.sensParDefaut],
+            sensLibelle: [d.sensLibelle]
           })
         );
         this.lignes = this.natureOperations;
@@ -347,12 +302,12 @@ export class NatureOperationsComponent implements OnInit {
   chargerCodeJournal() {
     this.natureOperationService.getAllCodeJournal().subscribe(
       {
-        next:(data:any) => {
-          this.codesjournaux=data;
-          this.result=true;
+        next: (data: any) => {
+          this.codesjournaux = data;
+          this.result = true;
         },
-        error:(error:any) => {
-          this.result=true;
+        error: (error: any) => {
+          this.result = true;
           console.log('Erreur lors du chargement des codes journaux', error);
           this.notification.showError("erreur lors du chargement des codes journaux");
         }
@@ -361,78 +316,90 @@ export class NatureOperationsComponent implements OnInit {
   }
 
   chargerCategories() {
-      this.categorieService.getAllCategories().subscribe({
-        next: (data: Categorie[]) => {
-          this.categories = data.map(d => ({
+    this.categorieService.getAllCategories().subscribe({
+      next: (data: Categorie[]) => {
+        this.categories = data.map(d => ({
+          id: d.id,
+          code: d.code,
+          libelle: d.libelle,
+          type: d.type
+        }));
+        this.result = true;
+      },
+      error: (error: any) => {
+        this.result = true;
+        console.log('Erreur lors du chargement des categories', error);
+        this.notification.showError("Erreur lors du chargement des catégories");
+      }
+    });
+  }
+
+  chargerComptesComptables() {
+    this.compteComptableService.getAll().subscribe({
+      next: (data: CompteComptableDTO[]) => {
+        this.comptes = data.map(d => ({
+          id: d.id,
+          numero: d.numero,
+          intitule: d.intitule
+        }));
+        this.result = true;
+      },
+      error: (error: any) => {
+        this.result = true;
+        console.log('Erreur lors du chargement des categories', error);
+        this.notification.showError("Erreur lors du chargement des catégories");
+      }
+    });
+  }
+
+  chargerSectionsAnalytiques() {
+    this.sectionAnalytiqueService.getAllSectionAnalytiques().subscribe(
+      {
+        next: (data: SectionAnalytique[]) => {
+          this.sectionsAnalytiques = data.map(d => ({
             id: d.id,
             code: d.code,
             libelle: d.libelle,
-            type: d.type
           }));
           this.result = true;
         },
         error: (error: any) => {
           this.result = true;
-          console.log('Erreur lors du chargement des categories', error);
-          this.notification.showError("Erreur lors du chargement des catégories");
-        }
-      });
-    }
-
-  chargerSectionsAnalytiques() {
-    this.sectionAnalytiqueService.getAllSectionAnalytiques().subscribe(
-      {
-        next:(data: SectionAnalytique[]) => {
-          this.sectionsAnalytiques=data.map(d => ({
-          id: d.id,
-          code: d.code,
-          libelle: d.libelle,
-        }));
-          this.result=true;
-        },
-        error:(error:any) => {
-          this.result=true;
           console.log('Erreur lors du chargement des sections analytiques', error);
           this.notification.showError("erreur lors du chargement des sections analytiques");
         }
       }
     );
   }
-  
-  chargerComptables() {
-    this.planComptableService.getAllParPrefixe(this.prefixe).subscribe(
-      (data:any) => {
-        for(let d of data){
-          //console.log(data)
-          this.comptables = [{ label: '', options: (data as any[]).map(d => ({ value: d.compte, label: d.compte+' - '+d.intitule })) }];
-        }
-        //this.isLoading=true;
-      },
-      (error) => {
-        //this.isLoading=true;
-        console.error('Erreur lors du chargement des comptes comptables', error);
-        this.notification.showError("erreur..");
-      }
-    );
-  }
-  chargerAnalytiques() {
-    this.planComptableService.getAllPlanAnalytique().subscribe(
-      (data:any) => {
-        for(let d of data){
-          //console.log(data)
-          this.analytiques = [{ label: '', options: (data as any[]).map(d => ({ value: d.sectionAnalytique, label: d.intitule })) }];
-        }
-        //this.isLoading=true;
-      },
-      (error) => {
-        //this.isLoading=true;
-        console.error('Erreur lors du chargement des tiers', error);
-        this.notification.showError("erreur..");
-      }
-    );
+
+  chargerComptables(typeNature: string) {
+    console.log(typeNature);
+    this.planComptableService.getByTypeNature(typeNature).subscribe({
+      next: (data: PlanComptable[]) => this.comptables = data,
+      error: (err: any) => this.notification.showError(err)
+    });
   }
 
-  deleteNatureOperation(nature: NatureOperation): void {
+
+  chargerPlansAnalytiques() {
+    this.planAnalytiqueService.getAllPlanAnalytique().subscribe({
+      next: (data: PlanAnalytiqueDTO[]) => {
+        this.plansAnalytiques = data.map(d =>
+          this.fb.group({
+            id: [d.id],
+            sectionAnalytique: [d.sectionAnalytique],
+            societe: [d.societe]
+          })
+        );
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des tiers', err);
+        this.notification.showError("Erreur..");
+      }
+    });
+  }
+
+  deleteNatureOperationDto(nature: NatureOperationDto): void {
     Swal.fire({
       title: 'Supprimer la Nature Opération',
       html: `
@@ -452,7 +419,7 @@ export class NatureOperationsComponent implements OnInit {
         this.natureOperationService.delete(nature.id!).subscribe({
           next: () => {
             this.natureOperations = [];
-            this.chargerNatureOperations();
+            this.chargerNatureOperationDtos();
             Swal.fire('Succès', 'Nature supprimée avec succès.', 'success');
           },
           error: () => {

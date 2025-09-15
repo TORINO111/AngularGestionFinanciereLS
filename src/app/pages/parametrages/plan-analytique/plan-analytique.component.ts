@@ -5,11 +5,12 @@ import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
-import { PlanAnalytique } from '../../../models/plan-analytique.model';
+import { PlanAnalytique, PlanAnalytiqueDTO } from '../../../models/plan-analytique.model';
 import { SectionAnalytique } from 'src/app/models/section-analytique';
 import { SectionAnalytiqueService } from 'src/app/services/section-analytique/section-analytique.service';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
 import { SocieteService } from 'src/app/services/societe/societe.service';
+import { PlansAnalytiquesService } from 'src/app/services/plans-analytiques/plans-analytiques.service';
 
 
 export interface PlanComptableImportDTO {
@@ -65,7 +66,7 @@ export class PlanAnalytiqueComponent implements OnInit {
     private planComptableService: PlanComptableService,
     private fb: UntypedFormBuilder,
     private modalService: NgbModal,
-    private toastr: ToastrService,
+    private plansAnalytiquesService: PlansAnalytiquesService,
     private notification: NotificationService,
     private sectionAnalytiqueService: SectionAnalytiqueService,
     private societeService: SocieteService,
@@ -81,7 +82,7 @@ export class PlanAnalytiqueComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.pageTitle = [{ label: 'vos plans comptables', path: '/', active: true }];
+    this.pageTitle = [{ label: 'Vos sections analytiques', path: '/', active: true }];
     this.chargerPlanAnalytiques();
     this.chargerSectionsAnalytiques();
     this.chargerSocietes();
@@ -148,7 +149,6 @@ export class PlanAnalytiqueComponent implements OnInit {
     }
   }
 
-
   fermer(): void {
     this.formVisible = false;
     this.selectedIndex = null;
@@ -173,8 +173,8 @@ export class PlanAnalytiqueComponent implements OnInit {
     const planAnalytique = this.planAnalytiqueForm.value as PlanAnalytique;
 
     const action$ = this.selected
-      ? this.planComptableService.updatePlanAnalytique(planAnalytique.sectionAnalytique, planAnalytique)
-      : this.planComptableService.createPlanAnalytique(planAnalytique);
+      ? this.plansAnalytiquesService.updatePlanAnalytique(planAnalytique.sectionAnalytique, planAnalytique)
+      : this.plansAnalytiquesService.createPlanAnalytique(planAnalytique);
 
     action$.subscribe({
       next: () => {
@@ -186,7 +186,6 @@ export class PlanAnalytiqueComponent implements OnInit {
         this.selectedIndex = null;
         this.selected = undefined;
         this.isLoading = false;
-
         this.chargerPlanAnalytiques();
       },
       error: (error: any) => {
@@ -202,10 +201,11 @@ export class PlanAnalytiqueComponent implements OnInit {
 
   chargerPlanAnalytiques(): void {
     this.planComptableService.getAllPlanAnalytique().subscribe({
-      next: (data: PlanAnalytique[]) => {
+      next: (data: PlanAnalytiqueDTO[]) => {
         //console.log(data)
         this.plansAnalytiques = data.map(d =>
           this.fb.group({
+            id: [d.id],
             sectionAnalytique: [d.sectionAnalytique],
             societe: [d.societe]
           })
@@ -216,7 +216,7 @@ export class PlanAnalytiqueComponent implements OnInit {
         this.result = true;
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des plans comptables', error);
+        console.error('Erreur lors du chargement des plans analytiques', error);
         this.result = true;
         this.notification.showError('Erreur de chargement');
       }

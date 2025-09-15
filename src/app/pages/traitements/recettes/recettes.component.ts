@@ -3,7 +3,7 @@ import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
-import { NatureOperation } from 'src/app/models/nature-operation.model';
+import { NatureOperationDto } from 'src/app/models/nature-operation.model';
 import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
 import { ImportOperationResultDTO, Operation } from 'src/app/models/operation.model';
 import { OperationService } from 'src/app/services/operations/operation.service';
@@ -277,7 +277,7 @@ export class RecettesComponent implements OnInit {
             .map(t => ({ value: t.id as number, label: t.intitule }));
 
 
-          this.natureOperations = (natureOperations as NatureOperation[])
+          this.natureOperations = (natureOperations as NatureOperationDto[])
           .filter(n => n.id !== undefined)
           .map(n => ({ value: n.id as number, label: n.libelle }));
 
@@ -373,7 +373,7 @@ export class RecettesComponent implements OnInit {
     this.natureOperationService.getByFilters(societeId, 'RECETTE', 'RECETTE')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data: NatureOperation[]) => {
+        next: (data: NatureOperationDto[]) => {
           this.natureOperations = data
             .filter(n => n.id !== undefined)
             .map(n => ({ value: n.id as number, label: n.libelle }));

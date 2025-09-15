@@ -31,44 +31,31 @@
             <div class="col-md-2">
               <div class="form-group">
                 <label for="">Catégorie</label>
-                <select required name="categorieId" formControlName="categorieId" class="form-select" id="categorieId"
-                  (change)="onCategorieChange()">
-                  <option [value]="null" disabled>---Select Catégorie---</option>
-                  @for (categorie of categories; track categorie) {
-                  <option [value]="categorie.id">
-                    {{ categorie.libelle }}
-                  </option>
-                  }
-                </select>
+                <ng-select [items]="categories" bindLabel="libelle" bindValue="id" placeholder="Sélection Catégorie"
+                  formControlName="categorieId" [searchable]="true" (change)="onCategorieChange()">
+                  <ng-template ng-notfound-tmp>
+                    Aucune catégorie disponible
+                  </ng-template>
+                </ng-select>
               </div>
             </div>
-            @if (isType) {
-            <div class="col-md-2">
+            <!-- Si isType est là 
+            <div class="col-md-2" *ngIf="isType">
               <div class="form-group">
                 <label for="type">Type</label>
-                <!-- <select (change)="onTypeChange()" name="typeNature" formControlName="typeNature" class="form-select"
-                  id="typeNature">
-                  <option [value]="null" disabled>---Select Type---</option>
-                  @for (type of typesFiltres; track type) {
-                  <option [value]="type.id">
-                    {{ type.libelle }}
-                  </option>
-                  }
-                </select> -->
-                <ng-select (change)="onTypeChange()" [items]="typesFiltres" bindLabel="libelle" bindValue="id" formControlName="typeNature"
-                  placeholder="Sélection Journal">
-                  [searchable]="true">
+                <ng-select (change)="onTypeChange()" [items]="typesFiltres" bindLabel="libelle" bindValue="libelle"
+                  formControlName="typeNature" placeholder="Sélection Journal" [searchable]="true">
                   <ng-template ng-notfound-tmp>
                     Aucun journal disponible
                   </ng-template>
                 </ng-select>
               </div>
-            </div>
-            }
+            </div> -->
+
             <div class="col-md-2">
               <div class="form-group">
                 <label for="">Code journal</label>
-                <ng-select [items]="codesjournaux" bindLabel="libelle" bindValue="code" formControlName="codeJournal"
+                <ng-select [items]="codesjournaux" bindLabel="libelle" bindValue="code" formControlName="codeJournalId"
                   placeholder="Sélection Journal">
                   [searchable]="true">
                   <ng-template ng-notfound-tmp>
@@ -105,8 +92,8 @@
             <div class="col-12 col-md-3 mb-3">
               <div class="form-group">
                 <label for="">Compte Comptable</label>
-                <ng-select [items]="comptables" bindLabel="label" bindValue="value" placeholder="Sélection Compte Comptable"
-                  formControlName="compteComptableId" id="compteComptableId" style="width: 100%;" >
+                <ng-select [items]="comptes" bindLabel="intitule" bindValue="id"
+                  placeholder="Sélection Compte Comptable" formControlName="compteComptableId">
                   [searchable]="true">
                   <ng-template ng-notfound-tmp>
                     Aucun compte comptable disponible
@@ -119,12 +106,13 @@
 
               </div>
             </div>
-            @if (isExploitation) {
-            <div class="col-12 col-md-3 mb-2">
+              
+            <!-- CAS isExploitation -->
+            <div class="col-12 col-md-3 mb-2" *ngIf="isExploitation">
               <div class="form-group">
                 <label for="">Section Analytique</label>
-                <ng-select [items]="analytiques" bindLabel="label" bindValue="value" placeholder="Select Analytique"
-                  formControlName="sectionAnalytiqueId" id="sectionAnalytiqueId" style="width: 100%;">
+                <ng-select [items]="sectionsAnalytiques" bindLabel="libelle" bindValue="id" placeholder="Selection Section Analytique"
+                  formControlName="sectionAnalytiqueId">
                   <ng-template ng-notfound-tmp>
                     Aucun section analytique disponible
                   </ng-template>
@@ -137,19 +125,22 @@
                 }
               </div>
             </div>
-            }
+
             <div class="col-md-2">
               <div class="form-group">
                 <label for="">Sens</label>
-                <select required name="sensParDefaut" formControlName="sensParDefaut" class="form-select"
-                  id="sensParDefaut">
-                  <option [value]="null" disabled>---Select Sens---</option>
-                  @for (ls of listeSens; track ls) {
-                  <option [value]="ls.id">
-                    {{ ls.libelle }}
-                  </option>
-                  }
-                </select>
+                <ng-select [items]="listeSens" bindLabel="libelle" bindValue="id" placeholder="Selection Sens"
+                  formControlName="sensParDefaut">
+                  <ng-template ng-notfound-tmp>
+                    Aucun sens disponible
+                  </ng-template>
+                </ng-select>
+                @if (natureOperationForm.get('sensParDefaut')?.hasError('required') &&
+                natureOperationForm.get('sensParDefaut')?.touched) {
+                <strong class="text-danger">
+                  Champ obligatoire !
+                </strong>
+                }
               </div>
             </div>
             @if (isTresorerie) {
@@ -166,6 +157,8 @@
         }
       </div>
     </form>
+
+    <!-- TABLEAU -->
     <div class="table-container">
       <table class="table table-bordered table-sm custom-table">
         <thead>
@@ -214,6 +207,7 @@
         }
       </table>
     </div>
+
   </div>
 </div>
 }

@@ -20,6 +20,7 @@ export class ComptesComptablesComponent {
   lignes: UntypedFormGroup[] = [];
   plansComptables: any[] = [];
   selectedIndex: number | null = null;
+  tiersNatures: any[] = [{libelle:'CLIENT'}, {libelle:'FOURNISSEUR'}];
 
   pageTitle: BreadcrumbItem[] = [];
 
@@ -50,7 +51,8 @@ export class ComptesComptablesComponent {
       numero: ['', Validators.required],
       intitule: ['', [Validators.required, Validators.minLength(3)]],
       planComptableId: ['', Validators.required],
-      classeCompte: ['', Validators.required]
+      classeCompte: ['', Validators.required],
+      tiersNature: [null]
     });
   }
 
@@ -145,7 +147,9 @@ export class ComptesComptablesComponent {
         this.selectedIndex = null;
         this.loadComptes();
       },
-      error: (err) => this.toastr.error('Erreur lors de l\'enregistrement')
+      error: (err) => {
+        console.error(err);
+        this.toastr.error(err)}
     });
   }
 

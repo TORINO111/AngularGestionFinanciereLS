@@ -29,7 +29,7 @@
       <h4 class="modal-title text-light" id="NewTaskModalLabel">RUBRIQUE</h4>
       <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body" style="max-height: 250px;">
 
       <form (ngSubmit)="onSaveCategorie(categorieForm); modal.close('Close click')" [formGroup]="categorieForm"
         class="p-2">
@@ -52,7 +52,7 @@
               <label for="type">Type</label>
 
               <ng-select formControlName="type" [items]="types" bindLabel="libelle" bindValue="id"
-                placeholder="Sélection type">
+                placeholder="Sélection type"
                 [searchable]="true">
                 <ng-template ng-notfound-tmp>
                   Aucun type disponible
@@ -92,7 +92,7 @@
                 <tr>
                   <td>{{ categorie.code }}</td>
                   <td>{{ categorie.libelle }}</td>
-                  <td>{{ categorie.type?.libelle }}</td>
+                  <td>{{ categorie.type }}</td>
                   <td style="width: 50px;">
                     <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x mr-1 me-3"
                       (click)="openEditModal(categorie, editModal)"></span>
@@ -105,7 +105,7 @@
                         <h4 class="modal-title text-light" id="NewTaskkModalLabel">RUBRIQUE</h4>
                         <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
                       </div>
-                      <div class="modal-body">
+                      <div >
                         <form (ngSubmit)="onUpdateCategorie(categorieUpdateForm);modal.close('Close click')"
                           [formGroup]="categorieUpdateForm" class="p-2">
                           <div class="row">
@@ -128,12 +128,12 @@
                               </div>
                             </div>
 
-                            <div class="col-md-6">
+                            <div class="col-md-6" style="height: 160px;">
                               <div class="form-group">
                                 <label for="type"> Type</label>
                                 <!--Ng-select ajoutés partout sur le projet par Victorin-->
                                 <ng-select formControlName="type" [items]="types" bindLabel="libelle" bindValue="id"
-                                  [clearable]="false" placeholder="Sélection type" [searchable]="true">
+                                  placeholder="Sélection type" [searchable]="true" >
                                   <ng-template ng-notfound-tmp>
                                     Aucun type disponible
                                   </ng-template>

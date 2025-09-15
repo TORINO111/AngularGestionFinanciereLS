@@ -7,7 +7,9 @@ export interface Societe {
     email: string;
     adresse: string;
     numeroIFU: string;
+    numeroRccm: string;
     comptableId?: string;
     comptableNom?:string;
+
 }
   

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { NatureOperation } from '../../models/nature-operation.model';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { NatureOperationDto } from '../../models/nature-operation.model';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
@@ -12,10 +12,23 @@ export class NatureOperationService {
   //private host:string='//4.222.22.46:8082/gest-fin';
   //private host:string='http://localhost:8082';
 
+  private baseUrl = `${environment.apiUrl}/api/nature-mapping`;
+
   constructor(private http: HttpClient) {}
 
-  getAll(): Observable<NatureOperation[]> {
-    return this.http.get<NatureOperation[]>(`${environment.apiUrl}/api/natures`).pipe(
+  getPrefixe(typeNature: string): Observable<string> {
+    const params = new HttpParams().set('typeNature', typeNature);
+    return this.http.get<string>(`${this.baseUrl}/prefixe`, { params });
+  }
+
+  // Récupérer la classe selon le TypeNature
+  getClasse(typeNature: string): Observable<string> {
+    const params = new HttpParams().set('typeNature', typeNature);
+    return this.http.get<string>(`${this.baseUrl}/classe`, { params });
+  }
+  
+  getAll(): Observable<NatureOperationDto[]> {
+    return this.http.get<NatureOperationDto[]>(`${environment.apiUrl}/api/natures`).pipe(
       catchError(this.handleError)
     );
   }
@@ -26,20 +39,20 @@ export class NatureOperationService {
     );
   }
 
-  getById(id: number): Observable<NatureOperation> {
-    return this.http.get<NatureOperation>(`${environment.apiUrl}/api/nature/${id}`).pipe(
+  getById(id: number): Observable<NatureOperationDto> {
+    return this.http.get<NatureOperationDto>(`${environment.apiUrl}/api/nature/${id}`).pipe(
       catchError(this.handleError)
     );
   }
 
-  create(data: NatureOperation): Observable<NatureOperation> {
-    return this.http.post<NatureOperation>(`${environment.apiUrl}/api/nature`, data).pipe(
+  create(data: NatureOperationDto): Observable<NatureOperationDto> {
+    return this.http.post<NatureOperationDto>(`${environment.apiUrl}/api/nature`, data).pipe(
       catchError(this.handleError)
     );
   }
 
-  update(id: number, data: NatureOperation): Observable<NatureOperation> {
-    return this.http.put<NatureOperation>(`${environment.apiUrl}/api/nature/${id}`, data).pipe(
+  update(id: number, data: NatureOperationDto): Observable<NatureOperationDto> {
+    return this.http.put<NatureOperationDto>(`${environment.apiUrl}/api/nature/${id}`, data).pipe(
       catchError(this.handleError)
     );
   }
@@ -54,14 +67,14 @@ export class NatureOperationService {
     societeId?: number,
     typeDepense?: string,
     typeCategorie?: string
-  ): Observable<NatureOperation[]> {
+  ): Observable<NatureOperationDto[]> {
     let params: any = {};
   
     if (societeId !== undefined) params.societeId = societeId.toString();
     if (typeDepense) params.typeDepense = typeDepense;
     if (typeCategorie) params.typeCategorie = typeCategorie;
   
-    return this.http.get<NatureOperation[]>(`${environment.apiUrl}/api/nature/by-filters`, { params });
+    return this.http.get<NatureOperationDto[]>(`${environment.apiUrl}/api/nature/by-filters`, { params });
   }
   
 

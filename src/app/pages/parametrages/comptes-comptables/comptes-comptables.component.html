@@ -56,8 +56,14 @@
             compteForm.get('classeCompte')?.touched" class="text-danger">
                         Champ obligatoire !
                     </div>
-
                 </div>
+                <div class="col-md-4 mt-2" *ngIf="compteForm.get('classeCompte')?.value === 'TIERS'">
+                    <label>Type Tiers</label>
+                    <ng-select formControlName="tiersNature" [items]="tiersNatures" bindLabel="libelle"
+                        bindValue="libelle" placeholder="Sélectionner le type de tiers">
+                    </ng-select>
+                </div>
+
             </div>
         </form>
 

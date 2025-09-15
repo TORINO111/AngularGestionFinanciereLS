@@ -1,5 +1,7 @@
-export interface TypeCategorie {
-    id: number;
-    code: string;
-    libelle: string;
-}
+export type TypeCategorie =
+  | 'DEPENSE'
+  | 'RECETTE'
+  | 'SALAIRE'
+  | 'TRESORERIE'
+  | 'IMMOBILISATION'
+  | 'AUTRE';

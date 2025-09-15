@@ -3,7 +3,7 @@ import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
-import { NatureOperation } from 'src/app/models/nature-operation.model';
+import { NatureOperationDto } from 'src/app/models/nature-operation.model';
 import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
 import { Operation } from 'src/app/models/operation.model';
 import { OperationService } from 'src/app/services/operations/operation.service';
@@ -206,7 +206,7 @@ export class RetraitsComponent implements OnInit {
         // 👉 3. Charger les natureOperations dans dropdown
         this.natureOperations = [{
           label: '',
-          options: (natureOperations as NatureOperation[]).map(n => ({
+          options: (natureOperations as NatureOperationDto[]).map(n => ({
             value: n.id,
             label: n.libelle
           }))
@@ -281,7 +281,7 @@ export class RetraitsComponent implements OnInit {
       (data:any) => {
         for(let d of data){
           //console.log(data)
-          this.natureOperations = [{ label: '', options: (data as NatureOperation[]).map(d => ({ value: d.id, label: d.libelle })) }];
+          this.natureOperations = [{ label: '', options: (data as NatureOperationDto[]).map(d => ({ value: d.id, label: d.libelle })) }];
         }
         this.isLoading=true;
       },

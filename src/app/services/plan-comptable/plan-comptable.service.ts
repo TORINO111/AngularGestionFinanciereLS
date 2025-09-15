@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { PlanComptable } from '../../models/plan-comptable.model';
-import { PlanAnalytique } from '../../models/plan-analytique.model';
+import { PlanAnalytique, PlanAnalytiqueDTO } from '../../models/plan-analytique.model';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 export interface PlanComptableImportDTO {
@@ -19,20 +19,23 @@ export interface ImportPlanComptableResultDTO {
 @Injectable({
   providedIn: 'root'
 })
-export class PlanComptableService {
-  
+export class PlanComptableService {  
   //private host:string='http://localhost:8082';
   //private host:string='//4.222.22.46:8082/gest-fin';
   ///private host:string='http://localhost:8082';
 
   private baseUrlPlanComptables = `${environment.apiUrl}/api/planComptables`;
   private baseUrlPlanComptable = `${environment.apiUrl}/api/planComptable`;
-  private baseUrlPlanAnalytique = `${environment.apiUrl}/api/plan-analytique`;
   
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<PlanComptable[]> {
     return this.http.get<PlanComptable[]>(this.baseUrlPlanComptables);
+  }
+
+  getByTypeNature(typeNature: string) {
+    const params = new HttpParams().set('typeNature', typeNature);
+    return this.http.get<PlanComptable[]>(`${this.baseUrlPlanComptables}/par-typenature`, {params});
   }
 
   getAllParPrefixe(prefixe:string): Observable<PlanComptable[]> {
@@ -56,20 +59,8 @@ export class PlanComptableService {
     return this.http.post<ImportPlanComptableResultDTO>(`${environment.apiUrl}/api/import-plan-comptable`,formData);
   }
 
-  getAllPlanAnalytique(): Observable<PlanAnalytique[]> {
-    return this.http.get<PlanAnalytique[]>(`${environment.apiUrl}/api/plans-analytiques`);
-  }
-
-  createPlanAnalytique(plananalytique: PlanAnalytique): Observable<PlanAnalytique> {
-    return this.http.post<PlanAnalytique>(this.baseUrlPlanAnalytique, plananalytique);
-  }
-
-  updatePlanAnalytique(sectionAnalytique: number, plananalytique: PlanAnalytique): Observable<PlanAnalytique> {
-    return this.http.put<PlanAnalytique>(`${this.baseUrlPlanAnalytique}/${sectionAnalytique}`, plananalytique);
-  }
-
-  deletePlanAnalytique(sectionAnalytique: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrlPlanAnalytique}/${sectionAnalytique}`);
+  getAllPlanAnalytique(): Observable<PlanAnalytiqueDTO[]> {
+    return this.http.get<PlanAnalytiqueDTO[]>(`${environment.apiUrl}/api/plans-analytiques`);
   }
 
   importerPlanAnalytique(formData: FormData) {

@@ -4,7 +4,7 @@ import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
-import { NatureOperation } from 'src/app/models/nature-operation.model';
+import { NatureOperationDto } from 'src/app/models/nature-operation.model';
 import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
 import { Operation } from 'src/app/models/operation.model';
 import { OperationService } from 'src/app/services/operations/operation.service';
@@ -253,7 +253,7 @@ export class DecaissementsComponent implements OnInit {
         }));
   
         // 👉 3. Charger les natureOperations dans dropdown
-        this.natureOperations = (natureOperations as NatureOperation[]).map(n => ({
+        this.natureOperations = (natureOperations as NatureOperationDto[]).map(n => ({
           value: n.id!,
           label: n.libelle
         }));
@@ -335,7 +335,7 @@ export class DecaissementsComponent implements OnInit {
     );
   }
 
-  chargerNatureOperations() {
+  chargerNatureOperationDtos() {
     const societeId = this.societeActive?.id;
     if (!societeId) {
       this.message = "Aucune société active sélectionnée.";
@@ -346,7 +346,7 @@ export class DecaissementsComponent implements OnInit {
     this.natureOperationService
       .getByFilters(societeId, 'DECAISSEMENT', 'TRESORERIE')
       .subscribe(
-        (data: NatureOperation[]) => {
+        (data: NatureOperationDto[]) => {
           // On filtre les éléments sans id et on crée un tableau plat
           this.natureOperations = data
             .filter(n => n.id !== undefined)
