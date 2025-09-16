@@ -9,9 +9,6 @@ import { environment } from 'src/environments/environment';
   providedIn: 'root'
 })
 export class SocieteService {
-  //private host:string='http://localhost:8082';
-  //private host:string='//4.222.22.46:8082/gest-fin';
-  //private host:string='http://localhost:8082';
 
   private baseUrlSociete = `${environment.apiUrl}/api/societe`;
   private baseUrlSocietes = `${environment.apiUrl}/api/societes`;

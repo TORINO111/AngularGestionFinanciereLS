@@ -51,8 +51,8 @@ export class PlanComptableService {
     return this.http.put<PlanComptable>(`${this.baseUrlPlanComptable}/${id}`, plan);
   }
 
-  delete(compte: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrlPlanComptable}/${compte}`);
+  delete(planComptableId: number, sectionId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrlPlanComptable}/${planComptableId}/${sectionId}`);
   }
 
   importerPlanComptable(formData: FormData) {

@@ -387,7 +387,7 @@ export class NatureOperationsComponent implements OnInit {
         this.plansAnalytiques = data.map(d =>
           this.fb.group({
             id: [d.id],
-            sectionAnalytique: [d.sectionAnalytique],
+            sectionAnalytique: [d.sectionsAnalytiques],
             societe: [d.societe]
           })
         );

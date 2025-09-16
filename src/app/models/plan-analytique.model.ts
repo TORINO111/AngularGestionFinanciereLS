@@ -1,10 +1,16 @@
 export interface PlanAnalytique {
-  sectionAnalytique: number;
+  id?: number;
+  sectionsAnalytiques: number[];
   societe: number;
 }
 
-export interface PlanAnalytiqueDTO{
+export interface SectionAnalytiqueDTO {
+  id: number;
+  libelle: string;
+}
+
+export interface PlanAnalytiqueDTO {
   id?: number;
-  sectionAnalytique: String;
-  societe: String;
+  sectionsAnalytiques: SectionAnalytiqueDTO[];
+  societe: string;
 }

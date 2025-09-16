@@ -72,7 +72,8 @@ export class PlanAnalytiqueComponent implements OnInit {
     private societeService: SocieteService,
   ) {
     this.planAnalytiqueForm = this.fb.group({
-      sectionAnalytique: ['', Validators.required],
+      id: [null],
+      sectionAnalytiques: [[], Validators.required],
       societe: [''],
     });
     this.modelImportForm = this.fb.group({
@@ -135,19 +136,64 @@ export class PlanAnalytiqueComponent implements OnInit {
 
   modifier(): void {
     if (this.selectedIndex !== null) {
+      const currentData = this.lignes[this.selectedIndex].value as PlanAnalytiqueDTO;
+      this.planAnalytiqueForm.patchValue({
+        id: currentData.id,
+        sectionsAnalytiques: currentData.sectionsAnalytiques,
+        societe: currentData.societe
+      });
       this.formVisible = true;
     }
   }
 
+  // supprimer(): void {
+  //   if (this.selectedIndex !== null) {
+  //     const currentData = this.lignes[this.selectedIndex].value as PlanAnalytique;
+  //     this.planAnalytiqueForm.setValue(currentData);
+  //     this.lignes.splice(this.selectedIndex, 1);
+  //     this.selectedIndex = null;
+  //     this.deleteSectionDuPlan(currentData.id, currentData.);
+  //   }
+  // }
+
   supprimer(): void {
     if (this.selectedIndex !== null) {
-      const currentData = this.lignes[this.selectedIndex].value as PlanAnalytique;
-      this.planAnalytiqueForm.setValue(currentData);
-      this.lignes.splice(this.selectedIndex, 1);
-      this.selectedIndex = null;
-      this.deletePlanAnalytique(currentData);
+      const currentGroup = this.lignes[this.selectedIndex]; // FormGroup
+      const currentData = currentGroup.value as {
+        planId: number,
+        sectionId: number,
+        sectionAnalytique: string,
+        societe: string
+      };
+
+      console.log(currentData);
+
+      Swal.fire({
+        title: 'Supprimer la section',
+        text: `Voulez-vous vraiment supprimer la section "${currentData.sectionAnalytique}" ?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Supprimer',
+        cancelButtonText: 'Annuler'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.plansAnalytiquesService.deleteSection(currentData.planId, currentData.sectionId)
+            .subscribe({
+              next: () => {
+                this.lignes.splice(this.selectedIndex!, 1);
+                this.selectedIndex = null;
+                this.planAnalytiqueForm.reset();
+                Swal.fire('Succès', 'Section supprimée avec succès.', 'success');
+              },
+              error: () => {
+                Swal.fire('Erreur', 'Une erreur s\'est produite.', 'error');
+              }
+            });
+        }
+      });
     }
   }
+
 
   fermer(): void {
     this.formVisible = false;
@@ -155,14 +201,21 @@ export class PlanAnalytiqueComponent implements OnInit {
     this.planAnalytiqueForm.reset();
   }
 
+
   selectLigne(index: number): void {
     this.selectedIndex = index;
-    const currentData = this.lignes[this.selectedIndex].value as PlanAnalytique;
-    this.planAnalytiqueForm.setValue(currentData);
+    const currentData = this.lignes[this.selectedIndex].value;
+    console.log(currentData);
+    this.planAnalytiqueForm.patchValue({
+      sectionsAnalytiques: [currentData.sectionAnalytique],
+      societe: currentData.societe
+    });
+
     this.selected = true;
   }
 
   enregistrer(): void {
+    console.log(this.planAnalytiqueForm.value);
     if (this.planAnalytiqueForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
       return;
@@ -172,8 +225,8 @@ export class PlanAnalytiqueComponent implements OnInit {
 
     const planAnalytique = this.planAnalytiqueForm.value as PlanAnalytique;
 
-    const action$ = this.selected
-      ? this.plansAnalytiquesService.updatePlanAnalytique(planAnalytique.sectionAnalytique, planAnalytique)
+    const action$ = planAnalytique.id!
+      ? this.plansAnalytiquesService.updatePlanAnalytique(planAnalytique.sectionsAnalytiques[0], planAnalytique)
       : this.plansAnalytiquesService.createPlanAnalytique(planAnalytique);
 
     action$.subscribe({
@@ -199,19 +252,87 @@ export class PlanAnalytiqueComponent implements OnInit {
     });
   }
 
+  // enregistrer(): void {
+  //   if (this.planAnalytiqueForm.invalid) {
+  //     this.notification.showWarning('Formulaire invalide');
+  //     return;
+  //   }
+
+  //   this.isLoading = true;
+
+  //   const planAnalytique = this.planAnalytiqueForm.value as PlanAnalytique;
+
+  //   const action$ = this.selected
+  //     ? this.plansAnalytiquesService.updatePlanAnalytique(planAnalytique.sectionAnalytique, planAnalytique)
+  //     : this.plansAnalytiquesService.createPlanAnalytique(planAnalytique);
+
+  //   action$.subscribe({
+  //     next: () => {
+  //       this.loading = false;
+  //       const msg = this.selected ? 'Modifié' : 'Enregistré';
+  //       this.notification.showSuccess(`${msg} avec succès`);
+  //       this.formVisible = false;
+  //       this.planAnalytiqueForm.reset();
+  //       this.selectedIndex = null;
+  //       this.selected = undefined;
+  //       this.isLoading = false;
+  //       this.chargerPlanAnalytiques();
+  //     },
+  //     error: (error: any) => {
+  //       this.notification.showError(error);
+  //       this.isLoading = false;
+  //       this.planAnalytiqueForm.reset();
+  //       this.selectedIndex = null;
+  //       this.selected = false;
+  //       this.chargerPlanAnalytiques();
+  //     }
+  //   });
+  // }
+
+
+  // chargerPlanAnalytiques(): void {
+  //   this.planComptableService.getAllPlanAnalytique().subscribe({
+  //     next: (data: PlanAnalytiqueDTO[]) => {
+  //       //console.log(data)
+  //       this.plansAnalytiques = data.map(d =>
+  //         this.fb.group({
+  //           id: [d.id],
+  //           sectionAnalytique: [d.sectionAnalytique],
+  //           societe: [d.societe]
+  //         })
+  //       );
+  //       this.lignes = this.plansAnalytiques;
+  //       console.log('lignes:', this.lignes);
+  //       this.selected = false;
+  //       this.result = true;
+  //     },
+  //     error: (error) => {
+  //       console.error('Erreur lors du chargement des plans analytiques', error);
+  //       this.result = true;
+  //       this.notification.showError('Erreur de chargement');
+  //     }
+  //   });
+  // }
+
   chargerPlanAnalytiques(): void {
     this.planComptableService.getAllPlanAnalytique().subscribe({
       next: (data: PlanAnalytiqueDTO[]) => {
-        //console.log(data)
-        this.plansAnalytiques = data.map(d =>
-          this.fb.group({
-            id: [d.id],
-            sectionAnalytique: [d.sectionAnalytique],
-            societe: [d.societe]
-          })
-        );
+        this.plansAnalytiques = [];
+
+        data.forEach(plan => {
+          (plan.sectionsAnalytiques || []).forEach(section => {
+            this.plansAnalytiques.push(
+              this.fb.group({
+                planId: [plan.id],
+                sectionId: [section.id],
+                sectionAnalytique: [section.libelle],
+                societe: [plan.societe]
+              })
+            );
+          });
+        });
+
         this.lignes = this.plansAnalytiques;
-        console.log('lignes:', this.lignes);
         this.selected = false;
         this.result = true;
       },
@@ -223,12 +344,11 @@ export class PlanAnalytiqueComponent implements OnInit {
     });
   }
 
-  deletePlanAnalytique(planComptable: PlanAnalytique): void {
+  deleteSectionDuPlan(planId: number, sectionId: number): void {
     Swal.fire({
-      title: 'Supprimer le compte',
-      // html: `
-      //   /* <p><strong>Compte : </strong><span style="color: #009879; font-size: 1.2em;">${planComptable.intitule}</span></p>
-      // `,
+      title: 'Supprimer la section',
+      text: `Voulez-vous vraiment supprimer cette section ?`,
+      icon: 'warning',
       showCancelButton: true,
       confirmButtonText: '<i class="fa fa-trash-alt"></i> Supprimer',
       cancelButtonText: '<i class="fa fa-ban"></i> Annuler',
@@ -239,15 +359,19 @@ export class PlanAnalytiqueComponent implements OnInit {
       },
       buttonsStyling: false
     }).then((result) => {
-      if (result.value) {
-        this.planComptableService.delete(planComptable.sectionAnalytique!).subscribe({
+      if (result.isConfirmed) {
+        this.planComptableService.delete(planId, sectionId).subscribe({
           next: () => {
-            this.plansAnalytiques = [];
-            this.chargerPlanAnalytiques();
-            Swal.fire('Succès', 'PlanAnalytique supprimé avec succès.', 'success');
+            // Mettre à jour le tableau frontend : retirer la section supprimée
+            this.lignes.forEach(l => {
+              if (l.value.id === planId) {
+                l.value.sectionsAnalytiques = l.value.sectionsAnalytiques.filter((sid: number) => sid !== sectionId);
+              }
+            });
+            Swal.fire('Succès', 'Section supprimée avec succès.', 'success');
           },
           error: () => {
-            Swal.fire('Erreur', 'Une erreur s\'est produite.', 'error');
+            Swal.fire('Erreur', 'Une erreur est survenue lors de la suppression.', 'error');
           }
         });
       } else if (result.dismiss === Swal.DismissReason.cancel) {
@@ -331,7 +455,6 @@ export class PlanAnalytiqueComponent implements OnInit {
       }
     });
   }
-
 
   openScrollableModal(content: TemplateRef<NgbModal>): void {
     //this.codeBudgetaireForm.reset();

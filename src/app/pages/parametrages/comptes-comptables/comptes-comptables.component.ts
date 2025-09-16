@@ -135,6 +135,7 @@ export class ComptesComptablesComponent {
     }
 
     const formValue = this.compteForm.value as CompteComptableDTO;
+    console.log(formValue.id);
     const action$ = formValue.id
       ? this.compteService.update(formValue.id, formValue)
       : this.compteService.create(formValue);

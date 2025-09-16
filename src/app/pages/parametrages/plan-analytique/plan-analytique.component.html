@@ -104,12 +104,15 @@
           <div class="row">
             <div class="col-12 col-md-6 mb-2">
               <div class="form-group">
-                <ng-select formControlName="sectionAnalytique" [items]="sectionsAnalytiques" bindLabel="libelle"
-                  bindValue="id" [clearable]="false" placeholder="Section Analytique" [searchable]="true">
-                  <ng-template ng-notfound-tmp>
-                    Aucune section analytique disponible
-                  </ng-template>
+                <input type="hidden" formControlName="id">
+                
+                <ng-select formControlName="sectionAnalytiques" [items]="sectionsAnalytiques" bindLabel="libelle"
+                  bindValue="id" [multiple]="true" [clearable]="false" placeholder="Sections Analytiques"
+                  [searchable]="true">
                 </ng-select>
+                <ng-template ng-notfound-tmp>
+                  Aucune section analytique disponible
+                </ng-template>
               </div>
             </div>
 
@@ -129,6 +132,7 @@
         }
       </div>
     </form>
+    <!-- Tableau -->
     <div class="table-container">
       <table class="table table-bordered table-sm custom-table">
         <thead>
@@ -139,10 +143,10 @@
         </thead>
         @if (!isLoading) {
         <tbody>
-          @for (plancomptable of plansAnalytiques; track plancomptable; let i = $index) {
+          @for (plan of plansAnalytiques; track plan; let i = $index) {
           <tr (click)="selectLigne(i)" [class.selected]="i === selectedIndex">
-            <td>{{ plancomptable.value.sectionAnalytique }}</td>
-            <td>{{ plancomptable.value.societe }}</td>
+            <td>{{ plan.value.sectionAnalytique }}</td>
+            <td>{{ plan.value.societe }}</td>
           </tr>
           }
           @if (plansAnalytiques?.length == 0) {

@@ -10,21 +10,21 @@ import { environment } from 'src/environments/environment';
 export class PlansAnalytiquesService {
   private baseUrlPlanAnalytique = `${environment.apiUrl}/api/plan-analytique`;
 
-  constructor(private http: HttpClient) {}
-  
+  constructor(private http: HttpClient) { }
+
   createPlanAnalytique(plananalytique: PlanAnalytique): Observable<PlanAnalytique> {
     return this.http.post<PlanAnalytique>(this.baseUrlPlanAnalytique, plananalytique);
   }
 
   getAllPlanAnalytique(): Observable<PlanAnalytiqueDTO[]> {
-      return this.http.get<PlanAnalytiqueDTO[]>(`${environment.apiUrl}/api/plans-analytiques`);
+    return this.http.get<PlanAnalytiqueDTO[]>(`${environment.apiUrl}/api/plans-analytiques`);
   }
 
-  updatePlanAnalytique(sectionAnalytique: number, plananalytique: PlanAnalytique): Observable<PlanAnalytique> {
-    return this.http.put<PlanAnalytique>(`${this.baseUrlPlanAnalytique}/${sectionAnalytique}`, plananalytique);
+  updatePlanAnalytique(plananalytiqueId: number, planAnalytique: PlanAnalytique): Observable<PlanAnalytique> {
+    return this.http.put<PlanAnalytique>(`${this.baseUrlPlanAnalytique}/${plananalytiqueId}`, planAnalytique);
   }
 
-  deletePlanAnalytique(sectionAnalytique: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrlPlanAnalytique}/${sectionAnalytique}`);
+  deleteSection(planId: number, sectionId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrlPlanAnalytique}/${planId}/section/${sectionId}`);
   }
 }

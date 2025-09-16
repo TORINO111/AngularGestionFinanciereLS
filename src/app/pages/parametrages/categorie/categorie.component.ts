@@ -89,8 +89,7 @@ export class CategorieComponent implements OnInit {
       },
       error: (error: any) => {
         this.result = true;
-        console.log('Erreur lors du chargement des categories', error);
-        this.notification.showError("Erreur lors du chargement des catégories");
+        this.notification.showError("Erreur lors du chargement des catégories: "+ error);
       }
     });
   }
@@ -99,7 +98,6 @@ export class CategorieComponent implements OnInit {
     this.typeCategorieService.getAll().subscribe({
       next: (data: any[]) => {
         this.types = data.map(t => ({ id: t, libelle: t }));
-        console.log(this.types)
         this.lastTypeId = data[data.length - 1].id;
       },
       error: (err) => {
@@ -162,10 +160,10 @@ export class CategorieComponent implements OnInit {
   }
 
   onUpdateCategorie(categorieFormValue: FormGroup) {
-    console.log('Form values:', categorieFormValue.value); // contient les modifications
 
     if (categorieFormValue.valid) {
     const formValue = categorieFormValue.value;
+
     this.categorieService.modifierCategorie(formValue.id, formValue).subscribe(
       {
       next: resp => {
@@ -177,10 +175,7 @@ export class CategorieComponent implements OnInit {
         this.result = true;
       },
       error: (error) => {
-        console.log("err :", error);
-        this.notification.showError(JSON.stringify(error));
-
-        console.log(error);
+        this.notification.showError(error);
         this.loading = false;
       }
     });
