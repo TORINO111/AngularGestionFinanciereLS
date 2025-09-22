@@ -6,6 +6,21 @@
     <!-- Boutons principaux -->
     <div class="mb-3 d-flex gap-2 flex-wrap">
       <button class="btn btn-success" (click)="openModal()" style="background-color: #37a6de">Nouveau Cabinet</button>
+
+      <!-- Barre de recherche + filtre -->
+      <div class="d-flex gap-2 ms-auto">
+        <input #searchInputNom class="p-2" placeholder="Rechercher par nom" [(ngModel)]="searchNom"
+          (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+
+        <input #searchInputTel class="p-2" placeholder="Rechercher par téléphone" [(ngModel)]="searchTel"
+          (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+
+        <ng-select class="mt-1" [items]="pays" placeholder="Filtrer par pays" bindLabel="libelle" bindValue="id"
+          [(ngModel)]="selectedPays" (ngModelChange)="onFilterChange()">
+          <ng-template ng-notfound-tmp>Aucun pays disponible</ng-template>
+        </ng-select>
+      </div>
+
     </div>
 
     <!-- Tableau des cabinets -->
@@ -41,13 +56,13 @@
         </thead>
         <tbody *ngIf="!isLoading && lignes.length > 0">
           <tr *ngFor="let cabinet of lignes; let i = index" (click)="selectLigne(i)">
-            <td>{{ cabinet.value.nom }}</td>
-            <td>{{ cabinet.value.adresse }}</td>
-            <td>{{ cabinet.value.telephone }}</td>
-            <td>{{ cabinet.value.email }}</td>
-            <td>{{ cabinet.value.numeroIFU }}</td>
-            <td>{{ cabinet.value.numeroRccm }}</td>
-            <td>{{ cabinet.value.paysNom }}</td>
+            <td>{{ cabinet.nom }}</td>
+            <td>{{ cabinet.adresse }}</td>
+            <td>{{ cabinet.telephone }}</td>
+            <td>{{ cabinet.email }}</td>
+            <td>{{ cabinet.numeroIFU }}</td>
+            <td>{{ cabinet.numeroRccm }}</td>
+            <td>{{ cabinet.paysNom }}</td>
             <td style="display: flex; justify-content:space-evenly;">
               <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="editCabinet(i)"></span>
               <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x" (click)="deleteCabinetConfirm(i)"></span>
@@ -70,6 +85,35 @@
             </td>
           </tr>
         </tbody>
+
+        <!-- Pagination -->
+      <nav aria-label="Pagination">
+        <ul class="pagination justify-content-center mt-3">
+
+          <!-- Bouton Précédent -->
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)"
+              [ngStyle]="{'background-color': currentPage === 0 ? '#ccc' : 'transparent'}">Précédent</a>
+          </li>
+
+          <!-- Pages dynamiques -->
+          <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
+            <a class="page-link" href="javascript:void(0)"
+              [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">
+              {{ page + 1 }}
+              <span *ngIf="page === currentPage" class="visually-hidden" (click)="goToPage(page)">(current)</span>
+            </a>
+          </li>
+
+          <!-- Bouton Suivant -->
+          <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
+            <a class="page-link" href="javascript:void(0)"
+              [ngStyle]="{'background-color': currentPage >= totalPages() - 1 ? '#ccc' : 'transparent'}"
+              (click)="goToPage(currentPage + 1)">Suivant</a>
+          </li>
+
+        </ul>
+      </nav>
       </table>
     </div>
 

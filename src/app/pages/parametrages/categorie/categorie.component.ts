@@ -31,6 +31,7 @@ export class CategorieComponent implements OnInit {
   totalElements: number = 0;
   pageSize: number = 3;
   currentPage: number = 0;
+
   private search$ = new Subject<{ libelle: string; type?: string }>();
 
   closeResult: string = '';

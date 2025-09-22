@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
+import { Component, OnInit, ViewChild, TemplateRef, ElementRef } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { SocieteService } from 'src/app/services/societe/societe.service';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { Societe } from 'src/app/models/societe.model';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
+import { debounceTime, Subject, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-cabinets',
@@ -17,11 +18,23 @@ export class CabinetsComponent implements OnInit {
 
   @ViewChild('modalContent', { static: true }) modalContent!: TemplateRef<any>;
 
+  @ViewChild('searchInputNom', { static: true }) searchInputNom!: ElementRef<HTMLInputElement>;
+  @ViewChild('searchInputTel', { static: true }) searchInputTel!: ElementRef<HTMLInputElement>;
+
+  selectedPays?: number;
+  private search$ = new Subject<{ nom: string; tel: string; pays?: number }>();
+  searchNom: string = '';
+  searchTel: string = '';
+
+  totalElements: number = 0;
+  pageSize: number = 3;
+  currentPage: number = 0;
+
   closeResult: string = '';
   cabinetsList: Societe[] = [];
   selected?: Societe;
 
-  lignes: UntypedFormGroup[] = [];
+  lignes: any[] = [];
 
   selectedIndex: number | null = null;
   cabinetForm!: UntypedFormGroup;
@@ -56,6 +69,37 @@ export class CabinetsComponent implements OnInit {
     this.pageTitle = [{ label: 'cabinets', path: '/', active: true }];
     this.chargerCabinets();
     this.chargerPays();
+    this.initSearchListener()
+  }
+
+  onFilterChange(): void {
+    this.search$.next({ nom: this.searchNom, tel: this.searchTel, pays: this.selectedPays });
+  }
+
+  private initSearchListener(): void {
+    this.search$
+      .pipe(
+        debounceTime(300),
+        switchMap(({ nom, tel, pays }) => {
+          this.currentPage = 0;
+          return this.societeService.getCabinets(
+            0,
+            this.pageSize,
+            nom || undefined,
+            tel || undefined,
+            pays || undefined
+          );
+        })
+      )
+      .subscribe({
+        next: data => {
+          console.log(data)
+          this.lignes = data.content;
+          this.totalElements = data.totalElements;
+          this.currentPage = 0;
+        },
+        error: err => console.error('Erreur lors de la recherche', err)
+      });
   }
 
   ajouter(): void {
@@ -107,35 +151,72 @@ export class CabinetsComponent implements OnInit {
     });
   }
 
-  chargerCabinets(): void {
-    this.lignes = [];
-    this.societeService.getAllCabinet().subscribe({
-      next: (data: Societe[]) => {
-        this.lignes = data.map(d =>
-          this.fb.group({
-            id: [d.id],
-            nom: [d.nom, Validators.required],
-            telephone: [d.telephone],
-            email: [d.email, [Validators.required, Validators.email]],
-            adresse: [d.adresse],
-            numeroIFU: [d.numeroIFU],
-            numeroRccm: [d.numeroRccm],
-            paysId: [d.paysId],
-            paysNom: [d.paysNom]
-          })
-        );
-        this.result = true;
-        this.loading = false;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Erreur lors du chargement des cabinets', error);
-        this.result = true;
-        this.isLoading = false;
-        this.loading = false;
-        this.notification.showError('Erreur de chargement');
-      }
-    });
+  // chargerCabinets(): void {
+  //   this.lignes = [];
+  //   this.societeService.getAllCabinet().subscribe({
+  //     next: (data: Societe[]) => {
+  //       this.lignes = data.map(d =>
+  //         this.fb.group({
+  //           id: [d.id],
+  //           nom: [d.nom, Validators.required],
+  //           telephone: [d.telephone],
+  //           email: [d.email, [Validators.required, Validators.email]],
+  //           adresse: [d.adresse],
+  //           numeroIFU: [d.numeroIFU],
+  //           numeroRccm: [d.numeroRccm],
+  //           paysId: [d.paysId],
+  //           paysNom: [d.paysNom]
+  //         })
+  //       );
+  //       this.result = true;
+  //       this.loading = false;
+  //       this.isLoading = false;
+  //     },
+  //     error: (error) => {
+  //       console.error('Erreur lors du chargement des cabinets', error);
+  //       this.result = true;
+  //       this.isLoading = false;
+  //       this.loading = false;
+  //       this.notification.showError('Erreur de chargement');
+  //     }
+  //   });
+  // }
+
+  chargerCabinets(page: number = 0) {
+    this.result = false;
+    this.currentPage = page;
+
+    this.societeService.getCabinets(
+      page,
+      this.pageSize,
+      this.searchNom ? this.searchNom : undefined,
+      this.searchTel ? this.searchTel : undefined,
+      this.selectedPays ? this.selectedPays : undefined
+    )
+      .subscribe({
+        next: (data) => {
+          this.lignes = data.content;
+          console.log(this.lignes);
+          this.totalElements = data.totalElements;
+          this.result = true;
+        },
+        error: (error) => {
+          this.result = true;
+          console.error("Erreur lors du chargement des cabinets:", error);
+        }
+      });
+  }
+
+  pages(): number[] {
+    return Array(this.totalPages()).fill(0).map((_, i) => i);
+  }
+
+  goToPage(page: number) {
+    this.chargerCabinets(page);
+  }
+
+  totalPages(): number {
+    return Math.ceil(this.totalElements / this.pageSize);
   }
 
   chargerPays() {
@@ -258,7 +339,7 @@ export class CabinetsComponent implements OnInit {
   }
 
 
-    openModal(): void {
+  openModal(): void {
     this.cabinetForm.reset();
     this.selectedIndex = null;
     this.modalService.open(this.modalContent, { centered: true });
@@ -274,15 +355,15 @@ export class CabinetsComponent implements OnInit {
     this.selectedIndex = index;
     const cabinet = this.lignes[index].value;
     this.cabinetForm.patchValue({
-    id: cabinet.id,
-    nom: cabinet.nom,
-    adresse: cabinet.adresse,
-    telephone: cabinet.telephone,
-    email: cabinet.email,
-    numeroIFU: cabinet.numeroIFU,
-    numeroRccm: cabinet.numeroRccm,
-    paysId: cabinet.paysId
-  });
+      id: cabinet.id,
+      nom: cabinet.nom,
+      adresse: cabinet.adresse,
+      telephone: cabinet.telephone,
+      email: cabinet.email,
+      numeroIFU: cabinet.numeroIFU,
+      numeroRccm: cabinet.numeroRccm,
+      paysId: cabinet.paysId
+    });
     this.modalService.open(this.modalContent, { centered: true });
   }
 
