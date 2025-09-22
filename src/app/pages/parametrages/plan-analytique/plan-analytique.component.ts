@@ -34,8 +34,8 @@ export interface ImportPlanComptableResultDTO {
 })
 export class PlanAnalytiqueComponent implements OnInit {
 
-  @ViewChild('content', { static: true }) content: any;
-  @ViewChild('editcontent', { static: true }) editcontent: any;
+  @ViewChild('modalContent', { static: true }) modalContent!: TemplateRef<any>;
+
   closeResult: string = '';
   plansAnalytiquesList: PlanAnalytique[] = [];
   selected?: boolean = false;
@@ -146,19 +146,9 @@ export class PlanAnalytiqueComponent implements OnInit {
     }
   }
 
-  // supprimer(): void {
-  //   if (this.selectedIndex !== null) {
-  //     const currentData = this.lignes[this.selectedIndex].value as PlanAnalytique;
-  //     this.planAnalytiqueForm.setValue(currentData);
-  //     this.lignes.splice(this.selectedIndex, 1);
-  //     this.selectedIndex = null;
-  //     this.deleteSectionDuPlan(currentData.id, currentData.);
-  //   }
-  // }
-
   supprimer(): void {
     if (this.selectedIndex !== null) {
-      const currentGroup = this.lignes[this.selectedIndex]; // FormGroup
+      const currentGroup = this.lignes[this.selectedIndex];
       const currentData = currentGroup.value as {
         planId: number,
         sectionId: number,
@@ -183,7 +173,7 @@ export class PlanAnalytiqueComponent implements OnInit {
                 this.lignes.splice(this.selectedIndex!, 1);
                 this.selectedIndex = null;
                 this.planAnalytiqueForm.reset();
-                Swal.fire('Succès', 'Section supprimée avec succès.', 'success');
+                Swal.fire('Succès', `Section supprimée du plan avec succès`, 'success');
               },
               error: () => {
                 Swal.fire('Erreur', 'Une erreur s\'est produite.', 'error');
@@ -194,13 +184,11 @@ export class PlanAnalytiqueComponent implements OnInit {
     }
   }
 
-
   fermer(): void {
     this.formVisible = false;
     this.selectedIndex = null;
     this.planAnalytiqueForm.reset();
   }
-
 
   selectLigne(index: number): void {
     this.selectedIndex = index;
@@ -226,7 +214,7 @@ export class PlanAnalytiqueComponent implements OnInit {
     const planAnalytique = this.planAnalytiqueForm.value as PlanAnalytique;
 
     const action$ = planAnalytique.id!
-      ? this.plansAnalytiquesService.updatePlanAnalytique(planAnalytique.sectionsAnalytiques[0], planAnalytique)
+      ? this.plansAnalytiquesService.updatePlanAnalytique(planAnalytique.id, planAnalytique)
       : this.plansAnalytiquesService.createPlanAnalytique(planAnalytique);
 
     action$.subscribe({
@@ -240,6 +228,7 @@ export class PlanAnalytiqueComponent implements OnInit {
         this.selected = undefined;
         this.isLoading = false;
         this.chargerPlanAnalytiques();
+        this.closeModal()
       },
       error: (error: any) => {
         this.notification.showError(error);
@@ -248,71 +237,11 @@ export class PlanAnalytiqueComponent implements OnInit {
         this.selectedIndex = null;
         this.selected = false;
         this.chargerPlanAnalytiques();
+        this.closeModal()
+
       }
     });
   }
-
-  // enregistrer(): void {
-  //   if (this.planAnalytiqueForm.invalid) {
-  //     this.notification.showWarning('Formulaire invalide');
-  //     return;
-  //   }
-
-  //   this.isLoading = true;
-
-  //   const planAnalytique = this.planAnalytiqueForm.value as PlanAnalytique;
-
-  //   const action$ = this.selected
-  //     ? this.plansAnalytiquesService.updatePlanAnalytique(planAnalytique.sectionAnalytique, planAnalytique)
-  //     : this.plansAnalytiquesService.createPlanAnalytique(planAnalytique);
-
-  //   action$.subscribe({
-  //     next: () => {
-  //       this.loading = false;
-  //       const msg = this.selected ? 'Modifié' : 'Enregistré';
-  //       this.notification.showSuccess(`${msg} avec succès`);
-  //       this.formVisible = false;
-  //       this.planAnalytiqueForm.reset();
-  //       this.selectedIndex = null;
-  //       this.selected = undefined;
-  //       this.isLoading = false;
-  //       this.chargerPlanAnalytiques();
-  //     },
-  //     error: (error: any) => {
-  //       this.notification.showError(error);
-  //       this.isLoading = false;
-  //       this.planAnalytiqueForm.reset();
-  //       this.selectedIndex = null;
-  //       this.selected = false;
-  //       this.chargerPlanAnalytiques();
-  //     }
-  //   });
-  // }
-
-
-  // chargerPlanAnalytiques(): void {
-  //   this.planComptableService.getAllPlanAnalytique().subscribe({
-  //     next: (data: PlanAnalytiqueDTO[]) => {
-  //       //console.log(data)
-  //       this.plansAnalytiques = data.map(d =>
-  //         this.fb.group({
-  //           id: [d.id],
-  //           sectionAnalytique: [d.sectionAnalytique],
-  //           societe: [d.societe]
-  //         })
-  //       );
-  //       this.lignes = this.plansAnalytiques;
-  //       console.log('lignes:', this.lignes);
-  //       this.selected = false;
-  //       this.result = true;
-  //     },
-  //     error: (error) => {
-  //       console.error('Erreur lors du chargement des plans analytiques', error);
-  //       this.result = true;
-  //       this.notification.showError('Erreur de chargement');
-  //     }
-  //   });
-  // }
 
   chargerPlanAnalytiques(): void {
     this.planComptableService.getAllPlanAnalytique().subscribe({
@@ -473,22 +402,6 @@ export class PlanAnalytiqueComponent implements OnInit {
       });
   }
 
-  openEditModal(editcontent: TemplateRef<NgbModal>): void {
-    this.modalService.open(editcontent,
-      {
-        size: 'lg', // set modal size
-        centered: true, scrollable: true,
-        backdrop: 'static', // disable modal from closing on click outside
-        keyboard: false,
-        ariaLabelledBy: 'modal-basic-title'
-      }).result.then((result) => {
-        this.closeResult = `Closed with: ${result}`;
-      }, (reason) => {
-        this.closeResult =
-          `Dismissed ${this.getDismissReason(reason)}`;
-      });
-  }
-
   private getDismissReason(reason: any): string {
     if (reason === ModalDismissReasons.ESC) {
       return 'by pressing ESC';
@@ -498,5 +411,59 @@ export class PlanAnalytiqueComponent implements OnInit {
       return 'with: ${reason}';
     }
   }
+
+  closeModal(): void {
+    this.modalService.dismissAll();
+    this.planAnalytiqueForm.reset();
+    this.selectedIndex = null;
+  }
+
+  openModal(): void {
+    this.planAnalytiqueForm.reset();
+    this.selectedIndex = null;
+    this.modalService.open(this.modalContent, { centered: true });
+  }
+
+  editPlan(index: number): void {
+    this.selectedIndex = index;
+    const plan = this.lignes[index].value;
+    // this.planAnalytiqueForm.patchValue(plan);
+    this.planAnalytiqueForm.patchValue(plan);
+    console.log(this.planAnalytiqueForm);
+
+    this.modalService.open(this.modalContent, { centered: true });
+  }
+
+  deletePlan(index: number): void {
+    const plan = this.plansAnalytiques[index].value;
+    if (!plan?.planId || !plan?.sectionId) return;
+
+    Swal.fire({
+      title: 'Supprimer la section',
+      text: `Voulez-vous vraiment supprimer la section "${plan.sectionAnalytique}" ?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Supprimer',
+      cancelButtonText: 'Annuler',
+      customClass: {
+        confirmButton: 'btn btn-danger',
+        cancelButton: 'btn btn-secondary'
+      },
+      buttonsStyling: false
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.plansAnalytiquesService.deleteSection(plan.planId, plan.sectionId)
+          .subscribe({
+            next: () => {
+              this.lignes.splice(index, 1);
+              this.selectedIndex = null;
+              this.notification.showSuccess('Section supprimée avec succès');
+            },
+            error: () => this.notification.showError('Erreur lors de la suppression')
+          });
+      }
+    });
+  }
+
 }
 

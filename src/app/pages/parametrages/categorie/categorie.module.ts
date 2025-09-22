@@ -5,6 +5,7 @@ import { PageTitleModule } from 'src/app/shared/page-title/page-title.module';
 import {CategorieRoutingModule } from './categorie-routing.module';
 import { CategorieComponent } from './categorie.component';
 import { NgSelectModule } from '@ng-select/ng-select'; 
+import { NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 
 
 @NgModule({
@@ -17,7 +18,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
     PageTitleModule,
     CategorieRoutingModule,
     ReactiveFormsModule,
-    NgSelectModule
+    NgSelectModule,
+    NgbModalModule
   ]
 })
 export class CategorieModule { }

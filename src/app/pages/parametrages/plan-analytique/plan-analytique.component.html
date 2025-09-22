@@ -1,176 +1,123 @@
-<!-- end page title -->
 <app-page-title [breadcrumbItems]="pageTitle" title="Plan Analytique"></app-page-title>
 
-@if (!result) {
-<div class="loader-container">
-  <div class="lds-dual-ring"></div>
-</div>
-}
-<!-- start page title -->
-@if (result) {
-<div class="mt-2 card">
+<div class="card mt-2">
   <div class="card-body">
-    @if (errorMessage) {
-    <div class="error-message">
-      <span class="error-icon">⚠️</span> {{ errorMessage }}
-    </div>
-    }
-    @if (importResult) {
-    <div class="result-container">
-      <div [ngClass]="{ 'success-message': importResult.success, 'error-message': !importResult.success }">
-        <span class="result-icon">{{ importResult.success ? '✓' : '⚠️' }}</span>
-        {{ importResult.message }}
-        @if (importResult.success) {
-        <span> - {{ importResult.lignesImportees }} comptes importés</span>
-        }
-      </div>
-      @if (importResult?.erreurs?.length ?? 0 > 0) {
-      <table class="error-table">
-        <thead>
-          <tr>
-            <th>Ligne</th>
-            <th>Compte</th>
-            <th>Intitulé</th>
-            <th>Erreur</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (err of importResult.erreurs; track err) {
-          <tr>
-            <td>{{ err.ligne }}</td>
-            <td>{{ err.compte }}</td>
-            <td>{{ err.intitule }}</td>
-            <td>{{ err.erreur }}</td>
-          </tr>
-          }
-        </tbody>
-      </table>
-      }
-    </div>
-    }
-    <br>
-    <form [formGroup]="planAnalytiqueForm">
-      <!-- Toolbar responsive -->
-      <div class="toolbar d-flex flex-wrap gap-2 mb-3">
-        <button type="button" class="btn btn-success" (click)="ajouter()">Nouveau</button>
-        <button type="button" class="btn btn-success" (click)="modifier()"
-          [disabled]="selectedIndex === null">Modifier</button>
-        <button type="button" class="btn btn-danger" (click)="supprimer()"
-          [disabled]="selectedIndex === null">Supprimer</button>
-        <button type="button" class="btn btn-success" (click)="enregistrer()"
-          [disabled]="!formVisible">Enregistrer</button>
-        <button type="button" class="btn btn-success" (click)="fermer()" [disabled]="!formVisible">Fermer</button>
-        <button type="button" class="btn btn-success" (click)="openScrollableModal(importExcelModal)">Importer</button>
-      </div>
 
-      <!-- Modal EXCEL-->
-      <ng-template #importExcelModal let-modal>
-        <div class="modal-header" style="background-color: #128C7E;">
-          <h4 class="modal-title text-light" id="NewTaskModalLabel">IMPORT EXCEL</h4>
-          <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
-        </div>
-        <div class="modal-body">
-          <form (ngSubmit)="onSubmit();modal.close('Close click')" enctype="multipart/form-data"
-            [formGroup]="modelImportForm" class="p-2">
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label>Fichier Excel</label>
-                <input required type="file" accept=".xls,.xlsx" class="form-control"
-                  (change)="onExcelFileSelected($event)">
-                @if (fileError) {
-                <div class="text-danger">{{ fileError }}</div>
-                }
-              </div>
-              <!-- <div class="col-md-6 mb-3">
-                  <label>Année</label>
-                  <select required name="annee" formControlName="annee" class="form-select" id="annee">
-                    <option value="null" disabled>---Select Année---</option>
-                    <option *ngFor="let annee of annees" [value]="annee">{{annee}}</option>
-                  </select>
-                </div> -->
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
-              <button type="submit" class="btn btn-secondary">Valider</button>
-            </div>
-          </form>
-        </div>
-      </ng-template>
-
-      <div class="container-fluid">
-        <!-- Formulaire principal -->
-        @if (formVisible) {
-        <div class="row mb-3">
-          <div class="row">
-            <div class="col-12 col-md-6 mb-2">
-              <div class="form-group">
-                <input type="hidden" formControlName="id">
-                
-                <ng-select formControlName="sectionAnalytiques" [items]="sectionsAnalytiques" bindLabel="libelle"
-                  bindValue="id" [multiple]="true" [clearable]="false" placeholder="Sections Analytiques"
-                  [searchable]="true">
-                </ng-select>
-                <ng-template ng-notfound-tmp>
-                  Aucune section analytique disponible
-                </ng-template>
-              </div>
-            </div>
-
-            <div class="col-12 col-md-4 mb-2">
-              <div class="form-group">
-                <label for="sociiete">Société</label>
-                <ng-select formControlName="societe" [items]="societes" bindLabel="nom" bindValue="id"
-                  [clearable]="false" placeholder="Société" [searchable]="true">
-                  <ng-template ng-notfound-tmp>
-                    Aucune société disponible
-                  </ng-template>
-                </ng-select>
-              </div>
-            </div>
-          </div>
-        </div>
-        }
-      </div>
-    </form>
-    <!-- Tableau -->
-    <div class="table-container">
-      <table class="table table-bordered table-sm custom-table">
-        <thead>
-          <tr>
-            <th>Section Analytique</th>
-            <th>Société</th>
-          </tr>
-        </thead>
-        @if (!isLoading) {
-        <tbody>
-          @for (plan of plansAnalytiques; track plan; let i = $index) {
-          <tr (click)="selectLigne(i)" [class.selected]="i === selectedIndex">
-            <td>{{ plan.value.sectionAnalytique }}</td>
-            <td>{{ plan.value.societe }}</td>
-          </tr>
-          }
-          @if (plansAnalytiques?.length == 0) {
-          <tr>
-            <td colspan="5">
-              <h3 style="text-align: center;">Aucune donnée trouvée</h3>
-            </td>
-          </tr>
-          }
-        </tbody>
-        }
-        @if (isLoading) {
-        <tbody>
-          <tr>
-            <td colspan="5" class="text-center">
-              <div class="spinner-border text-secondary" role="status">
-                <span class="visually-hidden">Chargement...</span>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-        }
-      </table>
+    <!-- Boutons principaux -->
+    <div class="mb-3 d-flex gap-2 flex-wrap">
+      <button class="btn btn-success" (click)="openModal()">Nouveau Plan
+        Analytique</button>
+      <button class="btn btn-success" (click)="openScrollableModal(importExcelModal)"
+        style="background-color: #37a6de">Importer</button>
     </div>
+
+    <!-- Tableau des plans analytiques -->
+    <table class="table table-bordered table-striped">
+      <thead class="table-custom">
+        <tr>
+          <th>
+            <h5>Section Analytique</h5>
+          </th>
+          <th>
+            <h5>Société</h5>
+          </th>
+          <th style="width:120px;">
+            <h5>Actions</h5>
+          </th>
+        </tr>
+      </thead>
+      <tbody *ngIf="!isLoading && plansAnalytiques.length > 0">
+        <tr *ngFor="let plan of lignes; let i = index">
+          <td>{{ plan.value.sectionAnalytique }}</td>
+          <td>{{ plan.value.societe }}</td>
+          <td>
+            <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x mr-1 me-3" (click)="editPlan(i)"></span>
+            <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x mr-1" (click)="deletePlan(i)"></span>
+          </td>
+        </tr>
+      </tbody>
+      <tbody *ngIf="!isLoading && plansAnalytiques.length === 0">
+        <tr>
+          <td colspan="3" class="text-center">
+            <h5>Aucune donnée trouvée</h5>
+          </td>
+        </tr>
+      </tbody>
+      <tbody *ngIf="isLoading">
+        <tr>
+          <td colspan="3" class="text-center">
+            <div class="spinner-border text-secondary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
   </div>
 </div>
-}
+
+<!-- Modal Import Excel -->
+<ng-template #importExcelModal let-modal>
+  <div class="modal-header text-white" style="background-color: #37a6de">
+    <h4 class="modal-title text-white">IMPORT EXCEL</h4>
+    <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss('')"></button>
+  </div>
+  <div class="modal-body">
+    <form (ngSubmit)="onSubmit(); modal.close('Close click')" enctype="multipart/form-data"
+      [formGroup]="modelImportForm" class="p-2">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label>Fichier Excel</label>
+          <input required type="file" accept=".xls,.xlsx" class="form-control" (change)="onExcelFileSelected($event)">
+          <div *ngIf="fileError" class="text-danger">{{ fileError }}</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
+        <button type="submit" class="btn btn-secondary" style="background-color: #37a6de">Valider</button>
+      </div>
+    </form>
+  </div>
+</ng-template>
+
+<!-- Modal Création / Modification Plan Analytique -->
+<ng-template #modalContent>
+
+  <div class="modal-header text-white" style="background-color: #37a6de; padding: 6px 10px;">
+    <h4 class="modal-title" style="color: white;">{{ selectedIndex !== null ? 'Modifier Plan Analytique' : 'Nouveau
+      Plan Analytique' }}</h4>
+    <button type="button" class="btn" style="color:white; font-size:1.4rem;" (click)="closeModal()">
+      &times;
+    </button>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="planAnalytiqueForm">
+      <input type="hidden" formControlName="id">
+      <div class="row g-3">
+        <div class="mb-3 col-md-7">
+          <label>Sections Analytiques</label>
+          <ng-select formControlName="sectionAnalytiques" [items]="sectionsAnalytiques" bindLabel="libelle"
+            bindValue="id" [multiple]="true" [clearable]="false" placeholder="Sélection Sections Analytiques"
+            [searchable]="true">
+            <ng-template ng-notfound-tmp>Aucune section analytique disponible</ng-template>
+          </ng-select>
+        </div>
+
+        <div class="mb-3 col-md-5">
+          <label>Société</label>
+          <ng-select formControlName="societe" [items]="societes" bindLabel="nom" bindValue="id" [clearable]="false"
+            placeholder="Société" [searchable]="true">
+            <ng-template ng-notfound-tmp>Aucune société disponible</ng-template>
+          </ng-select>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
+    <button type="button" class="btn btn-success" (click)="enregistrer()"
+      style="background-color: #37a6de">Enregistrer</button>
+  </div>
+</ng-template>

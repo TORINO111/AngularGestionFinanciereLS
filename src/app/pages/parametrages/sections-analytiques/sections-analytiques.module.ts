@@ -1,22 +1,22 @@
+import { SectionAnalytiqueRoutingModule } from './sections-analyitques-routing.module';
 import { NgModule } from '@angular/core';
+import { NgSelectModule } from '@ng-select/ng-select'; 
 import { CommonModule } from '@angular/common';
 import { FormsModule,ReactiveFormsModule} from '@angular/forms';
 import { PageTitleModule } from 'src/app/shared/page-title/page-title.module';
-import { PlanAnalytiqueRoutingModule } from './plan-analytique-routing.module';
-import { PlanAnalytiqueComponent } from './plan-analytique.component';
-import { NgSelectModule } from '@ng-select/ng-select'; 
+import { SectionsAnalytiquesComponent } from './sections-analytiques.component';
 
 @NgModule({
   declarations: [
-    PlanAnalytiqueComponent
+    SectionsAnalytiquesComponent
   ],
   imports: [
     CommonModule,
     FormsModule,
     PageTitleModule,
     ReactiveFormsModule,
-    PlanAnalytiqueRoutingModule,
+    SectionAnalytiqueRoutingModule,
     NgSelectModule
   ]
 })
-export class PlanAnalytiqueModule { }
+export class SectionsAnalytiquesModule{ }

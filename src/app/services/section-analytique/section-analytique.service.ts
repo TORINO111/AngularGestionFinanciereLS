@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SectionAnalytique } from 'src/app/models/section-analytique';
+import { SectionAnalytiqueDTO, SectionAnalytiqueRequest } from 'src/app/models/section-analytique.model';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -12,20 +13,20 @@ export class SectionAnalytiqueService {
 
   constructor(private _http: HttpClient) { }
 
-  creerSectionAnalytique(sectionAnalytique: any) {
-    return this._http.post(this.baseUrlSectionAnalytique, sectionAnalytique, {
+  creerSectionAnalytique(sectionAnalytique: SectionAnalytiqueRequest): Observable<SectionAnalytiqueDTO>  {
+    return this._http.post<SectionAnalytiqueDTO>(this.baseUrlSectionAnalytique, sectionAnalytique, {
       headers: new HttpHeaders().set('Content-Type', 'application/json')
     });
   }
 
-  modifierSectionAnalytique(id: number, sectionAnalytique: SectionAnalytique) {
-    return this._http.put(`${this.baseUrlSectionAnalytique}/${id}`, sectionAnalytique, {
+  modifierSectionAnalytique(id: number, sectionAnalytique: SectionAnalytique): Observable<SectionAnalytiqueDTO> {
+    return this._http.put<SectionAnalytiqueDTO>(`${this.baseUrlSectionAnalytique}/${id}`, sectionAnalytique, {
       headers: new HttpHeaders().set('Content-Type', 'application/json')
     });
   }
 
-  getAllSectionAnalytiques(): Observable<SectionAnalytique[]> {
-    return this._http.get<SectionAnalytique[]>(this.baseUrlSectionAnalytique, {
+  getAllSectionAnalytiques(): Observable<SectionAnalytiqueDTO[]> {
+    return this._http.get<SectionAnalytiqueDTO[]>(this.baseUrlSectionAnalytique, {
       headers: new HttpHeaders().set('Content-Type', 'application/json')
     });
   }

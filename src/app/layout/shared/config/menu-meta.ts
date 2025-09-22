@@ -28,7 +28,6 @@ const MENU_ITEMS: MenuItem[] = [
         isTitle: false,
         roles: ['SUPERVISEUR','COMPTABLE']
     },
-    
     {
         key: 'salaires',
         label: 'Salaires',
@@ -120,18 +119,9 @@ const MENU_ITEMS: MenuItem[] = [
         roles: ['SUPERVISEUR']
     },
     {
-        key: 'cabinets',
-        label: 'Cabinets',
-        link: '/parametrages/cabinets',
-        icon: 'package',
-        isTitle: false,
-        roles: ['ADMIN']
-    },
-
-    {
-        key: 'categories',
-        label: 'Categories',
-        link: '/parametrages/categories',
+        key: 'natureoperations',
+        label: "Nature d'opération",
+        link: '/parametrages/nature-operations',
         icon: 'package',
         isTitle: false,
         roles: ['ADMIN']
@@ -143,17 +133,7 @@ const MENU_ITEMS: MenuItem[] = [
         icon: 'package',
         isTitle: false,
         roles: ['ADMIN']
-    }
-    ,
-    {
-        key: 'natureoperations',
-        label: 'Nature Opération',
-        link: '/parametrages/nature-operations',
-        icon: 'package',
-        isTitle: false,
-        roles: ['ADMIN']
-    }
-    ,
+    },
     {
         key: 'plancomptable',
         label: 'Plan Comptable',
@@ -161,8 +141,15 @@ const MENU_ITEMS: MenuItem[] = [
         icon: 'package',
         isTitle: false,
         roles: ['ADMIN']
-    }
-    ,
+    },
+    {
+        key: 'sectionnalytique',
+        label: 'Section Analytique',
+        link: '/parametrages/sections-analytiques',
+        icon: 'package',
+        isTitle: false,
+        roles: ['ADMIN']
+    },
     {
         key: 'plananalytique',
         label: 'Plan Analytique',
@@ -170,8 +157,23 @@ const MENU_ITEMS: MenuItem[] = [
         icon: 'package',
         isTitle: false,
         roles: ['ADMIN']
-    }
-    ,
+    },
+    {
+        key: 'cabinets',
+        label: 'Cabinets',
+        link: '/parametrages/cabinets',
+        icon: 'package',
+        isTitle: false,
+        roles: ['ADMIN']
+    },
+    {
+        key: 'categories',
+        label: 'Categories',
+        link: '/parametrages/categories',
+        icon: 'package',
+        isTitle: false,
+        roles: ['ADMIN']
+    },
     {
         key: 'tiers',
         label: 'Tiers',
@@ -179,8 +181,7 @@ const MENU_ITEMS: MenuItem[] = [
         icon: 'package',
         isTitle: false,
         roles: ['ADMIN']
-    }
-    ,
+    },
     {
         key: 'utilisateurs',
         label: 'Utilisateurs',
@@ -188,8 +189,7 @@ const MENU_ITEMS: MenuItem[] = [
         icon: 'package',
         isTitle: false,
         roles: ['ADMIN','SUPERVISEUR']
-    }
-    ,
+    },
     {
         key: 'moncompte',
         label: 'Mon compte',

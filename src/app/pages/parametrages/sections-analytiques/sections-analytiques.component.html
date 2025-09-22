@@ -1,0 +1,77 @@
+<app-page-title [breadcrumbItems]="pageTitle" title="Sections Analytiques"></app-page-title>
+
+<div class="card">
+    <div class="card-body">
+
+        <!-- Bouton -->
+        <div class="mb-3 d-flex gap-2">
+            <button class="btn btn-success" style="background-color: #37a6de; border: #37a6de;" (click)="openModal()">Nouvelle
+                Section</button>
+        </div>
+
+        <!-- Tableau des sections analytiques -->
+        <table class="table table-bordered table-striped">
+            <thead class="table-custom">
+                <tr>
+                    <th>
+                        <h5>Code Section</h5>
+                    </th>
+                    <th>
+                        <h5>Intitulé</h5>
+                    </th>
+                    <th style="width:120px;">
+                        <h5>Actions</h5>
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody class="tbody-custom">
+                <tr *ngFor="let section of sections; let i = index">
+                    <td style="width: 200px;">{{ section.code }}</td>
+                    <td>{{ section.libelle }}</td>
+                    <td>
+                        <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x mr-1 me-3"
+                            (click)="editSection(i)"></span>
+                        <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x mr-1"
+                            (click)="deleteSection(i)"></span>
+                    </td>
+                </tr>
+                <tr *ngIf="sections.length === 0">
+                    <td colspan="3" class="text-center">Aucune section trouvée</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Modif-AJout -->
+<ng-template #modalContent>
+
+    <div class="modal-header text-white" style="background-color: #37a6de; padding: 6px 10px;">
+        <h5 class="modal-title" style="color: white;">{{ selectedIndex !== null ? 'Modifier Section' : 'Nouvelle
+            Section' }}</h5>
+        <button type="button" class="btn" style="color:white; font-size:1.4rem;" (click)="closeModal()">
+            &times;
+        </button>
+    </div>
+
+    <div class="modal-body">
+        <form [formGroup]="sectionForm">
+            <div class="mb-3">
+                <label class="form-label">Libellé</label>
+                <input formControlName="libelle" class="form-control">
+                <div *ngIf="sectionForm.get('libelle')?.invalid && sectionForm.get('libelle')?.touched"
+                    class="text-danger">
+                    <span *ngIf="sectionForm.get('libelle')?.hasError('required')">Libellé obligatoire</span>
+                    <span *ngIf="sectionForm.get('libelle')?.hasError('pattern')">Uniquement des lettres et
+                        espaces</span>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
+        <button type="button" class="btn btn-success"
+            (click)="saveSection()">Enregistrer</button>
+    </div>
+</ng-template>

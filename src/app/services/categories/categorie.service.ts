@@ -24,17 +24,42 @@ export class CategorieService {
       headers: new HttpHeaders().set('Content-Type', 'application/json')
     });
   }
+
   modifierCategorie(id: number, categorie: Categorie) {
     return this._http.put(`${this.baseUrlCategorie}/${id}`, categorie, {
       headers: new HttpHeaders().set('Content-Type', 'application/json')
     });
   }
 
-  getAllCategories(): Observable<Categorie[]> {
-    return this._http.get<Categorie[]>(`${environment.apiUrl}/api/categories`, {
-      headers: new HttpHeaders().set('Content-Type', 'application/json')
-    });
+  // getAllCategories(): Observable<Categorie[]> {
+  //   return this._http.get<Categorie[]>(`${environment.apiUrl}/api/categories`, {
+  //     headers: new HttpHeaders().set('Content-Type', 'application/json')
+  //   });
+  // }
+
+  getCategories(
+    page: number = 0,
+    size: number = 20,
+    search?: string,
+    type?: string
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    if (search) params = params.set('search', search);
+    if (type) params = params.set('type', type);
+
+    return this._http.get<any>(`${environment.apiUrl}/api/categories/pageable`, { params });
   }
+
+
+
+  getAllCategories(): Observable<Categorie[]> {
+    return this._http.get<Categorie[]>(`${environment.apiUrl}/api/categories/all`);
+  }
+
+
   getCategorieParId(id: number) {
     return this._http.get(`${this.baseUrlCategorie}/${id}`, {
       headers: new HttpHeaders().set('Content-Type', 'application/json')

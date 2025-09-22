@@ -1,170 +1,157 @@
-<!-- end page title -->
+<app-page-title [breadcrumbItems]="pageTitle" title="Catégories"></app-page-title>
+
 @if (!result) {
 <div class="loader-container">
   <div class="lds-dual-ring"></div>
 </div>
 }
-<!-- start page title -->
+
 @if (result) {
-<div class="">
-  <div class="row">
-    <div class="col-12">
-      <div class="page-title-box">
-        <h4 class="page-title">Catégorie</h4>
-        <div class="page-title-right">
-          <div class="mt-2 mt-md-0">
-            <button (click)="openScrollableModal(categorieModal)" type="button"
-              class="btn btn-success me-1 mb-2 mb-sm-0">
-              <i class="uil-plus me-1"></i> CREER UNE CATÉGORIE
-            </button>
-          </div>
-        </div>
+<div class="card">
+  <div class="card-body">
+    <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
+      <!-- Bouton Nouvelle catégorie -->
+      <button (click)="openModal()" type="button" class="btn btn-success">
+        Nouvelle Catégorie
+      </button>
+
+      <!-- Barre de recherche + filtre -->
+      <div class="d-flex gap-2 ms-auto">
+        <input #searchInput class="p-2" placeholder="Rechercher par libellé" [(ngModel)]="searchTerm"
+          (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+
+        <ng-select class="mt-1" [items]="types" placeholder="Filtrer par type" bindLabel="libelle"
+          bindValue="id" [(ngModel)]="selectedType" (ngModelChange)="onFilterChange()">>
+          <ng-template ng-notfound-tmp>Aucun type disponible</ng-template>
+        </ng-select>
       </div>
-    </div>
-  </div>
 
-  <!-- FORMULAIRE D'AJOUT DE CATÉGORIE -->
-  <ng-template #categorieModal let-modal>
-    <div class="modal-header" style="background-color: #128C7E;">
-      <h4 class="modal-title text-light" id="NewTaskModalLabel">RUBRIQUE</h4>
-      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
     </div>
-    <div class="modal-body" style="max-height: 250px;">
 
-      <form (ngSubmit)="onSaveCategorie(categorieForm); modal.close('Close click')" [formGroup]="categorieForm"
-        class="p-2">
-        <div class="row">
-          <div class="col-md-5">
-            <div class="form-group">
-              <label for="">Libelle</label>
-              <input type="text" id="libelle" name="libelle" formControlName="libelle" class="form-control"
-                placeholder="libelle">
-              @if (categorieForm.get('libelle')?.hasError('required') && categorieForm.get('libelle')?.touched) {
-              <strong class="text-danger"> Ce champ est obligatoire !</strong>
-              }
-              @if (categorieForm.get('libelle')?.hasError('minlength') && categorieForm.get('libelle')?.touched) {
-              <strong class="text-danger"> Minimum 2 caractères !</strong>
-              }
+    <!-- <div class="table-responsive mt-1"> -->
+    <table class="table table-bordered table-striped">
+      <thead class="table-custom">
+        <tr>
+          <th style="width:120px;">
+            <h5>Code</h5>
+          </th>
+          <th>
+            <h5>Libellé</h5>
+          </th>
+          <th>
+            <h5>Type</h5>
+          </th>
+          <th style="width:120px;">
+            <h5>Actions</h5>
+          </th>
+        </tr>
+      </thead>
+
+      <tbody *ngIf="!isLoading && categories.length > 0">
+        <tr *ngFor="let cat of lignes; let i = index">
+          <td>{{ cat.code }}</td>
+          <td>{{ cat.libelle }}</td>
+          <td>{{ cat.type }}</td>
+
+          <td>
+            <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="editCategorie(i)"></span>
+            <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x" (click)="deleteCategorie(i)"></span>
+
+          </td>
+        </tr>
+      </tbody>
+
+      <tbody *ngIf="!isLoading && categories.length === 0">
+        <tr>
+          <td colspan="4" class="text-center">
+            <h5>Aucune donnée trouvée</h5>
+          </td>
+        </tr>
+      </tbody>
+
+      <tbody *ngIf="isLoading">
+        <tr>
+          <td colspan="4" class="text-center">
+            <div class="spinner-border text-secondary" role="status">
+              <span class="visually-hidden">Chargement...</span>
             </div>
-          </div>
-          <div class="col-md-5">
-            <div class="form-group">
-              <label for="type">Type</label>
+          </td>
+        </tr>
+      </tbody>
 
-              <ng-select formControlName="type" [items]="types" bindLabel="libelle" bindValue="id"
-                placeholder="Sélection type"
-                [searchable]="true">
-                <ng-template ng-notfound-tmp>
-                  Aucun type disponible
-                </ng-template>
-              </ng-select>
+      <!-- Pagination -->
+      <nav aria-label="Pagination">
+        <ul class="pagination justify-content-center mt-3">
 
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
-          <button type="submit" class="btn btn-secondary">Enregistrer</button>
-        </div>
-      </form>
-    </div>
-  </ng-template>
+          <!-- Bouton Précédent -->
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)"
+              [ngStyle]="{'background-color': currentPage === 0 ? '#ccc' : 'transparent'}">Précédent</a>
+          </li>
 
-  <!-- LISTE DE CATÉGORIES -->
-  <div class="card mb-1">
-    <div class="card-body">
-      <div class="row">
-        <div class="col-12 col-md-12 col-lg-12">
-          <h4>Liste des catégories</h4>
-          <div class="table-responsive mt-1">
-            <table class="table table-hover table-nowrap mb-0">
-              <thead>
-                <tr>
-                  <th style="width: 100px;">Code</th>
-                  <th style="width: 250px;">Libellé</th>
-                  <th style="width: 200px;">Type</th>
-                  <th style="width: 120px;">Actions</th>
-                </tr>
-              </thead>
+          <!-- Pages dynamiques -->
+          <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
+            <a class="page-link" href="javascript:void(0)"
+              [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">
+              {{ page + 1 }}
+              <span *ngIf="page === currentPage" class="visually-hidden" (click)="goToPage(page)">(current)</span>
+            </a>
+          </li>
 
-              <tbody>
-                @for (categorie of categories; track categorie; let i = $index) {
-                <tr>
-                  <td>{{ categorie.code }}</td>
-                  <td>{{ categorie.libelle }}</td>
-                  <td>{{ categorie.type }}</td>
-                  <td style="width: 50px;">
-                    <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x mr-1 me-3"
-                      (click)="openEditModal(categorie, editModal)"></span>
-                    <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x mr-1"
-                      (click)="deleteCategorie(categorie)"></span>
+          <!-- Bouton Suivant -->
+          <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
+            <a class="page-link" href="javascript:void(0)"
+              [ngStyle]="{'background-color': currentPage >= totalPages() - 1 ? '#ccc' : 'transparent'}"
+              (click)="goToPage(currentPage + 1)">Suivant</a>
+          </li>
 
-                    <!-- FORMULAIRE DE MODIFICATION DE CATÉGORIE -->
-                    <ng-template #editModal let-modal>
-                      <div class="modal-header" style="background-color: #128C7E;">
-                        <h4 class="modal-title text-light" id="NewTaskkModalLabel">RUBRIQUE</h4>
-                        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
-                      </div>
-                      <div >
-                        <form (ngSubmit)="onUpdateCategorie(categorieUpdateForm);modal.close('Close click')"
-                          [formGroup]="categorieUpdateForm" class="p-2">
-                          <div class="row">
-                              <input type="hidden" formControlName="id" id="id" class="form-control"
-                                  [value]="categorieUpdateForm.get('id')?.value">
+        </ul>
+      </nav>
 
-                            <div class="col-md-6">
-                              <div class="form-group">
-                                <label for="">Libellé</label>
-                                <input type="text" id="libelle" name="libelle" formControlName="libelle"
-                                  class="form-control" placeholder="libelle">
-                                @if (categorieForm.get('libelle')?.hasError('required') &&
-                                categorieForm.get('libelle')?.touched) {
-                                <strong class="text-danger"> Ce champ est obligatoire !</strong>
-                                }
-                                @if (categorieForm.get('libelle')?.hasError('minlength') &&
-                                categorieForm.get('libelle')?.touched) {
-                                <strong class="text-danger"> Minimum 5 caractères !</strong>
-                                }
-                              </div>
-                            </div>
-
-                            <div class="col-md-6" style="height: 160px;">
-                              <div class="form-group">
-                                <label for="type"> Type</label>
-                                <!--Ng-select ajoutés partout sur le projet par Victorin-->
-                                <ng-select formControlName="type" [items]="types" bindLabel="libelle" bindValue="id"
-                                  placeholder="Sélection type" [searchable]="true" >
-                                  <ng-template ng-notfound-tmp>
-                                    Aucun type disponible
-                                  </ng-template>
-                                </ng-select>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
-                            <button type="submit" class="btn btn-primary">Modifier</button>
-                          </div>
-                        </form>
-                      </div>
-                    </ng-template>
-                  </td>
-                </tr>
-                }
-                @if (categories?.length == 0) {
-                <tr>
-                  <td colspan="4">
-                    <h3 style="text-align: center;">Aucune catégorie trouvée</h3>
-                  </td>
-                </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
+    </table>
   </div>
-  
 </div>
 }
+
+<!-- MODAL CREATION / MODIFICATION -->
+<ng-template #categorieModal>
+  <div class="modal-header text-white" style="background-color: #37a6de; padding: 6px 10px;">
+    <h4 class="modal-title" style="color: white;">{{ selectedIndex !== null ? 'Modifier Catégorie' : 'Nouvelle
+      Catégorie'}}</h4>
+    <button type="button" class="btn" style="color:white; font-size:1.4rem;" (click)="closeModal()">
+      &times;
+    </button>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="categorieForm" class="p-2">
+      <input type="hidden" formControlName="id">
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label>Libellé</label>
+          <input type="text" class="form-control" formControlName="libelle" placeholder="Libellé">
+          <div *ngIf="categorieForm.get('libelle')?.hasError('required') && categorieForm.get('libelle')?.touched"
+            class="text-danger">Champ obligatoire !</div>
+          <div *ngIf="categorieForm.get('libelle')?.hasError('minlength') && categorieForm.get('libelle')?.touched"
+            class="text-danger">Minimum 5 caractères !</div>
+        </div>
+
+        <div class="col-md-6">
+          <label>Type</label>
+          <ng-select formControlName="type" [items]="types" bindLabel="libelle" bindValue="id" [clearable]="false"
+            placeholder="Sélection type">
+            <ng-template ng-notfound-tmp>Aucun type disponible</ng-template>
+          </ng-select>
+          <div *ngIf="categorieForm.get('type')?.hasError('required') && categorieForm.get('type')?.touched"
+            class="text-danger">Champ obligatoire !</div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
+    <button type="button" class="btn btn-success" (click)="enregistrer()">Enregistrer</button>
+  </div>
+</ng-template>

@@ -32,9 +32,9 @@ export interface ImportPlanComptableResultDTO {
   standalone: false
 })
 export class PlanComptableComponent implements OnInit {
+  @ViewChild('modalContent', { static: true }) modalContent!: TemplateRef<any>;
+  @ViewChild('importExcelModal', { static: true }) importExcelModal!: TemplateRef<any>;
 
-  @ViewChild('content', { static: true }) content: any;
-  @ViewChild('editcontent', { static: true }) editcontent: any;
   closeResult: string = '';
   plansComptablesList: PlanComptable[] = [];
   selected: boolean = false;
@@ -67,7 +67,7 @@ export class PlanComptableComponent implements OnInit {
     private modalService: NgbModal,
   ) {
     this.planComptableForm = this.fb.group({
-      id:[''],
+      id: [''],
       societeId: ['', Validators.required],
       intitule: ['', [Validators.required,
       Validators.pattern('^[a-zA-Z0-9 -]+$'), // lettres, chiffres, tirets et espaces
@@ -125,31 +125,7 @@ export class PlanComptableComponent implements OnInit {
       //this.deletePlanComptable(currentData);
     }
   }
-
-  edit(planComptable: PlanComptable): void {
-    // this.selected = { ...planComptable };
-    // this.planComptableForm.patchValue(this.selected);
-    this.formVisible = true;
-  }
-
-  fermer(): void {
-    this.formVisible = false;
-    this.selectedIndex = null;
-    this.planComptableForm.reset();
-  }
-
-  selectLigne(index: number): void {
-    this.selectedIndex = index;
-    const currentData = this.lignes[this.selectedIndex].value as PlanComptable;
-    this.planComptableForm.setValue({
-      id: currentData.id,
-      intitule: currentData.intitule,
-      societeId: currentData.societe
-    });
-    this.selected = true;
-  }
-
-  //Enregistrer refait par VICTORIN
+  
   enregistrer(): void {
     if (this.planComptableForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
@@ -216,39 +192,6 @@ export class PlanComptableComponent implements OnInit {
       }
     });
   }
-
-  // deletePlanComptable(planComptable: PlanComptable): void {
-  //   Swal.fire({
-  //     title: 'Supprimer le compte',
-  //     html: `
-  //       <p><strong>Compte : </strong><span style="color: #009879; font-size: 1.2em;">${planComptable.intitule}</span></p>
-  //     `,
-  //     showCancelButton: true,
-  //     confirmButtonText: '<i class="fa fa-trash-alt"></i> Supprimer',
-  //     cancelButtonText: '<i class="fa fa-ban"></i> Annuler',
-  //     customClass: {
-  //       popup: 'swal2-custom-popup',
-  //       confirmButton: 'btn btn-danger',
-  //       cancelButton: 'btn btn-secondary'
-  //     },
-  //     buttonsStyling: false
-  //   }).then((result) => {
-  //     if (result.value) {
-  //       this.planComptableService.delete(planComptable.compte!).subscribe({
-  //         next: () => {
-  //           this.plansComptables = [];
-  //           this.chargerPlanComptables();
-  //           Swal.fire('Succès', 'Tiers supprimé avec succès.', 'success');
-  //         },
-  //         error: () => {
-  //           Swal.fire('Erreur', 'Une erreur s\'est produite.', 'error');
-  //         }
-  //       });
-  //     } else if (result.dismiss === Swal.DismissReason.cancel) {
-  //       Swal.fire('Abandonné', 'Suppression annulée', 'info');
-  //     }
-  //   });
-  // }
 
   onExcelFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -326,26 +269,9 @@ export class PlanComptableComponent implements OnInit {
     });
   }
 
-
   openScrollableModal(content: TemplateRef<NgbModal>): void {
     //this.codeBudgetaireForm.reset();
     this.modalService.open(content,
-      {
-        size: 'lg', // set modal size
-        centered: true, scrollable: true,
-        backdrop: 'static', // disable modal from closing on click outside
-        keyboard: false,
-        ariaLabelledBy: 'modal-basic-title'
-      }).result.then((result) => {
-        this.closeResult = `Closed with: ${result}`;
-      }, (reason) => {
-        this.closeResult =
-          `Dismissed ${this.getDismissReason(reason)}`;
-      });
-  }
-
-  openEditModal(editcontent: TemplateRef<NgbModal>): void {
-    this.modalService.open(editcontent,
       {
         size: 'lg', // set modal size
         centered: true, scrollable: true,
@@ -370,5 +296,41 @@ export class PlanComptableComponent implements OnInit {
     }
   }
 
+  closeModal(): void {
+    this.modalService.dismissAll();
+    this.planComptableForm.reset();
+    this.selectedIndex = null;
+    this.formVisible = false;
+  }
+
+  openModal(): void {
+    this.formVisible = true;
+    this.planComptableForm.reset();
+    this.selectedIndex = null;  
+    this.modalService.open(this.modalContent, { centered: true });
+  }
+
+  editPlan(index: number): void {
+    this.selectedIndex = index;
+    const plan = this.plansComptables[index].value;
+    console.log(plan);
+    this.planComptableForm.patchValue(plan);
+    this.formVisible = true;
+    this.modalService.open(this.modalContent, { size: 'lg', centered: true });
+  }
+
+  deletePlan(index: number): void {
+    const plan = this.plansComptables[index].value;
+    if (!plan?.id) return;
+    if (!confirm(`Voulez-vous vraiment supprimer le plan "${plan.intitule}" ?`)) return;
+
+    this.planComptableService.delete(plan.id, plan.section).subscribe({
+      next: () => {
+        this.notification.showSuccess('Plan comptable supprimé avec succès');
+        this.chargerPlanComptables();
+      },
+      error: () => this.notification.showError('Erreur lors de la suppression')
+    });
+  }
 
 }

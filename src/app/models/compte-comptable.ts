@@ -1,9 +1,10 @@
 export interface CompteComptableDTO {
   id?: number;
   numero: string;
+  codeComplet: string;
   intitule: string;
   planComptableId: number;
   planComptableLibelle?: string;
-  type?: 'ACTIF' | 'PASSIF' | 'CHARGE' | 'PRODUIT';
+  type?: string;
   classeCompte: string;
 }

@@ -12,7 +12,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
   ],
   imports: [
     CommonModule,
-    FormsModule,ReactiveFormsModule,
+    FormsModule,
+    ReactiveFormsModule,
     PageTitleModule,
     NatureOperationsRoutingModule,
     NgSelectModule

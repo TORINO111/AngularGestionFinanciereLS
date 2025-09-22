@@ -1,5 +1,5 @@
 export interface SectionAnalytique{
-    id: number,
+    id?: number,
     code: String,
     libelle: String
 }

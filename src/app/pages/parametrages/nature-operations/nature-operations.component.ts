@@ -1,6 +1,6 @@
 import { PlanAnalytiqueDTO } from './../../../models/plan-analytique.model';
 import { PlansAnalytiquesService } from './../../../services/plans-analytiques/plans-analytiques.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
 import { CategorieService } from 'src/app/services/categories/categorie.service';
 import { PlanComptableService } from 'src/app/services/plan-comptable/plan-comptable.service';
@@ -18,14 +18,20 @@ import { CompteComptableService } from 'src/app/services/comptes-comptables/comp
 import { CompteComptableDTO } from 'src/app/models/compte-comptable';
 import { PlanComptable } from 'src/app/models/plan-comptable.model';
 import { NatureOperationDto } from 'src/app/models/nature-operation.model';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-nature-operations',
   templateUrl: './nature-operations.component.html',
   styleUrls: ['./nature-operations.component.scss'],
+  encapsulation: ViewEncapsulation.None,
   standalone: false
 })
 export class NatureOperationsComponent implements OnInit {
+
+  @ViewChild('modalContent') modalContent!: TemplateRef<any>;
+
+
   natureList: NatureOperationDto[] = [];
   selected?: NatureOperationDto | null;
 
@@ -82,7 +88,9 @@ export class NatureOperationsComponent implements OnInit {
     private fb: UntypedFormBuilder,
     private notification: NotificationService,
     private typeCategorieService: TypeCategorieService,
-    private sectionAnalytiqueService: SectionAnalytiqueService
+    private sectionAnalytiqueService: SectionAnalytiqueService,
+    private modalService: NgbModal
+
   ) {
     this.natureOperationForm = this.fb.group({
       id: [],
@@ -100,27 +108,13 @@ export class NatureOperationsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.pageTitle = [{ label: 'Vos natures opérations', path: '/', active: true }];
+    this.pageTitle = [{ label: "Vos natures d'opérations", path: '/', active: true }];
     this.chargerNatureOperationDtos();
     this.chargerCategories();
     this.chargerPlansAnalytiques();
     this.chargerCodeJournal();
-    this.chargerTypesCategorie();
     this.chargerSectionsAnalytiques();
     this.chargerComptesComptables()
-  }
-
-  chargerTypesCategorie() {
-    this.typeCategorieService.getAll().subscribe({
-      next: (data: any[]) => {
-        this.types = data.map(t => ({ id: t.id, code: t.code, libelle: t.libelle }));
-        this.lastTypeId = data[data.length - 1].id;
-      },
-      error: (err) => {
-        console.error('Erreur lors du chargement des types', err);
-        this.notification.showError("Erreur lors du chargement des types");
-      }
-    });
   }
 
   onCategorieChange(): void {
@@ -216,7 +210,6 @@ export class NatureOperationsComponent implements OnInit {
     console.log(currentData.typeNature);
     this.chargerComptables(currentData.typeNature);
   }
-
 
   enregistrer(): void {
     //   console.log(this.natureOperationForm.value)
@@ -373,13 +366,11 @@ export class NatureOperationsComponent implements OnInit {
   }
 
   chargerComptables(typeNature: string) {
-    console.log(typeNature);
     this.planComptableService.getByTypeNature(typeNature).subscribe({
       next: (data: PlanComptable[]) => this.comptables = data,
       error: (err: any) => this.notification.showError(err)
     });
   }
-
 
   chargerPlansAnalytiques() {
     this.planAnalytiqueService.getAllPlanAnalytique().subscribe({
@@ -430,6 +421,34 @@ export class NatureOperationsComponent implements OnInit {
         Swal.fire('Abandonné', 'Suppression annulée', 'info');
       }
     });
+  }
+
+  openModal(): void {
+    this.formVisible = true;
+    this.selectedIndex = null;
+    this.natureOperationForm.reset();
+    this.natureOperationForm.patchValue({ societeId: 1 });
+    this.modalService.open(this.modalContent, { size: 'lg', centered: true });
+  }
+
+  closeModal(): void {
+    this.modalService.dismissAll();
+    this.natureOperationForm.reset();
+    this.selectedIndex = null;
+    this.formVisible = false;
+  }
+
+  editNature(index: number): void {
+    this.selectedIndex = index;
+    const nature = this.natureOperations[index].value;
+    this.natureOperationForm.patchValue(nature);
+    this.formVisible = true;
+    this.modalService.open(this.modalContent, { size: 'lg', centered: true });
+  }
+
+  deleteNature(index: number): void {
+    const nature = this.natureOperations[index].value;
+    this.deleteNatureOperationDto(nature);
   }
 
 }

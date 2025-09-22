@@ -1,139 +1,46 @@
 <app-page-title [breadcrumbItems]="pageTitle" title="Les cabinets"></app-page-title>
 
-@if (!result) {
-<div class="loader-container">
-  <div class="lds-dual-ring"></div>
-</div>
-}
-@if (result) {
-<div class="mt-2 card">
+<div class="card mt-2">
   <div class="card-body">
-    <form [formGroup]="cabinetForm">
-      <div class="toolbar d-flex flex-wrap gap-2 mb-3">
-        <button type="button" class="btn btn-success" (click)="ajouter()">Nouveau</button>
-        <button type="button" class="btn btn-success" (click)="modifier()"
-          [disabled]="selectedIndex === null">Modifier</button>
-        <button type="button" class="btn btn-danger" (click)="supprimer()"
-          [disabled]="selectedIndex === null">Supprimer</button>
-        <button type="button" class="btn btn-success" (click)="enregistrer()"
-          [disabled]="!formVisible">Enregistrer</button>
-        <button type="button" class="btn btn-success" (click)="fermer()" [disabled]="!formVisible">Fermer</button>
-      </div>
 
-      <!-- Formulaire -->
-      <div class="container-fluid">
-        @if (formVisible) {
-        <div class="row mb-3">
-          <div class="row">
-            <input type="hidden" formControlName="id" />
-            <div class="col-12 col-md-2 mb-2">
-              <div class="form-group">
-                <label for="">Nom</label>
-                <input type="text" id="nom" name="nom" formControlName="nom" class="form-control" placeholder="Nom">
-                @if (cabinetForm.get('nom')?.hasError('required') && cabinetForm.get('nom')?.touched) {
-                <strong class="text-danger">
-                  Champ obligatoire !
-                </strong>
-                }
-              </div>
-            </div>
-            <div class="col-12 col-md-2 mb-2">
-              <div class="form-group">
-                <label for="">Adresse</label>
-                <input type="text" id="adresse" name="adresse" formControlName="adresse" class="form-control"
-                  placeholder="Adresse">
-                @if (cabinetForm.get('adresse')?.hasError('required') && cabinetForm.get('adresse')?.touched) {
-                <strong class="text-danger">
-                  Champ obligatoire !
-                </strong>
-                }
-              </div>
-            </div>
-            <div class="col-12 col-md-2 mb-2">
-              <div class="form-group">
-                <label for="">Telephone</label>
-                <input type="text" id="nom" name="telephone" formControlName="telephone" class="form-control"
-                  placeholder="Telephone">
-                @if (cabinetForm.get('telephone')?.hasError('required') && cabinetForm.get('telephone')?.touched) {
-                <strong class="text-danger">
-                  Champ obligatoire !
-                </strong>
-                }
-              </div>
-            </div>
-            <div class="col-12 col-md-2 mb-2">
-              <div class="form-group">
-                <label for="">Email</label>
-                <input type="text" id="email" name="email" formControlName="email" class="form-control"
-                  placeholder="Email">
-                @if (cabinetForm.get('email')?.hasError('required') && cabinetForm.get('email')?.touched) {
-                <strong class="text-danger">
-                  Champ obligatoire !
-                </strong>
-                }
-              </div>
-            </div>
-            <div class="col-12 col-md-2 mb-2">
-              <div class="form-group">
-                <label for="">IFU</label>
-                <input type="text" id="numeroIFU" name="numeroIFU" formControlName="numeroIFU" class="form-control"
-                  placeholder="IFU">
-                @if (cabinetForm.get('numeroIFU')?.hasError('required') && cabinetForm.get('numeroIFU')?.touched) {
-                <strong class="text-danger">
-                  Champ obligatoire !
-                </strong>
-                }
-              </div>
-            </div>
-            <div class="col-12 col-md-2 mb-2">
-              <div class="form-group">
-                <label for="numeroRccm">RCCM</label>
-                <input type="text" id="numeroRccm" name="numeroRccm" formControlName="numeroRccm" class="form-control" placeholder="RCCM">
-                @if (cabinetForm.get('rccm')?.hasError('required') && cabinetForm.get('rccm')?.touched) {
-                <strong class="text-danger">
-                  Champ obligatoire !
-                </strong>
-                }
-              </div>
-            </div>
-            <div class="col-12 col-md-4 mb-2">
-              <div class="form-group">
-                <label for="pays">Pays</label>
-                <ng-select [items]="pays" bindLabel="libelle" bindValue="id" placeholder="Sélection pays"
-                  formControlName="paysId" [searchable]="true">
-                  <ng-template ng-notfound-tmp>
-                    Aucune catégorie disponible
-                  </ng-template>
-                </ng-select>
-                @if (cabinetForm.get('paysId')?.hasError('required') && cabinetForm.get('paysId')?.touched) {
-                <strong class="text-danger">
-                  Champ obligatoire !
-                </strong>
-                }
-              </div>
-            </div>
-          </div>
-        </div>
-        }
-      </div>
-    </form>
+    <!-- Boutons principaux -->
+    <div class="mb-3 d-flex gap-2 flex-wrap">
+      <button class="btn btn-success" (click)="openModal()" style="background-color: #37a6de">Nouveau Cabinet</button>
+    </div>
+
+    <!-- Tableau des cabinets -->
     <div class="table-container">
-      <table class="table table-bordered table-sm custom-table">
-        <thead>
+      <table class="table table-bordered table-striped">
+        <thead class="table-custom">
           <tr>
-            <th>Nom</th>
-            <th>Adresse</th>
-            <th>Telephone</th>
-            <th>Email</th>
-            <th>IFU</th>
-            <th>RCCM</th>
-            <th>Pays</th>
+            <th>
+              <h5>Nom</h5>
+            </th>
+            <th>
+              <h5>Adresse</h5>
+            </th>
+            <th>
+              <h5>Téléphone</h5>
+            </th>
+            <th>
+              <h5>Email</h5>
+            </th>
+            <th>
+              <h5>IFU</h5>
+            </th>
+            <th>
+              <h5>RCCM</h5>
+            </th>
+            <th>
+              <h5>Pays</h5>
+            </th>
+            <th>
+              <h5>Actions</h5>
+            </th>
           </tr>
         </thead>
-        @if (!isLoading) {
-        <tbody>
-          @for (cabinet of lignes; track cabinet; let i = $index) {
-          <tr (click)="selectLigne(i)" [class.selected]="i === selectedIndex">
+        <tbody *ngIf="!isLoading && lignes.length > 0">
+          <tr *ngFor="let cabinet of lignes; let i = index" (click)="selectLigne(i)">
             <td>{{ cabinet.value.nom }}</td>
             <td>{{ cabinet.value.adresse }}</td>
             <td>{{ cabinet.value.telephone }}</td>
@@ -141,30 +48,99 @@
             <td>{{ cabinet.value.numeroIFU }}</td>
             <td>{{ cabinet.value.numeroRccm }}</td>
             <td>{{ cabinet.value.paysNom }}</td>
-          </tr>
-          }
-          @if (lignes?.length === 0) {
-          <tr>
-            <td colspan="6">
-              <h3 style="text-align: center;">Aucune donnée trouvée</h3>
+            <td style="display: flex; justify-content:space-evenly;">
+              <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="editCabinet(i)"></span>
+              <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x" (click)="deleteCabinetConfirm(i)"></span>
             </td>
           </tr>
-          }
         </tbody>
-        }
-        @if (isLoading) {
-        <tbody>
+        <tbody *ngIf="!isLoading && lignes.length === 0">
           <tr>
-            <td colspan="6" class="text-center">
+            <td colspan="8" class="text-center">
+              <h5>Aucune donnée trouvée</h5>
+            </td>
+          </tr>
+        </tbody>
+        <tbody *ngIf="isLoading">
+          <tr>
+            <td colspan="8" class="text-center">
               <div class="spinner-border text-secondary" role="status">
                 <span class="visually-hidden">Chargement...</span>
               </div>
             </td>
           </tr>
         </tbody>
-        }
       </table>
     </div>
+
   </div>
 </div>
-}
+
+<!-- Modal Création / Modification Cabinet -->
+<ng-template #modalContent>
+
+  <div class="modal-header text-white" style="background-color: #37a6de; padding: 6px 10px;">
+    <h4 class="modal-title" style="color: white;">{{ selectedIndex !== null ? 'Modifier Cabinet' : 'Nouveau Cabinet' }}
+    </h4>
+    <button type="button" class="btn" style="color:white; font-size:1.4rem;" (click)="closeModal()">
+      &times;
+    </button>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="cabinetForm" class="container-fluid">
+      <input type="hidden" formControlName="id">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label>Nom</label>
+          <input type="text" formControlName="nom" bindLabel="nom" class="form-control">
+          <div *ngIf="cabinetForm.get('nom')?.hasError('required') && cabinetForm.get('nom')?.touched"
+            class="text-danger">Champ obligatoire !</div>
+        </div>
+        <div class="col-md-6">
+          <label>Adresse</label>
+          <input type="text" formControlName="adresse" class="form-control">
+          <div *ngIf="cabinetForm.get('adresse')?.hasError('required') && cabinetForm.get('adresse')?.touched"
+            class="text-danger">Champ obligatoire !</div>
+        </div>
+        <div class="col-md-6">
+          <label>Téléphone</label>
+          <input type="text" formControlName="telephone" class="form-control">
+        </div>
+        <div class="col-md-6">
+          <label>Email</label>
+          <input type="text" formControlName="email" class="form-control">
+          <div *ngIf="cabinetForm.get('email')?.hasError('required') && cabinetForm.get('email')?.touched"
+            class="text-danger">Champ obligatoire !</div>
+          <div *ngIf="cabinetForm.get('email')?.hasError('email') && cabinetForm.get('email')?.touched"
+            class="text-danger">Email invalide !</div>
+        </div>
+        <div class="col-md-6">
+          <label>IFU</label>
+          <input type="text" formControlName="numeroIFU" class="form-control">
+          <div *ngIf="cabinetForm.get('numeroIFU')?.hasError('required') && cabinetForm.get('numeroIFU')?.touched"
+            class="text-danger">Champ obligatoire !</div>
+        </div>
+        <div class="col-md-6">
+          <label>RCCM</label>
+          <input type="text" formControlName="numeroRccm" class="form-control">
+          <div *ngIf="cabinetForm.get('numeroRccm')?.hasError('required') && cabinetForm.get('numeroRccm')?.touched"
+            class="text-danger">Champ obligatoire !</div>
+        </div>
+        <div class="col-md-6">
+          <label>Pays</label>
+          <ng-select [items]="pays" bindLabel="libelle" bindValue="id" formControlName="paysId"
+            placeholder="Sélection pays" [searchable]="true">
+            <ng-template ng-notfound-tmp>Aucun pays disponible</ng-template>
+          </ng-select>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
+    <button type="button" class="btn btn-success" (click)="enregistrer()"
+      style="background-color: #37a6de">Enregistrer</button>
+  </div>
+</ng-template>

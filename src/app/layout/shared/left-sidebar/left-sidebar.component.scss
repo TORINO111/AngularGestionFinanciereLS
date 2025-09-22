@@ -1,0 +1,12 @@
+/* Élément actif et hover dans le menu gauche */
+.left-side-menu #side-menu li.menuitem-active > a,
+.left-side-menu #side-menu li.menuitem-active > a:hover {
+  background-color: #37a6de !important;
+  color: #fff !important;
+}
+
+/* Tous les liens au survol */
+.left-side-menu #side-menu a.side-nav-link-ref:hover {
+  background-color: #37a6de !important;
+  color: #fff !important;
+}

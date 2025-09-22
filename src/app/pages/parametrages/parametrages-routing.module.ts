@@ -2,90 +2,88 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../../core/guards/auth.guard';
 const routes: Routes = [
-  
-  { 
+
+  {
+    path: 'nature-operations',
+    loadChildren: () => import('./nature-operations/nature-operations.module').then(m => m.NatureOperationsModule),
+    canActivate: [AuthGuard],
+    data: { roles: ['ADMIN'] }
+  },
+  {
     path: 'categories',
     loadChildren: () => import('./categorie/categorie.module').then(m => m.CategorieModule),
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }
-   },
-  
-  { 
+  },
+  {
     path: 'societes',
-    loadChildren: () => import('./societes/societes.module').then(m => m.SocietesModule) ,
+    loadChildren: () => import('./societes/societes.module').then(m => m.SocietesModule),
     canActivate: [AuthGuard],
     data: { roles: ['SUPERVISEUR'] }
   },
-  { 
+  {
     path: 'cabinets',
-    loadChildren: () => import('./cabinets/cabinets.module').then(m => m.CabinetsModule) ,
+    loadChildren: () => import('./cabinets/cabinets.module').then(m => m.CabinetsModule),
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }
   },
-  { 
+  {
     path: 'informations-cabinet',
-    loadChildren: () => import('./informations-societe/informations-societe.module').then(m => m.InformationsSocieteModule) ,
+    loadChildren: () => import('./informations-societe/informations-societe.module').then(m => m.InformationsSocieteModule),
     canActivate: [AuthGuard],
     data: { roles: ['SUPERVISEUR'] }
   },
-  { 
-    path: 'nature-operations',
-    loadChildren: () => import('./nature-operations/nature-operations.module').then(m => m.NatureOperationsModule),
-    canActivate: [AuthGuard],
-    data: { roles: ['ADMIN'] } 
-  },
-  
-  { 
+  {
     path: 'utilisateurs',
-    loadChildren: () => import('./utilisateurs/utilisateurs.module').then(m => m.UtilisateursModule) ,
+    loadChildren: () => import('./utilisateurs/utilisateurs.module').then(m => m.UtilisateursModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN','SUPERVISEUR'] }
-  }
-  ,
-  { 
+    data: { roles: ['ADMIN', 'SUPERVISEUR'] }
+  },
+  {
     path: 'mon-compte',
-    loadChildren: () => import('./compte/compte.module').then(m => m.CompteModule) ,
+    loadChildren: () => import('./compte/compte.module').then(m => m.CompteModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN','SUPERVISEUR','COMPTABLE'] }
-  }
-  ,
-  { 
+    data: { roles: ['ADMIN', 'SUPERVISEUR', 'COMPTABLE'] }
+  },
+  {
     path: 'tiers',
-    loadChildren: () => import('./tiers/tiers.module').then(m => m.TiersModule) ,
+    loadChildren: () => import('./tiers/tiers.module').then(m => m.TiersModule),
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }
-  }
-  ,
-  { 
+  },
+  {
     path: 'plan-comptable',
-    loadChildren: () => import('./plan-comptable/plan-comptable.module').then(m => m.PlanComptableModule) ,
+    loadChildren: () => import('./plan-comptable/plan-comptable.module').then(m => m.PlanComptableModule),
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }
-  }
-  ,
-  { 
+  },
+  {
     path: 'comptes-comptables',
-    loadChildren: () => import('./comptes-comptables/comptes-comptables.module').then(m => m.CompteComptableModule) ,
+    loadChildren: () => import('./comptes-comptables/comptes-comptables.module').then(m => m.CompteComptableModule),
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }
-  }
-  ,
-  { 
+  },
+  {
     path: 'plan-analytique',
-    loadChildren: () => import('./plan-analytique/plan-analytique.module').then(m => m.PlanAnalytiqueModule) ,
+    loadChildren: () => import('./plan-analytique/plan-analytique.module').then(m => m.PlanAnalytiqueModule),
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }
-  }
-  ,
-  { 
+  },
+  {
+    path: 'sections-analytiques',
+    loadChildren: () => import('./sections-analytiques/sections-analytiques.module').then(m => m.SectionsAnalytiquesModule),
+    canActivate: [AuthGuard],
+    data: { roles: ['ADMIN'] }
+  },
+  {
     path: 'exercice-comptable',
-    loadChildren: () => import('./gestion-exercice/gestion-exercice.module').then(m => m.GestionExerciceModule) ,
+    loadChildren: () => import('./gestion-exercice/gestion-exercice.module').then(m => m.GestionExerciceModule),
     canActivate: [AuthGuard],
     data: { roles: ['COMPTABLE'] }
   }
-  
+
 ];
-  
+
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]

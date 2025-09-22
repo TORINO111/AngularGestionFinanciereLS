@@ -80,7 +80,6 @@ export class TopbarComponent implements OnInit {
     document.addEventListener("mozfullscreenchange", this.exitHandler);
   }
 
-
   loadSocietes() {
     this.societeService.getSocietesPourComptableConnecte().subscribe(data => {
       this.societes = data;
@@ -420,8 +419,6 @@ export class TopbarComponent implements OnInit {
       }
     }
   }
-
-
 
   /**
   * Toggles the right sidebar

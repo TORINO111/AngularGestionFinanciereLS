@@ -1,5 +1,5 @@
 import { CompteComptableDTO } from 'src/app/models/compte-comptable';
-import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
+import { Component, OnInit, ViewChild, TemplateRef, ViewEncapsulation } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
@@ -11,33 +11,22 @@ import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.
   selector: 'app-comptes-comptables',
   templateUrl: './comptes-comptables.component.html',
   styleUrl: './comptes-comptables.component.scss',
+  encapsulation: ViewEncapsulation.None,
   standalone: false
 })
-export class ComptesComptablesComponent {
-  @ViewChild('modalContent', { static: true }) modalContent!: TemplateRef<any>;
+export class ComptesComptablesComponent implements OnInit {
+
+  @ViewChild('modalContent') modalContent!: TemplateRef<any>;
 
   comptes: UntypedFormGroup[] = [];
   lignes: UntypedFormGroup[] = [];
   plansComptables: any[] = [];
   selectedIndex: number | null = null;
-  tiersNatures: any[] = [{libelle:'CLIENT'}, {libelle:'FOURNISSEUR'}];
-
   pageTitle: BreadcrumbItem[] = [];
 
   compteForm: UntypedFormGroup;
   formVisible = false;
   isLoading = false;
-  result = false;
-  closeResult = '';
-  classeComptes = [
-    { value: 'CAPITAUX', label: 'Classe 1 : CAPITAUX' },
-    { value: 'IMMOBILISATIONS', label: 'Classe 2 : IMMOBILISATIONS' },
-    { value: 'STOCKS', label: 'Classe 3 : STOCKS' },
-    { value: 'TIERS', label: 'Classe 4 : TIERS' },
-    { value: 'FINANCIERS', label: 'Classe 5 : FINANCIERS' },
-    { value: 'CHARGES', label: 'Classe 6 : CHARGES' },
-    { value: 'PRODUITS', label: 'Classe 7 : PRODUITS' },
-  ];
 
   constructor(
     private fb: UntypedFormBuilder,
@@ -48,11 +37,10 @@ export class ComptesComptablesComponent {
   ) {
     this.compteForm = this.fb.group({
       id: [''],
-      numero: ['', Validators.required],
+      numero: ['', [Validators.required, Validators.pattern(/^\d{1,4}$/)]],
       intitule: ['', [Validators.required, Validators.minLength(3)]],
       planComptableId: ['', Validators.required],
-      classeCompte: ['', Validators.required],
-      tiersNature: [null]
+      classeCompte: ['', Validators.required]
     });
   }
 
@@ -63,11 +51,12 @@ export class ComptesComptablesComponent {
   }
 
   loadComptes(): void {
-    this.comptes = [];
+    this.isLoading = true;
     this.compteService.getAll().subscribe({
       next: (data) => {
         this.comptes = data.map(d => this.fb.group({
           id: [d.id],
+          code: [d.codeComplet],
           numero: [d.numero],
           intitule: [d.intitule],
           planComptableId: [d.planComptableId],
@@ -75,10 +64,11 @@ export class ComptesComptablesComponent {
           classeCompte: [d.classeCompte]
         }));
         this.lignes = this.comptes;
+        this.isLoading = false;
       },
-      error: (err) => {
-        console.error('Erreur chargement comptes', err);
+      error: () => {
         this.toastr.error('Erreur chargement comptes');
+        this.isLoading = false;
       }
     });
   }
@@ -86,56 +76,46 @@ export class ComptesComptablesComponent {
   loadPlansComptables(): void {
     this.planService.getAll().subscribe({
       next: (data) => this.plansComptables = data.map(p => ({ id: p.id, nom: p.intitule })),
-      error: (err) => console.error('Erreur chargement plans', err)
+      error: (err) => console.error('Erreur plans', err)
     });
   }
 
-  ajouter(): void {
+  openModal(): void {
+    this.formVisible = true;
     this.compteForm.reset();
-    this.formVisible = true;
     this.selectedIndex = null;
+    this.modalService.open(this.modalContent, { size: 'lg', centered: true });
   }
 
-  modifier(): void {
-    if (this.selectedIndex !== null) this.formVisible = true;
-  }
-
-  selectLigne(index: number): void {
+  editCompte(index: number): void {
     this.selectedIndex = index;
-    const current = this.lignes[index].value;
-    this.compteForm.patchValue({
-      id: current.id,
-      numero: current.numero,
-      intitule: current.intitule,
-      planComptableId: current.planComptableId,
-      classeCompte: current.classeCompte
+    const compte = this.lignes[index].value;
+    this.compteForm.patchValue(compte);
+    console.log(this.compteForm);
+
+    this.modalService.open(this.modalContent, { centered: true });
+  }
+
+  deleteCompte(index: number): void {
+    const compte = this.lignes[index].value;
+    if (!compte?.id) return;
+    if (!confirm(`Voulez-vous vraiment supprimer le compte "${compte.intitule}" ?`)) return;
+
+    this.compteService.delete(compte.id).subscribe({
+      next: () => {
+        this.toastr.success('Compte supprimé avec succès');
+        this.loadComptes();
+      },
+      error: () => this.toastr.error('Erreur suppression compte')
     });
-    this.formVisible = true;
   }
 
-  supprimer(): void {
-    if (this.selectedIndex !== null) {
-      const current = this.lignes[this.selectedIndex].value;
-      this.compteService.delete(current.id).subscribe({
-        next: () => {
-          this.toastr.success('Compte supprimé avec succès');
-          this.loadComptes();
-          this.formVisible = false;
-          this.selectedIndex = null;
-        },
-        error: (err) => this.toastr.error('Erreur suppression compte')
-      });
-    }
-  }
-
-  enregistrer(): void {
+  saveCompte(): void {
     if (this.compteForm.invalid) {
       this.toastr.warning('Formulaire invalide');
       return;
     }
-
     const formValue = this.compteForm.value as CompteComptableDTO;
-    console.log(formValue.id);
     const action$ = formValue.id
       ? this.compteService.update(formValue.id, formValue)
       : this.compteService.create(formValue);
@@ -147,20 +127,16 @@ export class ComptesComptablesComponent {
         this.formVisible = false;
         this.selectedIndex = null;
         this.loadComptes();
+        this.modalService.dismissAll();
       },
-      error: (err) => {
-        console.error(err);
-        this.toastr.error(err)}
+      error: () => this.toastr.error('Erreur lors de l\'enregistrement')
     });
   }
 
-  openModal(): void {
-    this.modalService.open(this.modalContent, { size: 'lg', centered: true });
-  }
-
-  fermer(): void {
-    this.formVisible = false;
-    this.selectedIndex = null;
+  closeModal(): void {
+    this.modalService.dismissAll();
     this.compteForm.reset();
+    this.selectedIndex = null;
+    this.formVisible = false;
   }
 }

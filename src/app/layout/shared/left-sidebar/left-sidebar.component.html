@@ -1,12 +1,13 @@
 <!-- ========== Left Sidebar Start ========== -->
-<div class="left-side-menu" (clickOutside)="hideMenu()" [exclude]="'.open-left'" [excludeBeforeClick]="true">
+<div class="left-side-menu" (clickOutside)="hideMenu()" [exclude]="'.open-left'" [excludeBeforeClick]="true"
+  style="background-color: #783dbe;">
   <ngx-simplebar class="h-100">
     <!-- User box -->
     <div class="user-box text-center">
       <img [src]="loggedInUser.avatar" alt="user-img" title="Mat Helme" class="rounded-circle avatar-md">
       <div ngbDropdown>
         <a href="javascript: void(0);" class="text-dark h5 mt-2 mb-1 d-block" id="profileMenu"
-        ngbDropdownToggle>{{loggedInUser.name}}</a>
+          ngbDropdownToggle>{{loggedInUser.name}}</a>
         <div class="user-pro-dropdown" ngbDropdownMenu aria-labelledby="profileMenu">
 
           <!-- item-->
@@ -43,25 +44,24 @@
 
       <ul id="side-menu">
         @for (menu of menuItems; track menu; let i = $index) {
-          @if (menu.isTitle) {
-            <li class="menu-title" [class.mt-2]="i!==0">
-              {{menu.label}}
-            </li>
-          }
-          @if (!menu.isTitle) {
-            <!-- menu item without any child -->
-            @if (!hasSubmenu(menu)) {
-              <ng-container
-                *ngTemplateOutlet="MenuItem;context:{menu: menu, linkClassName: 'side-nav-link-ref'}">
-              </ng-container>
-            }
-            <!-- menu item with child -->
-            @if (hasSubmenu(menu)) {
-              <ng-container
-                *ngTemplateOutlet="MenuItemWithChildren;context:{menu: menu, linkClassName: 'side-nav-link-ref', subMenuClassNames: 'nav-second-level'}">
-              </ng-container>
-            }
-          }
+        @if (menu.isTitle) {
+        <li class="menu-title" [class.mt-2]="i!==0">
+          {{menu.label}}
+        </li>
+        }
+        @if (!menu.isTitle) {
+        <!-- menu item without any child -->
+        @if (!hasSubmenu(menu)) {
+        <ng-container *ngTemplateOutlet="MenuItem;context:{menu: menu, linkClassName: 'side-nav-link-ref'}">
+        </ng-container>
+        }
+        <!-- menu item with child -->
+        @if (hasSubmenu(menu)) {
+        <ng-container
+          *ngTemplateOutlet="MenuItemWithChildren;context:{menu: menu, linkClassName: 'side-nav-link-ref', subMenuClassNames: 'nav-second-level'}">
+        </ng-container>
+        }
+        }
         }
       </ul>
 
@@ -78,34 +78,33 @@
 <!-- Reusable Templates -->
 <ng-template #MenuItemWithChildren let-menu="menu" let-linkClassName="linkClassName"
   let-subMenuClassNames="subMenuClassNames">
-  <li [ngClass]="{'menuitem-active': activeMenuItems.includes(menu.key)}">
+  <li [ngClass]="{'menuitem-active': activeMenuItems.includes(menu.key)}" style="color: white;">
     <a href="javascript: void(0)" [class]="linkClassName" (click)="toggleMenuItem(menu,collapse)"
       [attr.aria-expanded]="!menu.collapsed" [attr.data-menu-key]="menu.key">
       @if (menu.icon) {
-        <i [attr.data-feather]="menu.icon" appFeatherIcon></i>
+      <i [attr.data-feather]="menu.icon" appFeatherIcon></i>
       }
       @if (menu.badge) {
-        <span class="badge bg-{{menu.badge.variant}} float-end">{{menu.badge.text}}</span>
+      <span class="badge bg-{{menu.badge.variant}} float-end">{{menu.badge.text}}</span>
       }
       <span>{{ menu.label }}</span>
       @if (!menu.badge) {
-        <span class="menu-arrow"></span>
+      <span class="menu-arrow"></span>
       }
     </a>
 
     <div #collapse="ngbCollapse" [(ngbCollapse)]="menu.collapsed">
       <ul [class]="subMenuClassNames">
         @for (child of menu.children; track child) {
-          @if (hasSubmenu(child)) {
-            <ng-container
-              *ngTemplateOutlet="MenuItemWithChildren;context:{menu: child, linkClassName: 'side-nav-link-ref', subMenuClassNames: 'nav-second-level'}">
-            </ng-container>
-          }
-          @if (!hasSubmenu(child)) {
-            <ng-container
-              *ngTemplateOutlet="MenuItem;context:{menu: child, linkClassName: 'side-nav-link-ref'}">
-            </ng-container>
-          }
+        @if (hasSubmenu(child)) {
+        <ng-container
+          *ngTemplateOutlet="MenuItemWithChildren;context:{menu: child, linkClassName: 'side-nav-link-ref', subMenuClassNames: 'nav-second-level'}">
+        </ng-container>
+        }
+        @if (!hasSubmenu(child)) {
+        <ng-container *ngTemplateOutlet="MenuItem;context:{menu: child, linkClassName: 'side-nav-link-ref'}">
+        </ng-container>
+        }
         }
       </ul>
     </div>
@@ -123,10 +122,10 @@
   <a [routerLink]="menu.link" [class]="className" [ngClass]="{'active': activeMenuItems.includes(menu.key)}"
     [attr.data-menu-key]="menu.key">
     @if (menu.icon) {
-      <i [attr.data-feather]="menu.icon" appFeatherIcon></i>
+    <i [attr.data-feather]="menu.icon" appFeatherIcon></i>
     }
     @if (menu.badge) {
-      <span class="badge bg-{{menu.badge.variant}}  float-end">{{menu.badge.text}}</span>
+    <span class="badge bg-{{menu.badge.variant}}  float-end">{{menu.badge.text}}</span>
     }
     <span>{{ menu.label }}</span>
   </a>

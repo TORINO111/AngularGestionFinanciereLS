@@ -14,8 +14,9 @@ import { NotificationService } from 'src/app/services/notifications/notification
   standalone: false
 })
 export class CabinetsComponent implements OnInit {
-  @ViewChild('content', { static: true }) content: any;
-  @ViewChild('editcontent', { static: true }) editcontent: any;
+
+  @ViewChild('modalContent', { static: true }) modalContent!: TemplateRef<any>;
+
   closeResult: string = '';
   cabinetsList: Societe[] = [];
   selected?: Societe;
@@ -29,7 +30,6 @@ export class CabinetsComponent implements OnInit {
   loading = false;
   isLoading = false;
   result = false;
-  formVisible = false;
 
   pays: any[] = [];
 
@@ -40,7 +40,7 @@ export class CabinetsComponent implements OnInit {
     private notification: NotificationService
   ) {
     this.cabinetForm = this.fb.group({
-      id: [null],  
+      id: [null],
       nom: ['', Validators.required],
       telephone: [],
       email: ['', [Validators.required, Validators.email]],
@@ -60,54 +60,13 @@ export class CabinetsComponent implements OnInit {
 
   ajouter(): void {
     this.cabinetForm.reset();
-    this.formVisible = true;
     this.selectedIndex = null;
     this.selected = undefined;
   }
 
-  modifier(): void {
-    if (this.selectedIndex === null) { return; }
-
-    const cabinet = this.lignes[this.selectedIndex].value;
-
-    this.formVisible = true;
-
-    this.cabinetForm.patchValue({
-      id: cabinet.id,
-      nom: cabinet.nom,
-      adresse: cabinet.adresse,
-      telephone: cabinet.telephone,
-      email: cabinet.email,
-      numeroIFU: cabinet.numeroIFU,
-      numeroRccm: cabinet.numeroRccm,
-      paysId: cabinet.paysId
-    });
-}
-
-
-  supprimer(): void {
-    if (this.selectedIndex !== null && this.lignes[this.selectedIndex]) { 
-      const currentData = this.lignes[this.selectedIndex].value;
-      this.cabinetForm.setValue(currentData);
-      this.deleteCabinet(currentData);
-    }
-  }
-
   fermer(): void {
-    this.formVisible = false;
     this.selectedIndex = null;
     this.cabinetForm.reset();
-  }
-
-  selectLigne(index: number): void {
-    this.selectedIndex = index;
-    if (this.lignes[index]) {
-      const currentData = this.lignes[index].value as Societe;
-      this.cabinetForm.setValue(currentData);
-      this.selected = currentData;
-    } else {
-      console.error('Ligne non trouvée à l\'index :', index);
-    }
   }
 
   enregistrer(): void {
@@ -134,7 +93,6 @@ export class CabinetsComponent implements OnInit {
       next: () => {
         const msg = isUpdate ? 'Modifié' : 'Enregistré';
         this.notification.showSuccess(`${msg} avec succès`);
-        this.formVisible = false;
         this.cabinetForm.reset();
         this.isLoading = false;
         this.selectedIndex = null;
@@ -246,21 +204,21 @@ export class CabinetsComponent implements OnInit {
       });
   }
 
-  openEditModal(editcontent: TemplateRef<NgbModal>): void {
-    this.modalService.open(editcontent,
-      {
-        size: 'lg',
-        centered: true, scrollable: true,
-        backdrop: 'static',
-        keyboard: false,
-        ariaLabelledBy: 'modal-basic-title'
-      }).result.then((result) => {
-        this.closeResult = `Closed with: ${result}`;
-      }, (reason) => {
-        this.closeResult =
-          `Dismissed ${this.getDismissReason(reason)}`;
-      });
-  }
+  // openEditModal(editcontent: TemplateRef<NgbModal>): void {
+  //   this.modalService.open(editcontent,
+  //     {
+  //       size: 'lg',
+  //       centered: true, scrollable: true,
+  //       backdrop: 'static',
+  //       keyboard: false,
+  //       ariaLabelledBy: 'modal-basic-title'
+  //     }).result.then((result) => {
+  //       this.closeResult = `Closed with: ${result}`;
+  //     }, (reason) => {
+  //       this.closeResult =
+  //         `Dismissed ${this.getDismissReason(reason)}`;
+  //     });
+  // }
 
   private getDismissReason(reason: any): string {
     if (reason === ModalDismissReasons.ESC) {
@@ -272,5 +230,91 @@ export class CabinetsComponent implements OnInit {
     }
   }
 
+  modifier(): void {
+    if (this.selectedIndex === null) return;
+    const cabinet = this.lignes[this.selectedIndex].value;
+    this.cabinetForm.patchValue({
+      id: cabinet.id,
+      nom: cabinet.nom,
+      adresse: cabinet.adresse,
+      telephone: cabinet.telephone,
+      email: cabinet.email,
+      numeroIFU: cabinet.numeroIFU,
+      numeroRccm: cabinet.numeroRccm,
+      paysId: cabinet.paysId
+    });
+    this.openModal();
+  }
+
+  supprimer(): void {
+    if (this.selectedIndex === null) return;
+    const cabinet = this.lignes[this.selectedIndex].value;
+    this.deleteCabinet(cabinet);
+  }
+
+  selectLigne(index: number): void {
+    this.selectedIndex = index;
+    this.selected = this.lignes[index].value;
+  }
+
+
+    openModal(): void {
+    this.cabinetForm.reset();
+    this.selectedIndex = null;
+    this.modalService.open(this.modalContent, { centered: true });
+  }
+
+  closeModal(): void {
+    this.modalService.dismissAll();
+    this.cabinetForm.reset();
+    this.selectedIndex = null;
+  }
+
+  editCabinet(index: number): void {
+    this.selectedIndex = index;
+    const cabinet = this.lignes[index].value;
+    this.cabinetForm.patchValue({
+    id: cabinet.id,
+    nom: cabinet.nom,
+    adresse: cabinet.adresse,
+    telephone: cabinet.telephone,
+    email: cabinet.email,
+    numeroIFU: cabinet.numeroIFU,
+    numeroRccm: cabinet.numeroRccm,
+    paysId: cabinet.paysId
+  });
+    this.modalService.open(this.modalContent, { centered: true });
+  }
+
+  deleteCabinetConfirm(index: number): void {
+    const cabinet = this.lignes[index].value;
+
+    Swal.fire({
+      title: 'Supprimer le cabinet',
+      html: `<p><strong>Cabinet : </strong><span style="color: #009879; font-size: 1.2em;">${cabinet.nom}</span></p>`,
+      showCancelButton: true,
+      confirmButtonText: '<i class="fa fa-trash-alt"></i> Supprimer',
+      cancelButtonText: '<i class="fa fa-ban"></i> Annuler',
+      customClass: {
+        popup: 'swal2-custom-popup',
+        confirmButton: 'btn btn-danger',
+        cancelButton: 'btn btn-secondary'
+      },
+      buttonsStyling: false
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.societeService.deleteCabinet(cabinet.id!).subscribe({
+          next: () => {
+            this.lignes.splice(index, 1);
+            Swal.fire('Succès', 'Cabinet supprimé avec succès.', 'success');
+          },
+          error: (err) => {
+            const msg = err.error?.message || err.message || 'Une erreur est survenue.';
+            Swal.fire('Erreur', msg, 'error');
+          }
+        });
+      }
+    });
+  }
 
 }
