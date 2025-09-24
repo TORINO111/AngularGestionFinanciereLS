@@ -35,6 +35,7 @@ export class CabinetsComponent implements OnInit {
   selected?: Societe;
 
   lignes: any[] = [];
+  categories: any[] = [];
 
   selectedIndex: number | null = null;
   cabinetForm!: UntypedFormGroup;
@@ -195,8 +196,8 @@ export class CabinetsComponent implements OnInit {
     )
       .subscribe({
         next: (data) => {
-          this.lignes = data.content;
-          console.log(this.lignes);
+          this.categories = data.content;
+          this.lignes = [...this.categories];
           this.totalElements = data.totalElements;
           this.result = true;
         },
@@ -353,7 +354,8 @@ export class CabinetsComponent implements OnInit {
 
   editCabinet(index: number): void {
     this.selectedIndex = index;
-    const cabinet = this.lignes[index].value;
+    console.log(index);
+    const cabinet = this.lignes[index];
     this.cabinetForm.patchValue({
       id: cabinet.id,
       nom: cabinet.nom,

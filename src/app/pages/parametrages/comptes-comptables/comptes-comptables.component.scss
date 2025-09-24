@@ -12,3 +12,19 @@
     text-align: left;
     vertical-align: middle;
 }
+
+nav[aria-label="Pagination"] {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 0;
+}
+
+.pagination .page-item + .page-item {
+  margin-left: 5px;
+}
+
+ng-select {
+  min-width: 200px;  
+  max-width: 300px; 
+}

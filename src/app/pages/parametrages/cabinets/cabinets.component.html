@@ -86,9 +86,11 @@
           </tr>
         </tbody>
 
-        <!-- Pagination -->
+      </table>
+
+      <!-- Pagination -->
       <nav aria-label="Pagination">
-        <ul class="pagination justify-content-center mt-3">
+        <ul class="pagination mt-3">
 
           <!-- Bouton Précédent -->
           <li class="page-item" [class.disabled]="currentPage === 0">
@@ -111,10 +113,9 @@
               [ngStyle]="{'background-color': currentPage >= totalPages() - 1 ? '#ccc' : 'transparent'}"
               (click)="goToPage(currentPage + 1)">Suivant</a>
           </li>
-
         </ul>
       </nav>
-      </table>
+
     </div>
 
   </div>

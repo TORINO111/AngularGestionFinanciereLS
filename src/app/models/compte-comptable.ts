@@ -1,7 +1,6 @@
 export interface CompteComptableDTO {
   id?: number;
-  numero: string;
-  codeComplet: string;
+  code: string;
   intitule: string;
   planComptableId: number;
   planComptableLibelle?: string;

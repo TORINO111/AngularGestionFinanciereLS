@@ -2,12 +2,10 @@ import { SectionAnalytiqueDTO } from "./section-analytique.model";
 
 export interface PlanAnalytique {
   id?: number;
-  sectionsAnalytiques: number[];
-  societe: number;
+  intitule: string;
 }
 
 export interface PlanAnalytiqueDTO {
   id?: number;
-  sectionsAnalytiques: SectionAnalytiqueDTO[];
-  societe: string;
+  intitule: string;
 }

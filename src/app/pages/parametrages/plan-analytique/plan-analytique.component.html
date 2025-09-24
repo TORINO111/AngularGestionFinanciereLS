@@ -4,11 +4,15 @@
   <div class="card-body">
 
     <!-- Boutons principaux -->
-    <div class="mb-3 d-flex gap-2 flex-wrap">
-      <button class="btn btn-success" (click)="openModal()">Nouveau Plan
+    <div class="mb-3 d-flex gap-2">
+      <button class="btn btn-success" style="background-color: #37a6de; border: #37a6de;" (click)="openModal()">Nouveau
+        Plan
         Analytique</button>
-      <button class="btn btn-success" (click)="openScrollableModal(importExcelModal)"
-        style="background-color: #37a6de">Importer</button>
+
+      <div class="d-flex gap-2 ms-auto">
+        <input #searchInputLibelle class="p-2" placeholder="Rechercher par libellé" [(ngModel)]="searchLibelle"
+          (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+      </div>
     </div>
 
     <!-- Tableau des plans analytiques -->
@@ -16,10 +20,7 @@
       <thead class="table-custom">
         <tr>
           <th>
-            <h5>Section Analytique</h5>
-          </th>
-          <th>
-            <h5>Société</h5>
+            <h5>Intitulé</h5>
           </th>
           <th style="width:120px;">
             <h5>Actions</h5>
@@ -28,58 +29,67 @@
       </thead>
       <tbody *ngIf="!isLoading && plansAnalytiques.length > 0">
         <tr *ngFor="let plan of lignes; let i = index">
-          <td>{{ plan.value.sectionAnalytique }}</td>
-          <td>{{ plan.value.societe }}</td>
+          <td>{{ plan.intitule }}</td>
           <td>
             <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x mr-1 me-3" (click)="editPlan(i)"></span>
             <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x mr-1" (click)="deletePlan(i)"></span>
           </td>
         </tr>
       </tbody>
-      <tbody *ngIf="!isLoading && plansAnalytiques.length === 0">
+
+      <!-- Cas ou 0 donnée -->
+      <tbody *ngIf="!isLoading && lignes.length === 0">
         <tr>
           <td colspan="3" class="text-center">
-            <h5>Aucune donnée trouvée</h5>
+            <h5>Aucun plan analytique trouvé</h5>
           </td>
         </tr>
       </tbody>
+
+      <!-- Loader -->
       <tbody *ngIf="isLoading">
         <tr>
           <td colspan="3" class="text-center">
-            <div class="spinner-border text-secondary" role="status">
+            <div class="spinner-border text-s econdary" role="status">
               <span class="visually-hidden">Chargement...</span>
             </div>
           </td>
         </tr>
       </tbody>
+
     </table>
+
+    <!-- Pagination -->
+    <nav aria-label="Pagination">
+      <ul class="pagination mt-3">
+
+        <!-- Bouton Précédent -->
+        <li class="page-item" [class.disabled]="currentPage === 0">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)"
+            [ngStyle]="{'background-color': currentPage === 0 ? '#ccc' : 'transparent'}">Précédent</a>
+        </li>
+
+        <!-- Pages dynamiques -->
+        <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
+          <a class="page-link" href="javascript:void(0)"
+            [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">
+            {{ page + 1 }}
+            <span *ngIf="page === currentPage" class="visually-hidden" (click)="goToPage(page)">(current)</span>
+          </a>
+        </li>
+
+        <!-- Bouton Suivant -->
+        <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
+          <a class="page-link" href="javascript:void(0)"
+            [ngStyle]="{'background-color': currentPage >= totalPages() - 1 ? '#ccc' : 'transparent'}"
+            (click)="goToPage(currentPage + 1)">Suivant</a>
+        </li>
+      </ul>
+    </nav>
 
   </div>
 </div>
 
-<!-- Modal Import Excel -->
-<ng-template #importExcelModal let-modal>
-  <div class="modal-header text-white" style="background-color: #37a6de">
-    <h4 class="modal-title text-white">IMPORT EXCEL</h4>
-    <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss('')"></button>
-  </div>
-  <div class="modal-body">
-    <form (ngSubmit)="onSubmit(); modal.close('Close click')" enctype="multipart/form-data"
-      [formGroup]="modelImportForm" class="p-2">
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label>Fichier Excel</label>
-          <input required type="file" accept=".xls,.xlsx" class="form-control" (change)="onExcelFileSelected($event)">
-          <div *ngIf="fileError" class="text-danger">{{ fileError }}</div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
-        <button type="submit" class="btn btn-secondary" style="background-color: #37a6de">Valider</button>
-      </div>
-    </form>
-  </div>
-</ng-template>
 
 <!-- Modal Création / Modification Plan Analytique -->
 <ng-template #modalContent>
@@ -95,24 +105,34 @@
   <div class="modal-body">
     <form [formGroup]="planAnalytiqueForm">
       <input type="hidden" formControlName="id">
-      <div class="row g-3">
-        <div class="mb-3 col-md-7">
-          <label>Sections Analytiques</label>
-          <ng-select formControlName="sectionAnalytiques" [items]="sectionsAnalytiques" bindLabel="libelle"
-            bindValue="id" [multiple]="true" [clearable]="false" placeholder="Sélection Sections Analytiques"
-            [searchable]="true">
-            <ng-template ng-notfound-tmp>Aucune section analytique disponible</ng-template>
-          </ng-select>
+      <div class="container">
+        <!-- Champ en haut -->
+        <div class="mb-3 col-12">
+          <label>Intitulé</label>
+          <input type="text" class="form-control" formControlName="intitule" (keypress)="allowAlphaNumeric($event)">
         </div>
 
-        <div class="mb-3 col-md-5">
-          <label>Société</label>
-          <ng-select formControlName="societe" [items]="societes" bindLabel="nom" bindValue="id" [clearable]="false"
-            placeholder="Société" [searchable]="true">
-            <ng-template ng-notfound-tmp>Aucune société disponible</ng-template>
-          </ng-select>
-        </div>
+        <!-- Selects en bas
+        <div class="row g-3">
+          <div class="mb-3 col-md-7">
+            <label>Sections Analytiques</label>
+            <ng-select formControlName="sectionAnalytiques" [items]="sectionsAnalytiques" bindLabel="libelle"
+              bindValue="id" [multiple]="true" [clearable]="false" placeholder="Sélection Sections Analytiques"
+              [searchable]="true">
+              <ng-template ng-notfound-tmp>Aucune section analytique disponible</ng-template>
+            </ng-select>
+          </div>
+
+          <div class="mb-3 col-md-5">
+            <label>Société</label>
+            <ng-select formControlName="societe" [items]="societes" bindLabel="nom" bindValue="id" [clearable]="false"
+              placeholder="Société" [searchable]="true">
+              <ng-template ng-notfound-tmp>Aucune société disponible</ng-template>
+            </ng-select>
+          </div>
+        </div> -->
       </div>
+
     </form>
   </div>
   <div class="modal-footer">

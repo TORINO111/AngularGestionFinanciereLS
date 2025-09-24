@@ -5,7 +5,8 @@
 
         <!-- Bouton -->
         <div class="mb-3 d-flex gap-2">
-            <button class="btn btn-success" style="background-color: #37a6de; border: #37a6de;" (click)="openModal()">Nouvelle
+            <button class="btn btn-success" style="background-color: #37a6de; border: #37a6de;"
+                (click)="openModal()">Nouvelle
                 Section</button>
         </div>
 
@@ -60,18 +61,28 @@
             <div class="mb-3">
                 <label class="form-label">Libellé</label>
                 <input formControlName="libelle" class="form-control">
-                <div *ngIf="sectionForm.get('libelle')?.invalid && sectionForm.get('libelle')?.touched"
+                <div *ngIf="sectionForm.get('intitule')?.invalid && sectionForm.get('intitule')?.touched"
                     class="text-danger">
                     <span *ngIf="sectionForm.get('libelle')?.hasError('required')">Libellé obligatoire</span>
                     <span *ngIf="sectionForm.get('libelle')?.hasError('pattern')">Uniquement des lettres et
                         espaces</span>
                 </div>
             </div>
+            <div class="mb-3 col-md-12">
+                <label>Plan Analytique</label>
+                <ng-select formControlName="planAnalytiqueId" [items]="plans" bindLabel="intitule" bindValue="id"
+                    [clearable]="false" placeholder="Sélection Plan Analytique" [searchable]="true">
+                    <ng-template ng-notfound-tmp>Aucun plan disponible</ng-template>
+                </ng-select>
+                <div *ngIf="sectionForm.get('planAnalytiqueId')?.hasError('required') && sectionForm.get('planAnalytiqueId')?.touched"
+                    class="text-danger">Champ obligatoire !</div>
+            </div>
         </form>
     </div>
+
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
-        <button type="button" class="btn btn-success"
-            (click)="saveSection()">Enregistrer</button>
+        <button type="button" class="btn btn-success" (click)="saveSection()">Enregistrer</button>
     </div>
+    
 </ng-template>

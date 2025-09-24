@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
+import { Component, OnInit, ViewChild, TemplateRef, ElementRef } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { PlanComptableService } from 'src/app/services/plan-comptable/plan-comptable.service';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
@@ -11,6 +11,7 @@ import { SectionAnalytiqueService } from 'src/app/services/section-analytique/se
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
 import { SocieteService } from 'src/app/services/societe/societe.service';
 import { PlansAnalytiquesService } from 'src/app/services/plans-analytiques/plans-analytiques.service';
+import { debounceTime, Subject, switchMap } from 'rxjs';
 
 
 export interface PlanComptableImportDTO {
@@ -36,13 +37,21 @@ export class PlanAnalytiqueComponent implements OnInit {
 
   @ViewChild('modalContent', { static: true }) modalContent!: TemplateRef<any>;
 
+  @ViewChild('searchInputLibelle', { static: true }) searchInputLibelle!: ElementRef<HTMLInputElement>;
+
   closeResult: string = '';
   plansAnalytiquesList: PlanAnalytique[] = [];
   selected?: boolean = false;
 
   // Utilisation de FormGroup[] avec typage clair
   plansAnalytiques: UntypedFormGroup[] = [];
-  lignes: UntypedFormGroup[] = [];
+  lignes: any[] = [];
+
+  searchLibelle: string = '';
+  totalElements: number = 0;
+  pageSize: number = 1;
+  currentPage: number = 0;
+  private search$ = new Subject<{ libelle: string }>();
 
   sectionsAnalytiques: SectionAnalytique[] = [];
   societes: any[] = []
@@ -63,7 +72,6 @@ export class PlanAnalytiqueComponent implements OnInit {
   importResult: ImportPlanComptableResultDTO | null = null;
 
   constructor(
-    private planComptableService: PlanComptableService,
     private fb: UntypedFormBuilder,
     private modalService: NgbModal,
     private plansAnalytiquesService: PlansAnalytiquesService,
@@ -73,8 +81,7 @@ export class PlanAnalytiqueComponent implements OnInit {
   ) {
     this.planAnalytiqueForm = this.fb.group({
       id: [null],
-      sectionAnalytiques: [[], Validators.required],
-      societe: [''],
+      intitule: ['', Validators.required],
     });
     this.modelImportForm = this.fb.group({
       societeId: [1],
@@ -87,6 +94,15 @@ export class PlanAnalytiqueComponent implements OnInit {
     this.chargerPlanAnalytiques();
     this.chargerSectionsAnalytiques();
     this.chargerSocietes();
+    this.initSearchListener()
+  }
+
+  allowAlphaNumeric(event: KeyboardEvent) {
+    const regex = /^[a-zA-Z0-9-\s]*$/;
+    const inputChar = event.key;
+    if (!regex.test(inputChar)) {
+      event.preventDefault(); // bloque le caractère
+    }
   }
 
   chargerSectionsAnalytiques() {
@@ -139,8 +155,7 @@ export class PlanAnalytiqueComponent implements OnInit {
       const currentData = this.lignes[this.selectedIndex].value as PlanAnalytiqueDTO;
       this.planAnalytiqueForm.patchValue({
         id: currentData.id,
-        sectionsAnalytiques: currentData.sectionsAnalytiques,
-        societe: currentData.societe
+        intitule: currentData.intitule
       });
       this.formVisible = true;
     }
@@ -243,34 +258,96 @@ export class PlanAnalytiqueComponent implements OnInit {
     });
   }
 
-  chargerPlanAnalytiques(): void {
-    this.planComptableService.getAllPlanAnalytique().subscribe({
-      next: (data: PlanAnalytiqueDTO[]) => {
-        this.plansAnalytiques = [];
+  // chargerPlanAnalytiques(): void {
+  //   this.planComptableService.getAllPlanAnalytique().subscribe({
+  //     next: (data: PlanAnalytiqueDTO[]) => {
+  //       this.plansAnalytiques = [];
 
-        data.forEach(plan => {
-          (plan.sectionsAnalytiques || []).forEach(section => {
-            this.plansAnalytiques.push(
-              this.fb.group({
-                planId: [plan.id],
-                sectionId: [section.id],
-                sectionAnalytique: [section.libelle],
-                societe: [plan.societe]
-              })
-            );
-          });
-        });
+  //       data.forEach(plan => {
+  //         (plan.sectionsAnalytiques || []).forEach(section => {
+  //           this.plansAnalytiques.push(
+  //             this.fb.group({
+  //               planId: [plan.id],
+  //               sectionId: [section.id],
+  //               sectionAnalytique: [section.libelle],
+  //               societe: [plan.societe]
+  //             })
+  //           );
+  //         });
+  //       });
 
-        this.lignes = this.plansAnalytiques;
-        this.selected = false;
+  //       this.lignes = this.plansAnalytiques;
+  //       this.selected = false;
+  //       this.result = true;
+  //     },
+  //     error: (error) => {
+  //       console.error('Erreur lors du chargement des plans analytiques', error);
+  //       this.result = true;
+  //       this.notification.showError('Erreur de chargement');
+  //     }
+  //   });
+  // }
+
+  chargerPlanAnalytiques(page: number = 0) {
+    this.result = false;
+    this.currentPage = page;
+
+    this.plansAnalytiquesService.getAllPlanAnalytiquePageable(
+      page,
+      this.pageSize,
+      this.searchLibelle ? this.searchLibelle : undefined,
+    ).subscribe({
+      next: (data: any) => {
+        this.plansAnalytiques = data.content;
+        this.lignes = [...this.plansAnalytiques];
+        this.totalElements = data.totalElements;
         this.result = true;
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des plans analytiques', error);
+      error: (error: any) => {
         this.result = true;
-        this.notification.showError('Erreur de chargement');
+        console.error("Erreur lors du chargement des plans analytiques:", error);
+        this.notification.showError('Erreur lors du chargement des plans analytiques!');
       }
     });
+  }
+
+  onFilterChange(): void {
+    this.search$.next({ libelle: this.searchLibelle });
+  }
+
+  private initSearchListener(): void {
+    this.search$
+      .pipe(
+        debounceTime(300),
+        switchMap(({ libelle }) => {
+          this.currentPage = 0;
+          return this.plansAnalytiquesService.getAllPlanAnalytiquePageable(
+            0,
+            this.pageSize,
+            libelle || undefined,
+          );
+        })
+      )
+      .subscribe({
+        next: data => {
+          this.lignes = data.content;
+          this.totalElements = data.totalElements;
+          this.currentPage = 0;
+        },
+        error: err => console.error('Erreur lors de la recherche', err)
+      });
+  }
+
+  pages(): number[] {
+    return Array(this.totalPages()).fill(0).map((_, i) => i);
+  }
+
+  goToPage(page: number) {
+    this.chargerPlanAnalytiques(page);
+  }
+
+  totalPages(): number {
+    return Math.ceil(this.totalElements / this.pageSize);
   }
 
   deleteSectionDuPlan(planId: number, sectionId: number): void {
@@ -289,7 +366,7 @@ export class PlanAnalytiqueComponent implements OnInit {
       buttonsStyling: false
     }).then((result) => {
       if (result.isConfirmed) {
-        this.planComptableService.delete(planId, sectionId).subscribe({
+        this.plansAnalytiquesService.delete(planId).subscribe({
           next: () => {
             // Mettre à jour le tableau frontend : retirer la section supprimée
             this.lignes.forEach(l => {
@@ -309,108 +386,6 @@ export class PlanAnalytiqueComponent implements OnInit {
     });
   }
 
-  onExcelFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-
-    if (!file) return;
-
-    const validExtensions = ['.xls', '.xlsx'];
-    const fileName = file.name.toLowerCase();
-
-    const isValid = validExtensions.some(ext => fileName.endsWith(ext));
-
-    if (!isValid) {
-      this.fileError = 'Seuls les fichiers Excel (.xls, .xlsx) sont autorisés.';
-      this.notification.showError(this.fileError);
-      input.value = ''; // réinitialise le champ
-      this.modelImportForm.patchValue({ fichierExcel: null });
-      return;
-    }
-
-    this.fileError = null;
-    this.modelImportForm.patchValue({ fichierExcel: file });
-    this.modelImportForm.get('fichierExcel')?.updateValueAndValidity();
-  }
-
-  onSubmit(): void {
-    if (this.modelImportForm.invalid) {
-      this.notification.showWarning('Formulaire invalide');
-      return;
-    }
-
-    const file = this.modelImportForm.value.fichierExcel;
-    if (!file) {
-      this.notification.showWarning('Veuillez sélectionner un fichier Excel.');
-      return;
-    }
-
-    this.isLoading = true;
-    this.importResult = null;
-
-    const formData = new FormData();
-    const societeId = this.modelImportForm.value.societeId;
-    const otherData = { ...this.modelImportForm.value };
-    delete otherData.fichierExcel;
-
-    formData.append('societeId', societeId);
-    //formData.append('modelImport', new Blob([JSON.stringify(otherData)], { type: 'application/json' }));
-    formData.append('fichierExcel', file);
-
-    this.planComptableService.importerPlanAnalytique(formData).subscribe({
-      next: (result) => {
-        this.lignes = [];
-        this.chargerPlanAnalytiques();
-        this.importResult = result;
-        this.isLoading = false;
-
-        if (result.success) {
-          this.notification.showSuccess(`${result.message} (${result.lignesImportees} comptes importés)`);
-        } else {
-          this.notification.showError(`${result.message} (${result.erreurs.length} erreurs détectées)`);
-        }
-      },
-      error: (err) => {
-        const errorMsg = err.error?.message || 'Erreur lors de l’import.';
-        console.error(errorMsg);
-        this.notification.showError(errorMsg);
-        this.importResult = {
-          success: false,
-          message: errorMsg,
-          lignesImportees: 0,
-          erreurs: []
-        };
-        this.isLoading = false;
-      }
-    });
-  }
-
-  openScrollableModal(content: TemplateRef<NgbModal>): void {
-    //this.codeBudgetaireForm.reset();
-    this.modalService.open(content,
-      {
-        size: 'lg', // set modal size
-        centered: true, scrollable: true,
-        backdrop: 'static', // disable modal from closing on click outside
-        keyboard: false,
-        ariaLabelledBy: 'modal-basic-title'
-      }).result.then((result) => {
-        this.closeResult = `Closed with: ${result}`;
-      }, (reason) => {
-        this.closeResult =
-          `Dismissed ${this.getDismissReason(reason)}`;
-      });
-  }
-
-  private getDismissReason(reason: any): string {
-    if (reason === ModalDismissReasons.ESC) {
-      return 'by pressing ESC';
-    } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
-      return 'by clicking on a backdrop';
-    } else {
-      return 'with: ${reason}';
-    }
-  }
 
   closeModal(): void {
     this.modalService.dismissAll();
@@ -426,7 +401,7 @@ export class PlanAnalytiqueComponent implements OnInit {
 
   editPlan(index: number): void {
     this.selectedIndex = index;
-    const plan = this.lignes[index].value;
+    const plan = this.lignes[index];
     // this.planAnalytiqueForm.patchValue(plan);
     this.planAnalytiqueForm.patchValue(plan);
     console.log(this.planAnalytiqueForm);
@@ -436,11 +411,12 @@ export class PlanAnalytiqueComponent implements OnInit {
 
   deletePlan(index: number): void {
     const plan = this.plansAnalytiques[index].value;
+    console.log(plan);
     if (!plan?.planId || !plan?.sectionId) return;
 
     Swal.fire({
-      title: 'Supprimer la section',
-      text: `Voulez-vous vraiment supprimer la section "${plan.sectionAnalytique}" ?`,
+      title: 'Supprimer le plan analytique',
+      text: `Voulez-vous vraiment supprimer le plan : "${plan.sectionAnalytique}" ?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Supprimer',
@@ -457,7 +433,7 @@ export class PlanAnalytiqueComponent implements OnInit {
             next: () => {
               this.lignes.splice(index, 1);
               this.selectedIndex = null;
-              this.notification.showSuccess('Section supprimée avec succès');
+              this.notification.showSuccess('Section supprimée avec succès !');
             },
             error: () => this.notification.showError('Erreur lors de la suppression')
           });

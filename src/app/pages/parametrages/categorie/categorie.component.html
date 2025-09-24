@@ -9,26 +9,28 @@
 @if (result) {
 <div class="card">
   <div class="card-body">
+
+    <!-- Boutons et filtres -->
     <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
       <!-- Bouton Nouvelle catégorie -->
       <button (click)="openModal()" type="button" class="btn btn-success">
         Nouvelle Catégorie
-      </button>
+      </button> 
 
       <!-- Barre de recherche + filtre -->
       <div class="d-flex gap-2 ms-auto">
         <input #searchInput class="p-2" placeholder="Rechercher par libellé" [(ngModel)]="searchTerm"
           (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
 
-        <ng-select class="mt-1" [items]="types" placeholder="Filtrer par type" bindLabel="libelle"
-          bindValue="id" [(ngModel)]="selectedType" (ngModelChange)="onFilterChange()">>
+        <ng-select class="mt-1" [items]="types" placeholder="Filtrer par type" bindLabel="libelle" bindValue="id"
+          [(ngModel)]="selectedType" (ngModelChange)="onFilterChange()">
           <ng-template ng-notfound-tmp>Aucun type disponible</ng-template>
         </ng-select>
       </div>
 
     </div>
 
-    <!-- <div class="table-responsive mt-1"> -->
+    <!-- Tableau catégories -->
     <table class="table table-bordered table-striped">
       <thead class="table-custom">
         <tr>
@@ -47,7 +49,8 @@
         </tr>
       </thead>
 
-      <tbody *ngIf="!isLoading && categories.length > 0">
+      <!-- Cas ou les données existent -->
+      <tbody *ngIf="!isLoading && lignes.length > 0">
         <tr *ngFor="let cat of lignes; let i = index">
           <td>{{ cat.code }}</td>
           <td>{{ cat.libelle }}</td>
@@ -56,12 +59,12 @@
           <td>
             <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="editCategorie(i)"></span>
             <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x" (click)="deleteCategorie(i)"></span>
-
           </td>
         </tr>
       </tbody>
 
-      <tbody *ngIf="!isLoading && categories.length === 0">
+      <!-- Cas ou aucune donnée n'existe -->
+      <tbody *ngIf="!isLoading && lignes.length === 0">
         <tr>
           <td colspan="4" class="text-center">
             <h5>Aucune donnée trouvée</h5>
@@ -69,6 +72,7 @@
         </tr>
       </tbody>
 
+      <!-- Loader -->
       <tbody *ngIf="isLoading">
         <tr>
           <td colspan="4" class="text-center">
@@ -78,37 +82,37 @@
           </td>
         </tr>
       </tbody>
-
-      <!-- Pagination -->
-      <nav aria-label="Pagination">
-        <ul class="pagination justify-content-center mt-3">
-
-          <!-- Bouton Précédent -->
-          <li class="page-item" [class.disabled]="currentPage === 0">
-            <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)"
-              [ngStyle]="{'background-color': currentPage === 0 ? '#ccc' : 'transparent'}">Précédent</a>
-          </li>
-
-          <!-- Pages dynamiques -->
-          <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
-            <a class="page-link" href="javascript:void(0)"
-              [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">
-              {{ page + 1 }}
-              <span *ngIf="page === currentPage" class="visually-hidden" (click)="goToPage(page)">(current)</span>
-            </a>
-          </li>
-
-          <!-- Bouton Suivant -->
-          <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
-            <a class="page-link" href="javascript:void(0)"
-              [ngStyle]="{'background-color': currentPage >= totalPages() - 1 ? '#ccc' : 'transparent'}"
-              (click)="goToPage(currentPage + 1)">Suivant</a>
-          </li>
-
-        </ul>
-      </nav>
-
     </table>
+
+    <!-- Pagination -->
+    <nav aria-label="Pagination">
+      <ul class="pagination mt-3">
+
+        <!-- Bouton Précédent -->
+        <li class="page-item" [class.disabled]="currentPage === 0">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)"
+            [ngStyle]="{'background-color': currentPage === 0 ? '#ccc' : 'transparent'}">Précédent</a>
+        </li>
+
+        <!-- Pages dynamiques -->
+        <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
+          <a class="page-link" href="javascript:void(0)"
+            [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">
+            {{ page + 1 }}
+            <span *ngIf="page === currentPage" class="visually-hidden" (click)="goToPage(page)">(current)</span>
+          </a>
+        </li>
+
+        <!-- Bouton Suivant -->
+        <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
+          <a class="page-link" href="javascript:void(0)"
+            [ngStyle]="{'background-color': currentPage >= totalPages() - 1 ? '#ccc' : 'transparent'}"
+            (click)="goToPage(currentPage + 1)">Suivant</a>
+        </li>
+
+      </ul>
+    </nav>
+
   </div>
 </div>
 }

@@ -1,20 +1,45 @@
 <app-page-title [breadcrumbItems]="pageTitle" title="Comptes Comptables"></app-page-title>
 
+<!-- Tableau des comptes -->
 <div class="card">
   <div class="card-body">
-    <div class="mb-3 d-flex gap-2 flex-wrap">
-      <button class="btn btn-success" (click)="openModal()" style="background-color: #37a6de; color: white; border: #37a6de">Nouveau
-        Compte</button>
+
+    <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
+      <div class="d-flex">
+        <div>
+          <button class="btn btn-success" (click)="openModal()"
+            style="background-color: #37a6de; color: white; border: #37a6de">Nouveau
+            Compte</button>
+        </div>
+
+        <div style="margin-left: 10px;">
+          <button class="btn btn-success" style="margin-left: 40px;" (click)="openScrollableModal(importExcelModal)"
+            style="background-color: #37a6de; border: #37a6de;">Importer</button>
+        </div>
+      </div>
+
+      <!-- Barres de recherche + filtre -->
+      <div class="d-flex gap-2 ms-auto">
+        <input #searchCodeChamp class="p-2" placeholder="Rechercher par code" [(ngModel)]="searchCode"
+          (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+
+        <input #searchIntituleChamp class="p-2" placeholder="Rechercher par intitulé" [(ngModel)]="searchIntitule"
+          (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+
+        <ng-select class="mt-1" [items]="plansComptables" placeholder="Filtrer par plan" bindLabel="intitule"
+          bindValue="id" [(ngModel)]="selectedPlan" (ngModelChange)="onFilterChange()">>
+          <ng-template ng-notfound-tmp>Aucun type disponible</ng-template>
+        </ng-select>
+      </div>
+
     </div>
+
 
     <table class="table table-bordered table-striped">
       <thead class="table-custom">
         <tr>
           <th>
             <h5>Code</h5>
-          </th>
-          <th>
-            <h5>Numéro</h5>
           </th>
           <th>
             <h5>Intitulé</h5>
@@ -33,11 +58,10 @@
 
       <tbody>
         <tr *ngFor="let compte of lignes; let i = index" [class.table-active]="i === selectedIndex">
-          <td>{{ compte.value.code }}</td>
-          <td>{{ compte.value.numero }}</td>
-          <td>{{ compte.value.intitule }}</td>
-          <td>{{ compte.value.planComptableLibelle }}</td>
-          <td>{{ compte.value.classeCompte }}</td>
+          <td>{{ compte.code }}</td>
+          <td>{{ compte.intitule }}</td>
+          <td>{{ compte.planComptableLibelle }}</td>
+          <td>{{ compte.classeCompte }}</td>
           <td>
             <span style="color:blue; cursor:pointer;" class="fa fa-edit fa-2x me-3" (click)="editCompte(i)"></span>
             <span style="color:red; cursor:pointer;" class="fa fa-trash fa-2x" (click)="deleteCompte(i)"></span>
@@ -48,6 +72,35 @@
         </tr>
       </tbody>
     </table>
+
+    <!-- Pagination -->
+    <nav aria-label="Pagination">
+      <ul class="pagination mt-3">
+
+        <!-- Bouton Précédent -->
+        <li class="page-item" [class.disabled]="currentPage === 0">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)"
+            [ngStyle]="{'background-color': currentPage === 0 ? '#ccc' : 'transparent'}">Précédent</a>
+        </li>
+
+        <!-- Pages dynamiques -->
+        <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
+          <a class="page-link" href="javascript:void(0)"
+            [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">
+            {{ page + 1 }}
+            <span *ngIf="page === currentPage" class="visually-hidden" (click)="goToPage(page)">(current)</span>
+          </a>
+        </li>
+
+        <!-- Bouton Suivant -->
+        <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
+          <a class="page-link" href="javascript:void(0)"
+            [ngStyle]="{'background-color': currentPage >= totalPages() - 1 ? '#ccc' : 'transparent'}"
+            (click)="goToPage(currentPage + 1)">Suivant</a>
+        </li>
+
+      </ul>
+    </nav>
   </div>
 </div>
 
@@ -64,11 +117,11 @@
     <form [formGroup]="compteForm">
       <div class="row mb-3">
         <div class="col-md-4">
-          <label>Numéro</label>
-          <input formControlName="numero" class="form-control">
-          <div *ngIf="compteForm.get('numero')?.invalid && compteForm.get('numero')?.touched" class="text-danger">
-            <span *ngIf="compteForm.get('numero')?.hasError('required')">Champ obligatoire !</span>
-            <span *ngIf="compteForm.get('numero')?.hasError('pattern')">Numéro 1 à 4 chiffres</span>
+          <label>Code</label>
+          <input formControlName="code" class="form-control" (keypress)="allowOnlyNumbers($event)">
+          <div *ngIf="compteForm.get('code')?.invalid && compteForm.get('code')?.touched" class="text-danger">
+            <span *ngIf="compteForm.get('code')?.hasError('required')">Champ obligatoire !</span>
+            <span *ngIf="compteForm.get('code')?.hasError('pattern')">Code de 1 à 8 chiffres</span>
           </div>
         </div>
         <div class="col-md-4">
@@ -80,8 +133,8 @@
         </div>
         <div class="col-md-4">
           <label>Plan comptable</label>
-          <ng-select formControlName="planComptableId" [items]="plansComptables" bindLabel="nom" bindValue="id"
-            placeholder="Plan">
+          <ng-select formControlName="planComptableId" [items]="plansComptables" bindLabel="intitule" bindValue="id"
+            placeholder="Choisir Plan">
           </ng-select>
         </div>
       </div>
@@ -89,6 +142,31 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
-    <button type="button" class="btn btn-success" style="background-color: #37a6de; border: #37a6de" (click)="saveCompte()">Enregistrer</button>
+    <button type="button" class="btn btn-success" style="background-color: #37a6de; border: #37a6de"
+      (click)="saveCompte()">Enregistrer</button>
+  </div>
+</ng-template>
+
+<!-- Modal Import Excel -->
+<ng-template #importExcelModal let-modal>
+  <div class="modal-header text-white" style="background-color: #37a6de">
+    <h4 class="modal-title text-white">IMPORT EXCEL</h4>
+    <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss('')"></button>
+  </div>
+  <div class="modal-body">
+    <form (ngSubmit)="onSubmit(); modal.close('Close click')" enctype="multipart/form-data"
+      [formGroup]="modelImportForm" class="p-2">
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <label>Fichier Excel</label>
+          <input required type="file" accept=".xls,.xlsx" class="form-control" (change)="onExcelFileSelected($event)">
+          <div *ngIf="fileError" class="text-danger">{{ fileError }}</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
+        <button type="submit" class="btn btn-secondary" style="background-color: #37a6de">Valider</button>
+      </div>
+    </form>
   </div>
 </ng-template>

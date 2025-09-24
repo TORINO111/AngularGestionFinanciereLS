@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { PlanAnalytique, PlanAnalytiqueDTO } from 'src/app/models/plan-analytique.model';
@@ -18,6 +18,24 @@ export class PlansAnalytiquesService {
 
   getAllPlanAnalytique(): Observable<PlanAnalytiqueDTO[]> {
     return this.http.get<PlanAnalytiqueDTO[]>(`${environment.apiUrl}/api/plans-analytiques`);
+  }
+
+  getAllPlanAnalytiquePageable(
+    page: number = 0,
+    size: number = 20,
+    search?: string,
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    if (search) params = params.set('search', search);
+
+    return this.http.get<any>(`${environment.apiUrl}/api/plans-analytiques/pageable`, { params });
+  }
+
+  delete(planComptableId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrlPlanAnalytique}/delete/${planComptableId}`);
   }
 
   updatePlanAnalytique(plananalytiqueId: number, planAnalytique: PlanAnalytique): Observable<PlanAnalytique> {

@@ -1,15 +1,14 @@
 import { SocieteService } from 'src/app/services/societe/societe.service';
 import { Societe } from 'src/app/models/societe.model';
-import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
+import { Component, OnInit, ViewChild, TemplateRef, ElementRef } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { PlanComptableService } from 'src/app/services/plan-comptable/plan-comptable.service';
 import { PlanComptable } from './../../../models/plan-comptable.model';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
-import { d } from '@angular/cdk/portal-directives.d-DbeNrI5D';
+import { debounceTime, Subject, switchMap } from 'rxjs';
 
 
 export interface PlanComptableImportDTO {
@@ -35,14 +34,22 @@ export class PlanComptableComponent implements OnInit {
   @ViewChild('modalContent', { static: true }) modalContent!: TemplateRef<any>;
   @ViewChild('importExcelModal', { static: true }) importExcelModal!: TemplateRef<any>;
 
+  @ViewChild('searchInputLibelle', { static: true }) searchInputLibelle!: ElementRef<HTMLInputElement>;
+
+
   closeResult: string = '';
   plansComptablesList: PlanComptable[] = [];
   selected: boolean = false;
 
-  // Utilisation de FormGroup[] avec typage clair
   plansComptables: UntypedFormGroup[] = [];
-  lignes: UntypedFormGroup[] = [];
+  lignes: any[] = [];
   societes: any[] = [];
+
+  totalElements: number = 0;
+  pageSize: number = 4;
+  currentPage: number = 0;
+  private search$ = new Subject<{ libelle: string }>();
+  searchLibelle: string = '';
 
   selectedIndex: number | null = null;
   planComptableForm!: UntypedFormGroup;
@@ -68,14 +75,12 @@ export class PlanComptableComponent implements OnInit {
   ) {
     this.planComptableForm = this.fb.group({
       id: [''],
-      societeId: ['', Validators.required],
       intitule: ['', [Validators.required,
-      Validators.pattern('^[a-zA-Z0-9 -]+$'), // lettres, chiffres, tirets et espaces
+      Validators.pattern('^[a-zA-Z0-9 -]+$'),
       Validators.minLength(3)
       ]],
     });
     this.modelImportForm = this.fb.group({
-      societeId: [1],
       fichierExcel: [null, Validators.required]
     });
   }
@@ -84,6 +89,7 @@ export class PlanComptableComponent implements OnInit {
     this.pageTitle = [{ label: 'vos plans comptables', path: '/', active: true }];
     this.chargerPlanComptables();
     this.chargerSocietes();
+    this.initSearchListener()
   }
 
   chargerSocietes() {
@@ -125,7 +131,7 @@ export class PlanComptableComponent implements OnInit {
       //this.deletePlanComptable(currentData);
     }
   }
-  
+
   enregistrer(): void {
     if (this.planComptableForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
@@ -138,9 +144,7 @@ export class PlanComptableComponent implements OnInit {
     const planComptable: any = {
       id: formValue.id ?? null,
       intitule: formValue.intitule,
-      societeId: formValue.societeId
     };
-    console.log(planComptable);
 
     // Choisir create ou update selon présence d'un ID
     const action$ = planComptable.id
@@ -151,7 +155,6 @@ export class PlanComptableComponent implements OnInit {
       next: () => {
         const msg = planComptable.id ? 'Modifié' : 'Enregistré';
         this.notification.showSuccess(`${msg} avec succès`);
-
         // reset form et recharger
         this.formVisible = false;
         this.planComptableForm.reset();
@@ -164,31 +167,6 @@ export class PlanComptableComponent implements OnInit {
       error: (error: any) => {
         this.isLoading = false;
         this.notification.showError(error);
-      }
-    });
-  }
-
-  chargerPlanComptables(): void {
-    this.plansComptables = [];
-    this.planComptableService.getAll().subscribe({
-      next: (data: any[]) => {
-        this.plansComptables = data.map(d =>
-          this.fb.group({
-            id: [d.id],
-            intitule: [d.intitule, Validators.required],
-            societe: [d.societeNom],
-            societeId: [d.id]
-          })
-
-        );
-        this.lignes = this.plansComptables;
-        this.selected = false;
-        this.result = true;
-      },
-      error: (error) => {
-        console.error('Erreur lors du chargement des plans comptables', error);
-        this.result = true;
-        this.notification.showError('Erreur de chargement');
       }
     });
   }
@@ -306,7 +284,7 @@ export class PlanComptableComponent implements OnInit {
   openModal(): void {
     this.formVisible = true;
     this.planComptableForm.reset();
-    this.selectedIndex = null;  
+    this.selectedIndex = null;
     this.modalService.open(this.modalContent, { centered: true });
   }
 
@@ -322,15 +300,92 @@ export class PlanComptableComponent implements OnInit {
   deletePlan(index: number): void {
     const plan = this.plansComptables[index].value;
     if (!plan?.id) return;
-    if (!confirm(`Voulez-vous vraiment supprimer le plan "${plan.intitule}" ?`)) return;
-
-    this.planComptableService.delete(plan.id, plan.section).subscribe({
-      next: () => {
-        this.notification.showSuccess('Plan comptable supprimé avec succès');
-        this.chargerPlanComptables();
+    Swal.fire({
+      title: 'Supprimer la section',
+      text: `Voulez-vous vraiment supprimer le plan : "${plan.intitule}" ?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Supprimer',
+      cancelButtonText: 'Annuler',
+      customClass: {
+        confirmButton: 'btn btn-danger',
+        cancelButton: 'btn btn-secondary'
       },
-      error: () => this.notification.showError('Erreur lors de la suppression')
+      buttonsStyling: false
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.planComptableService.delete(plan.id)
+          .subscribe({
+            next: () => {
+              this.lignes.splice(index, 1);
+              this.selectedIndex = null;
+              this.notification.showSuccess('Plan comptable supprimé avec succès !');
+            },
+            error: (error) => this.notification.showError(error)
+          });
+      }
     });
+  }
+
+  chargerPlanComptables(page: number = 0): void {
+    this.plansComptables = [];
+    this.currentPage = page;
+
+    this.planComptableService.getAllPageable(page,
+      this.pageSize,
+      this.searchLibelle ? this.searchLibelle : undefined,
+    ).subscribe({
+      next: (data: any) => {
+        this.plansComptables = data.content;
+        this.lignes = [...this.plansComptables];
+        this.totalElements = data.totalElements;
+        this.result = true;
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des plans comptables', error);
+        this.result = true;
+        this.notification.showError('Erreur de chargement');
+      }
+    });
+  }
+
+  pages(): number[] {
+    return Array(this.totalPages()).fill(0).map((_, i) => i);
+  }
+
+  goToPage(page: number = 0) {
+    this.chargerPlanComptables(page);
+  }
+
+  totalPages(): number {
+    return Math.ceil(this.totalElements / this.pageSize);
+  }
+
+  onFilterChange(): void {
+    this.search$.next({ libelle: this.searchLibelle });
+  }
+
+  private initSearchListener(): void {
+    this.search$
+      .pipe(
+        debounceTime(300),
+        switchMap(({ libelle }) => {
+          this.currentPage = 0;
+          return this.planComptableService.getAllPlanAnalytiquePageable(
+            0,
+            this.pageSize,
+            libelle || undefined,
+          );
+        })
+      )
+      .subscribe({
+        next: data => {
+          this.lignes = data.content;
+          this.totalElements = data.totalElements;
+          this.currentPage = 0;
+        },
+        error: err => console.error('Erreur lors de la recherche', err)
+      });
   }
 
 }

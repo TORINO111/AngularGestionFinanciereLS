@@ -6,6 +6,8 @@ import { SectionAnalytiqueService } from 'src/app/services/section-analytique/se
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import Swal from 'sweetalert2';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
+import { PlansAnalytiquesService } from 'src/app/services/plans-analytiques/plans-analytiques.service';
+import { PlanAnalytique } from 'src/app/models/plan-analytique.model';
 
 @Component({
   selector: 'app-sections-analytiques.component',
@@ -14,32 +16,53 @@ import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.
   standalone: false
 })
 export class SectionsAnalytiquesComponent implements OnInit {
-  
+
   @ViewChild('modalContent') modalContent!: TemplateRef<any>;
 
   sections: SectionAnalytiqueDTO[] = [];
   sectionForm!: UntypedFormGroup;
+
+  plans: any[] = [];
   selectedIndex: number | null = null;
   formVisible = false;
   closeResult = '';
   pageTitle: BreadcrumbItem[] = [];
-  
+
   constructor(
     private fb: UntypedFormBuilder,
     private sectionService: SectionAnalytiqueService,
+    private planAnalytiqueService: PlansAnalytiquesService,
     private notification: NotificationService,
     private modalService: NgbModal
   ) {
     this.sectionForm = this.fb.group({
       id: [null],
-      // code: ['', [Validators.required, Validators.pattern(/^[a-zA-Z]+$/)]],
-      libelle: ['', [Validators.required, Validators.pattern(/^[\p{L}\p{M}\d\s\-']+$/u)]],
+      planAnalytiqueId: [null, Validators.required],
+      intitule: ['', [Validators.required, Validators.pattern(/^[\p{L}\p{M}\d\s\-']+$/u)]],
     });
   }
 
   ngOnInit(): void {
     this.pageTitle = [{ label: 'Vos sections analytiques', path: '/', active: true }];
     this.loadSections();
+    this.chargerPlansAnalytiques()
+  }
+
+  chargerPlansAnalytiques() {
+    this.planAnalytiqueService.getAllPlanAnalytique().subscribe(
+      {
+        next: (data: PlanAnalytique[]) => {
+          this.plans = data.map(d => ({
+            id: d.id,
+            intitule: d.intitule,
+          }));
+        },
+        error: (error: any) => {
+          console.log('Erreur lors du chargement des plans analytiques', error);
+          this.notification.showError("erreur lors du chargement des plans analytiques");
+        }
+      }
+    );
   }
 
   loadSections(): void {

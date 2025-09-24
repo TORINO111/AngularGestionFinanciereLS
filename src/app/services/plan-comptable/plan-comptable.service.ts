@@ -1,44 +1,72 @@
+import { environment } from './../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { PlanComptable } from '../../models/plan-comptable.model';
-import { PlanAnalytique, PlanAnalytiqueDTO } from '../../models/plan-analytique.model';
+import { PlanAnalytiqueDTO } from '../../models/plan-analytique.model';
 import { Observable } from 'rxjs';
-import { environment } from 'src/environments/environment';
+
 export interface PlanComptableImportDTO {
   ligne: number;
   compte: string;
   intitule: string;
   erreur: string;
 }
-export interface ImportPlanComptableResultDTO {
+export interface ImportComptesComptablesResultDTO {
   success: boolean;
   message: string;
   lignesImportees: number;
   erreurs: PlanComptableImportDTO[];
-}  
+}
 @Injectable({
   providedIn: 'root'
 })
-export class PlanComptableService {  
-  //private host:string='http://localhost:8082';
-  //private host:string='//4.222.22.46:8082/gest-fin';
-  ///private host:string='http://localhost:8082';
+export class PlanComptableService {
 
   private baseUrlPlanComptables = `${environment.apiUrl}/api/planComptables`;
   private baseUrlPlanComptable = `${environment.apiUrl}/api/planComptable`;
-  
-  constructor(private http: HttpClient) {}
+
+  constructor(private http: HttpClient) { }
+
 
   getAll(): Observable<PlanComptable[]> {
     return this.http.get<PlanComptable[]>(this.baseUrlPlanComptables);
   }
 
-  getByTypeNature(typeNature: string) {
-    const params = new HttpParams().set('typeNature', typeNature);
-    return this.http.get<PlanComptable[]>(`${this.baseUrlPlanComptables}/par-typenature`, {params});
+  getAllPageable(
+    page: number = 0,
+    size: number = 20,
+    search?: string,
+  ): Observable<PlanComptable[]> {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    if (search) params = params.set('search', search);
+
+    return this.http.get<PlanComptable[]>(`${this.baseUrlPlanComptables}/pageable`);
   }
 
-  getAllParPrefixe(prefixe:string): Observable<PlanComptable[]> {
+  getAllPlanAnalytiquePageable(
+    page: number = 0,
+    size: number = 20,
+    search?: string,
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    if (search) params = params.set('search', search);
+
+    return this.http.get<any>(`${environment.apiUrl}/api/plans-analytiques/pageable`, { params });
+  }
+
+
+  getByTypeNature(typeNature: string) {
+    const params = new HttpParams().set('typeNature', typeNature);
+    return this.http.get<PlanComptable[]>(`${this.baseUrlPlanComptables}/par-typenature`, { params });
+  }
+
+  getAllParPrefixe(prefixe: string): Observable<PlanComptable[]> {
     const params = new HttpParams().set('prefixe', prefixe);
     return this.http.get<PlanComptable[]>(`${environment.apiUrl}/api/plans-comptables/par-prefixe`, { params });
   }
@@ -51,12 +79,12 @@ export class PlanComptableService {
     return this.http.put<PlanComptable>(`${this.baseUrlPlanComptable}/${id}`, plan);
   }
 
-  delete(planComptableId: number, sectionId: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrlPlanComptable}/${planComptableId}/${sectionId}`);
+  delete(planComptableId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrlPlanComptable}/delete/${planComptableId}`);
   }
 
   importerPlanComptable(formData: FormData) {
-    return this.http.post<ImportPlanComptableResultDTO>(`${environment.apiUrl}/api/import-plan-comptable`,formData);
+    return this.http.post<ImportComptesComptablesResultDTO>(`${environment.apiUrl}/api/import-plan-comptable`, formData);
   }
 
   getAllPlanAnalytique(): Observable<PlanAnalytiqueDTO[]> {
@@ -64,6 +92,6 @@ export class PlanComptableService {
   }
 
   importerPlanAnalytique(formData: FormData) {
-    return this.http.post<ImportPlanComptableResultDTO>(`${environment.apiUrl}/api/import-plan-analytique`,formData);
+    return this.http.post<ImportComptesComptablesResultDTO>(`${environment.apiUrl}/api/import-plan-analytique`, formData);
   }
 }

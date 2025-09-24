@@ -1,16 +1,16 @@
 .table-custom th {
-    background-color: #37a6de;
-    padding: 6px 4px;
-    font-weight: bold;
-    vertical-align: middle;
+  background-color: #37a6de;
+  padding: 6px 4px;
+  font-weight: bold;
+  vertical-align: middle;
 }
 
-.table-custom th h5{
-    margin: 6px;
-    color: white;
-    font-weight: bold;
-    text-align: left;
-    vertical-align: middle;
+.table-custom th h5 {
+  margin: 6px;
+  color: white;
+  font-weight: bold;
+  text-align: left;
+  vertical-align: middle;
 }
 
 table {
@@ -18,17 +18,18 @@ table {
   border-collapse: collapse;
 }
 
-.pagination .page-item {
-  margin-left: 0;
-  margin-right: 0;
+nav[aria-label="Pagination"] {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 0;
 }
 
-.pagination .page-link {
-  border-radius: 0;
-  
+.pagination .page-item + .page-item {
+  margin-left: 5px;
 }
 
-.btn.btn-success{ 
+.btn.btn-success {
   background-color: #37a6de;
   border: #37a6de;
 }

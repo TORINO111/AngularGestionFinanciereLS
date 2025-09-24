@@ -6,7 +6,7 @@ import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TypeCategorieService } from 'src/app/services/type-categorie/type-categorie.service';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
-import { debounceTime, distinctUntilChanged, fromEvent, switchMap } from 'rxjs';
+import { debounceTime, switchMap } from 'rxjs';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -18,12 +18,13 @@ import { Subject } from 'rxjs';
 })
 export class CategorieComponent implements OnInit {
   @ViewChild('categorieModal', { static: true }) categorieModal!: TemplateRef<any>;
+
   @ViewChild('searchInput', { static: true }) searchInput!: ElementRef<HTMLInputElement>;
 
   categories: any[] = [];
   categorie!: UntypedFormGroup;
   categorieForm!: UntypedFormGroup;
-  lignes = [...this.categories];
+  lignes: any;
 
   searchTerm: string = '';
   selectedType?: string;
@@ -145,6 +146,7 @@ export class CategorieComponent implements OnInit {
   pages(): number[] {
     return Array(this.totalPages()).fill(0).map((_, i) => i);
   }
+  
   goToPage(page: number) {
     this.chargerCategories(page);
   }

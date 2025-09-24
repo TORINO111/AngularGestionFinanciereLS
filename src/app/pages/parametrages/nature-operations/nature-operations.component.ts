@@ -332,7 +332,7 @@ export class NatureOperationsComponent implements OnInit {
       next: (data: CompteComptableDTO[]) => {
         this.comptes = data.map(d => ({
           id: d.id,
-          numero: d.numero,
+          code: d.code,
           intitule: d.intitule
         }));
         this.result = true;
@@ -378,8 +378,7 @@ export class NatureOperationsComponent implements OnInit {
         this.plansAnalytiques = data.map(d =>
           this.fb.group({
             id: [d.id],
-            sectionAnalytique: [d.sectionsAnalytiques],
-            societe: [d.societe]
+            intitule: [d.intitule],
           })
         );
       },
