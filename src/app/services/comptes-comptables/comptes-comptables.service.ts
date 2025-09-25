@@ -10,8 +10,8 @@ import { environment } from 'src/environments/environment';
 export class CompteComptableService {
   private apiCompteUrl = `${environment.apiUrl}/api/compte`;
   private apiComptesUrl = `${environment.apiUrl}/api/comptes`;
-  
-  constructor(private http: HttpClient) {}
+
+  constructor(private http: HttpClient) { }
 
   getAll(): Observable<CompteComptableDTO[]> {
     return this.http.get<CompteComptableDTO[]>(`${this.apiComptesUrl}`);
@@ -46,4 +46,9 @@ export class CompteComptableService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiCompteUrl}/${id}`);
   }
+
+  importExcel(formData: FormData) {
+    return this.http.post(`${this.apiComptesUrl}/import`, formData);
+  }
+
 }

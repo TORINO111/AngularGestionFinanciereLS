@@ -34,12 +34,11 @@
 
     </div>
 
-
     <table class="table table-bordered table-striped">
       <thead class="table-custom">
         <tr>
           <th>
-            <h5>Code</h5>
+            <h5>Compte</h5>
           </th>
           <th>
             <h5>Intitulé</h5>
@@ -72,7 +71,6 @@
         </tr>
       </tbody>
     </table>
-
     <!-- Pagination -->
     <nav aria-label="Pagination">
       <ul class="pagination mt-3">
@@ -101,6 +99,7 @@
 
       </ul>
     </nav>
+
   </div>
 </div>
 
@@ -153,6 +152,52 @@
     <h4 class="modal-title text-white">IMPORT EXCEL</h4>
     <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss('')"></button>
   </div>
+
+  <div class="modal-body">
+    <form (ngSubmit)="onSubmit(); modal.close('Close click')"
+          enctype="multipart/form-data"
+          [formGroup]="modelImportForm"
+          class="p-2">
+
+      <div class="row">
+        <!-- Sélection du plan -->
+        <div class="col-md-12 mb-3">
+          <label>Plan comptable</label>
+          <ng-select
+            formControlName="planId"
+            [items]="plansComptables"
+            bindLabel="intitule"
+            bindValue="id"
+            placeholder="Choisir le plan à affecter">
+          </ng-select>
+        </div>
+
+        <!-- Fichier Excel -->
+        <div class="col-md-12 mb-3">
+          <label>Fichier Excel</label>
+          <input required type="file"
+                 accept=".xls,.xlsx"
+                 class="form-control"
+                 (change)="onExcelFileSelected($event)">
+          <div *ngIf="fileError" class="text-danger">{{ fileError }}</div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
+        <button type="submit" class="btn btn-secondary" style="background-color: #37a6de">Valider</button>
+      </div>
+    </form>
+  </div>
+</ng-template>
+
+
+<!-- Modal Import Excel -->
+<!-- <ng-template #importExcelModal let-modal>
+  <div class="modal-header text-white" style="background-color: #37a6de">
+    <h4 class="modal-title text-white">IMPORT EXCEL</h4>
+    <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss('')"></button>
+  </div>
   <div class="modal-body">
     <form (ngSubmit)="onSubmit(); modal.close('Close click')" enctype="multipart/form-data"
       [formGroup]="modelImportForm" class="p-2">
@@ -169,4 +214,4 @@
       </div>
     </form>
   </div>
-</ng-template>
+</ng-template> -->
