@@ -37,8 +37,8 @@ export class SocieteService {
     return this.http.get<Societe[]>(this.baseUrlSocietes);
   }
 
-  getSocietePourUserConnecte(userId: number): Observable<Societe[]> {
-    return this.http.get<Societe[]>(`${this.baseUrlSociete}/user/${userId}`);
+  getSocietePourUserConnecte(userId: number): Observable<Societe> {
+    return this.http.get<Societe>(`${this.baseUrlSociete}/user/${userId}`);
   }
 
   getAllPays(): Observable<Pays[]> {

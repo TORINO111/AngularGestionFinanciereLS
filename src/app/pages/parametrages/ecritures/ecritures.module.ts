@@ -2,21 +2,21 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule,ReactiveFormsModule } from '@angular/forms';
 import { PageTitleModule } from 'src/app/shared/page-title/page-title.module';
-import {NatureOperationsRoutingModule } from './nature-operations-routing.module';
-import { NatureOperationsComponent } from './nature-operations.component';
+import { EcrituresRoutingModule } from './ecritures-routing.module';
+import { EcrituresComponent } from './ecritures.component';
 import { NgSelectModule } from '@ng-select/ng-select'; 
 
 @NgModule({
   declarations: [
-    NatureOperationsComponent
+    EcrituresComponent  
   ],
   imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
     PageTitleModule,
-    NatureOperationsRoutingModule,
+    EcrituresRoutingModule,
     NgSelectModule
   ]
 })
-export class NatureOperationsModule { }
+export class EcrituresModule { }

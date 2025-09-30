@@ -119,9 +119,9 @@ const MENU_ITEMS: MenuItem[] = [
         roles: ['SUPERVISEUR']
     },
     {
-        key: 'natureoperations',
-        label: "Nature d'opération",
-        link: '/parametrages/nature-operations',
+        key: 'ecritures',
+        label: "Ecritures",
+        link: '/parametrages/ecritures',
         icon: 'package',
         isTitle: false,
         roles: ['ADMIN']

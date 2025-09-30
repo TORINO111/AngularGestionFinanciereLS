@@ -7,8 +7,6 @@ import { HorizontalLayoutComponent } from './layout/layout.component';
 import { TopnavComponent } from './topnav/topnav.component';
 import { SharedModule } from '../shared/shared.module';
 
-
-
 @NgModule({
   declarations: [
     HorizontalLayoutComponent,

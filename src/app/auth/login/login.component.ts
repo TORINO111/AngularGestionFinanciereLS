@@ -73,7 +73,6 @@ export class LoginComponent implements OnInit {
             let jwt=data.headers.get('Authorization');
             this.authenticationService.saveToken(jwt);
             this.authenticationService.getUserByUsername(this.loginForm.value.username).subscribe((data:any)=>{
-              console.log(data)
               if(!data.enabled){
                 this.error='Compte inactif,Merci de contacter l\'administrateur';
                 this.loading=false;

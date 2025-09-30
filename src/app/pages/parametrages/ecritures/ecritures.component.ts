@@ -1,5 +1,5 @@
-import { PlanAnalytiqueDTO } from './../../../models/plan-analytique.model';
-import { PlansAnalytiquesService } from './../../../services/plans-analytiques/plans-analytiques.service';
+import { PlanAnalytiqueDTO } from '../../../models/plan-analytique.model';
+import { PlansAnalytiquesService } from '../../../services/plans-analytiques/plans-analytiques.service';
 import { Component, ElementRef, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
 import { CategorieService } from 'src/app/services/categories/categorie.service';
@@ -20,6 +20,7 @@ import { PlanComptable } from 'src/app/models/plan-comptable.model';
 import { NatureOperationDto } from 'src/app/models/nature-operation.model';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { debounceTime, Subject, switchMap } from 'rxjs';
+import { TiersService } from 'src/app/services/tiers/tiers.service';
 
 @Component({
   selector: 'app-nature-operations',
@@ -54,6 +55,8 @@ export class EcrituresComponent implements OnInit {
   analytiques: Select2Data = [];
   comptables: PlanComptable[] = [];  // Fait référence aux Plans comptables
   categories: any[] = [];
+  tiersList: any[] = [];
+  
   comptes: CompteComptableDTO[] = [];
   listeSens = [{ id: 'CREDIT', libelle: 'CREDIT' }, { id: 'DEBIT', libelle: 'DEBIT' }];
   codesjournaux: CodeJournal[] = [];
@@ -83,12 +86,15 @@ export class EcrituresComponent implements OnInit {
   result = false;
   formVisible = false;
 
+  showTiers = false;
+  tiersRequired = false;
   isExploitation = false;
   isType = false;
   isTresorerie = false;
   prefixe: string;
   selectedCategorie: any;
   lastTypeId: any;
+  tiersObligatoire: boolean;
 
   constructor(
     private natureOperationService: NatureOperationService,
@@ -99,31 +105,33 @@ export class EcrituresComponent implements OnInit {
     private fb: UntypedFormBuilder,
     private notification: NotificationService,
     private sectionAnalytiqueService: SectionAnalytiqueService,
+    private tiersService: TiersService,
     private modalService: NgbModal
   ) {
     this.natureOperationForm = this.fb.group({
       id: [],
-      montant: ['', Validators.required],
       libelle: ['', [Validators.required, Validators.minLength(2)]],
       compteComptableId: ['', Validators.required],
-      sectionAnalytiqueId: [null],
       codeJournalId: [null, Validators.required],
       categorieId: [null, Validators.required],
       societeId: [null, Validators.required],
       typeNature: [null],
-      sensParDefaut: ['', Validators.required],
-      compteContrePartie: [null]
+      sectionAnalytiqueId: [null],  // optionnel selon catégorie
+      tiersId: [null],               // obligatoire/facultatif selon catégorie
+      montant: ['', Validators.required],   // montant HT
+      tva: [''],                            // TVA
     });
   }
 
   ngOnInit(): void {
-    this.pageTitle = [{ label: "Vos natures d'opérations", path: '/', active: true }];
+    this.pageTitle = [{ label: "Vos écritures", path: '/', active: true }];
     this.chargerNatureOperationDtos();
     this.chargerCategories();
     this.chargerPlansAnalytiques();
     this.chargerCodeJournal();
     this.chargerSectionsAnalytiques();
     this.chargerComptesComptables();
+    this.chargerTiers();
     this.initSearchListener()
   }
 
@@ -134,35 +142,22 @@ export class EcrituresComponent implements OnInit {
     this.selectedCategorie = this.categories.find(c => c.id === +selectedId);
     if (!this.selectedCategorie) return;
 
-    this.selectedTypeNature = this.selectedCategorie.type || '';
-    this.isExploitation = this.selectedTypeNature === 'EXPLOITATION';
+    const type = this.selectedCategorie.type || '';
+    this.selectedTypeNature = type;
 
+    // Compte comptable lié à la catégorie
     this.natureOperationForm.patchValue({
-      typeNature: this.selectedTypeNature,
-      sectionAnalytiqueId: this.isExploitation ? this.natureOperationForm.get('sectionAnalytiqueId')?.value : null
+      compteComptableId: this.selectedCategorie.compteComptableId || null
     });
 
-    this.chargerComptables(this.selectedTypeNature);
-  }
+    // Section analytique optionnelle pour RECETTE ou DEPENSE
+    this.isExploitation = ['RECETTE', 'DEPENSE'].includes(type);
+    if (!this.isExploitation) this.natureOperationForm.patchValue({ sectionAnalytiqueId: null });
 
-  onTypeChange(): void {
-    const selectedType = this.natureOperationForm.get('typeNature')?.value;
-    if (!selectedType) {
-      this.selectedTypeNature = '';
-      this.isExploitation = false;
-      this.comptables = [];
-      return;
-    }
+    // Tiers obligatoire ou facultatif
+    this.tiersObligatoire = ['RECETTE', 'DEPENSE', 'SALAIRE'].includes(type);
 
-    this.selectedTypeNature = selectedType;
-    this.isExploitation = selectedType === 'EXPLOITATION';
-
-    if (!this.isExploitation) {
-      this.natureOperationForm.patchValue({ sectionAnalytiqueId: null });
-    }
-
-    // Recharge les plans comptables pour ce type
-    this.chargerComptables(selectedType);
+    this.chargerComptables(type);
   }
 
   ajouter(): void {
@@ -170,9 +165,6 @@ export class EcrituresComponent implements OnInit {
     this.natureOperationForm.patchValue({
       societeId: 1
     });
-    // this.natureOperationForm.patchValue({
-    //   typeNature:['NEUTRE']
-    // });
     this.formVisible = true;
     this.selectedIndex = null;
     this.selected = null;
@@ -313,6 +305,22 @@ export class EcrituresComponent implements OnInit {
           this.result = true;
           console.log('Erreur lors du chargement des codes journaux', error);
           this.notification.showError("erreur lors du chargement des codes journaux");
+        }
+      }
+    );
+  }
+
+   chargerTiers() {
+    this.tiersService.getAll().subscribe(
+      {
+        next: (data: any) => {
+          this.tiersList = data;
+          this.result = true;
+        },
+        error: (error: any) => {
+          this.result = true;
+          console.log('Erreur lors du chargement des tiers', error);
+          this.notification.showError("erreur lors du chargement des tiers");
         }
       }
     );

@@ -5,6 +5,8 @@ import { PageTitleModule } from 'src/app/shared/page-title/page-title.module';
 import {CabinetsRoutingModule } from './cabinets-routing.module';
 import { CabinetsComponent } from './cabinets.component';
 import { NgSelectModule } from '@ng-select/ng-select'; 
+import { TopbarComponent } from 'src/app/layout/shared/topbar/topbar.component';
+import { SharedModule } from 'src/app/layout/shared/shared.module';
 
 @NgModule({
   declarations: [
@@ -16,7 +18,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
     PageTitleModule,
     ReactiveFormsModule,
     CabinetsRoutingModule,
-    NgSelectModule
+    NgSelectModule,
   ]
 })
 export class CabinetsModule { }

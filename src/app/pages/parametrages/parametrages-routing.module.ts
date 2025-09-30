@@ -4,8 +4,8 @@ import { AuthGuard } from '../../core/guards/auth.guard';
 const routes: Routes = [
 
   {
-    path: 'nature-operations',
-    loadChildren: () => import('./nature-operations/nature-operations.module').then(m => m.NatureOperationsModule),
+    path: 'ecritures',
+    loadChildren: () => import('./ecritures/ecritures.module').then(m => m.EcrituresModule),
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }
   },

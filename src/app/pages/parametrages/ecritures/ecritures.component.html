@@ -1,10 +1,10 @@
-<app-page-title [breadcrumbItems]="pageTitle" title="Nature Opération"></app-page-title>
+<app-page-title [breadcrumbItems]="pageTitle" title="Écritures"></app-page-title>
 
 <div class="card ">
   <div class="card-body">
     <!-- Boutons principaux -->
     <div class="mb-3 d-flex gap-2 ">
-      <button class="btn btn-success" (click)="openModal()" style="background-color: #37a6de">Nouvelle Opération
+      <button class="btn btn-success" (click)="openModal()" style="background-color: #37a6de">Nouvelle Écriture
       </button>
     </div>
 
@@ -99,18 +99,15 @@
 
       </ul>
     </nav>
+    
   </div>
 </div>
 
 <!-- Modal Création / Modification -->
 <ng-template #modalContent>
   <div class="modal-header text-white" style="background-color: #37a6de; padding: 6px 10px;">
-    <h4 class="modal-title" style="color: white">{{ selectedIndex !== null ? 'Modifier Nature Opération' : 'Nature
-      Opération' }}</h4>
-
-    <button type="button" class="btn" style="color:white; font-size:1.4rem;" (click)="closeModal()">
-      &times;
-    </button>
+    <h4 class="modal-title" style="color: white">{{ selectedIndex !== null ? 'Modifier Écriture' : 'Écriture' }}</h4>
+    <button type="button" class="btn" style="color:white; font-size:1.4rem;" (click)="closeModal()">&times;</button>
   </div>
 
   <div class="modal-body">
@@ -123,9 +120,8 @@
         <div class="col-md-4">
           <label>Intitulé</label>
           <input type="text" class="form-control" formControlName="libelle" placeholder="Intitulé">
-          <div
-            *ngIf="natureOperationForm.get('libelle')?.hasError('required') && natureOperationForm.get('libelle')?.touched"
-            class="text-danger">
+          <div *ngIf="natureOperationForm.get('libelle')?.hasError('required') && natureOperationForm.get('libelle')?.touched"
+               class="text-danger">
             Champ obligatoire !
           </div>
         </div>
@@ -134,7 +130,7 @@
         <div class="col-md-4">
           <label>Code journal</label>
           <ng-select [items]="codesjournaux" bindLabel="libelle" bindValue="code" placeholder="Sélection Journal"
-            formControlName="codeJournalId" [searchable]="true">
+                     formControlName="codeJournalId" [searchable]="true">
             <ng-template ng-notfound-tmp>Aucun journal disponible</ng-template>
           </ng-select>
         </div>
@@ -143,45 +139,40 @@
         <div class="col-md-4">
           <label>Catégorie</label>
           <ng-select [items]="categories" bindLabel="libelle" bindValue="id" placeholder="Sélection Catégorie"
-            formControlName="categorieId" [searchable]="true" (change)="onCategorieChange()">
+                     formControlName="categorieId" [searchable]="true" (change)="onCategorieChange()">
             <ng-template ng-notfound-tmp>Aucune catégorie disponible</ng-template>
           </ng-select>
-          <div
-            *ngIf="natureOperationForm.get('categorieId')?.hasError('required') && natureOperationForm.get('categorieId')?.touched"
-            class="text-danger">
+          <div *ngIf="natureOperationForm.get('categorieId')?.hasError('required') && natureOperationForm.get('categorieId')?.touched"
+               class="text-danger">
             Champ obligatoire !
           </div>
         </div>
 
-
-        <!-- Code -->
+        <!-- Montant HT -->
         <div class="col-md-4">
-          <label>Montant</label>
-          <input type="text" class="form-control" formControlName="montant" placeholder="Montant (FCFA)">
-          <div *ngIf="natureOperationForm.get('montant')?.hasError('required') && natureOperationForm.get('montant')?.touched"
-            class="text-danger">
+          <label>Montant (HT)</label>
+          <input type="number" class="form-control" formControlName="montantHT" placeholder="Montant HT">
+          <div *ngIf="natureOperationForm.get('montantHT')?.hasError('required') && natureOperationForm.get('montantHT')?.touched"
+               class="text-danger">
             Champ obligatoire !
           </div>
+        </div>
+
+        <!-- TVA -->
+        <div class="col-md-4">
+          <label>TVA (%)</label>
+          <input type="number" class="form-control" formControlName="tva" placeholder="TVA">
         </div>
 
         <!-- Compte Comptable -->
         <div class="col-md-6">
           <label>Compte Comptable</label>
           <ng-select [items]="comptes" bindValue="id" placeholder="Sélection Compte"
-            formControlName="compteComptableId" [searchable]="true" [searchFn]="searchFn"  [disabled]="!natureOperationForm.value.categorieId">
-
-            <!-- Label affiché dans le select -->
-            <ng-template ng-label-tmp let-item="item">
-              {{item.code}} - {{item.intitule}}
-            </ng-template>
-            <!-- Option dans le dropdown -->
-            <ng-template ng-option-tmp let-item="item">
-              {{item.code}} - {{item.intitule}}
-            </ng-template>
-
-            <ng-template ng-notfound-tmp>
-              Aucun compte comptable disponible
-            </ng-template>
+                     formControlName="compteComptableId" [searchable]="true" [searchFn]="searchFn"  
+                     [disabled]="!natureOperationForm.value.categorieId">
+            <ng-template ng-label-tmp let-item="item">{{item.code}} - {{item.intitule}}</ng-template>
+            <ng-template ng-option-tmp let-item="item">{{item.code}} - {{item.intitule}}</ng-template>
+            <ng-template ng-notfound-tmp>Aucun compte comptable disponible</ng-template>
           </ng-select>
         </div>
 
@@ -189,32 +180,31 @@
         <div class="col-md-4" *ngIf="isExploitation">
           <label>Section Analytique</label>
           <ng-select [items]="sectionsAnalytiques" bindLabel="libelle" bindValue="id"
-            placeholder="Sélection Section Analytique" formControlName="sectionAnalytiqueId" [searchable]="true">
+                     placeholder="Sélection Section Analytique" formControlName="sectionAnalytiqueId" [searchable]="true">
             <ng-template ng-notfound-tmp>Aucune section analytique disponible</ng-template>
           </ng-select>
         </div>
 
-        <!-- Sens 
-        <div class="col-md-6">
-          <label>Sens</label>
-          <ng-select [items]="listeSens" bindLabel="libelle" bindValue="id" placeholder="Sélection Sens"
-            formControlName="sensParDefaut" [searchable]="true">
-            <ng-template ng-notfound-tmp>Aucun sens disponible</ng-template>
+        <!-- Tiers -->
+        <div class="col-md-4" *ngIf="showTiers">
+          <label>Tiers</label>
+          <ng-select [items]="tiersList" bindLabel="intitule" bindValue="id"
+                     placeholder="Sélection Tiers" formControlName="tiersId" [searchable]="true">
+            <ng-template ng-notfound-tmp>Aucun tiers disponible</ng-template>
           </ng-select>
-        </div> -->
+          <div *ngIf="tiersRequired && natureOperationForm.get('tiersId')?.hasError('required') && natureOperationForm.get('tiersId')?.touched"
+               class="text-danger">
+            Champ obligatoire !
+          </div>
+        </div>
 
-        <!-- Contre-Partie 
-        <div class="col-md-6" *ngIf="isTresorerie">
-          <label>Contre-Partie</label>
-          <input type="text" class="form-control" formControlName="compteContrePartie" placeholder="Contre-Partie">
-        </div> -->
       </div>
     </form>
-
   </div>
+
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
     <button type="button" class="btn btn-success" (click)="enregistrer()"
-      style="background-color: #37a6de; padding: 6px 10px;">Enregistrer</button>
+            style="background-color: #37a6de; padding: 6px 10px;">Enregistrer</button>
   </div>
 </ng-template>

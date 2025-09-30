@@ -1,13 +1,16 @@
-import { Societe } from './../../../models/societe.model';
-import { Component, OnInit ,ViewChild,TemplateRef} from '@angular/core';
+import { SocieteService } from 'src/app/services/societe/societe.service';
+import { Societe } from 'src/app/models/societe.model';
+import { Component, OnInit, ViewChild, TemplateRef, ElementRef } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { Tiers } from 'src/app/models/tiers.model';
 import { TiersService } from 'src/app/services/tiers/tiers.service';
-import { Categorie } from 'src/app/models/categorie.model';
-import { ToastrService } from 'ngx-toastr';
+import { Tiers } from 'src/app/models/tiers.model';
+import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import Swal from 'sweetalert2';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
-import { NgbModal,ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
+import { NotificationService } from 'src/app/services/notifications/notifications-service';
+import { debounceTime, Subject, switchMap } from 'rxjs';
+import { CompteComptableService } from 'src/app/services/comptes-comptables/comptes-comptables.service';
+import { CompteComptableDTO } from 'src/app/models/compte-comptable';
 
 export interface TiersImportDTO {
   ligne: number;
@@ -21,74 +24,117 @@ export interface ImportTiersResultDTO {
   message: string;
   lignesImportees: number;
   erreurs: TiersImportDTO[];
-} 
+}
 
 @Component({
-    selector: 'app-tiers',
-    templateUrl: './tiers.component.html',
-    styleUrls: ['./tiers.component.scss'],
-    standalone: false
+  selector: 'app-tiers',
+  templateUrl: './tiers.component.html',
+  styleUrls: ['./tiers.component.scss'],
+  standalone: false
 })
 export class TiersComponent implements OnInit {
+  @ViewChild('modalContent', { static: true }) modalContent!: TemplateRef<any>;
+  @ViewChild('importExcelModal', { static: true }) importExcelModal!: TemplateRef<any>;
+  @ViewChild('searchInputLibelle', { static: true }) searchInputLibelle!: ElementRef<HTMLInputElement>;
 
-  @ViewChild('content', { static: true }) content: any;
-  @ViewChild('editcontent', { static: true }) editcontent: any;
-  closeResult:string='';
-  //selected: boolean=false; 
+  closeResult: string = '';
+  tiers: Tiers[] = [];
+  lignes: any[] = [];
+  societes: any[] = [];
+  types = [{ id: 'CLIENT', libelle: 'CLIENT' }, { id: 'FOURNISSEUR', libelle: 'FOURNISSEUR' }, { id: 'SALARIE', libelle: 'SALARIE' }];
 
-  tiersList: Tiers[] = [];
-  selected?: Tiers;
+  comptesCollectifs: any[];
 
-  // Utilisation de FormGroup[] avec typage clair
-  tiers: UntypedFormGroup[] = [];
-  lignes: UntypedFormGroup[] = [];
-
-  categories: Categorie[] = [];
+  totalElements = 0;
+  pageSize = 5;
+  currentPage = 0;
+  private search$ = new Subject<{ libelle: string }>();
+  searchLibelle = '';
 
   selectedIndex: number | null = null;
   tiersForm!: UntypedFormGroup;
-  pageTitle: BreadcrumbItem[] = [];
-
-  loading = false;
-  isLoading = false;
-  result = false;
-  formVisible = false;
-
   modelImportForm: UntypedFormGroup;
   excelFile: File | null = null;
   fileError: string | null = null;
-  errorMessage: string | null = null;
   importResult: ImportTiersResultDTO | null = null;
+  errorMessage: string | null = null;
 
-  types=[{id:'CLIENT',libelle:'CLIENT'},{id:'FOURNISSEUR',libelle:'FOURNISSEUR'},{id:'SALARIE',libelle:'SALARIE'}];
-  societes= [];
+  pageTitle: BreadcrumbItem[] = [];
+  isLoading = false;
+  formVisible = false;
+  result = false;
+  searchTelTiers: undefined;
+  currentUser: any;
+  currentSociete: Societe;
+  isFormReady = false;
+  societeBi: Societe;
+  comptes: CompteComptableDTO[];
 
   constructor(
     private tiersService: TiersService,
-    private modalService: NgbModal,
+    private societeService: SocieteService,
+    private notification: NotificationService,
     private fb: UntypedFormBuilder,
-    private toastr: ToastrService
+    private compteComptableService: CompteComptableService,
+    private modalService: NgbModal
   ) {
     this.tiersForm = this.fb.group({
-      id: [],
-      compte: ['', Validators.required],
+      id: [''],
       intitule: ['', Validators.required],
-      compteCollectif: ['', Validators.required],
+      compteCollectifId: ['', Validators.required],
       interlocuteur: [''],
-      telephoneInterlocuteur:[''],
-      telephoneSociete:[''],
+      telephoneInterlocuteur: [''],
+      telephoneTiers: [''],
       type: ['', Validators.required],
-      societeId: [1]
+      societeId: [null]
     });
+
     this.modelImportForm = this.fb.group({
-      societeId: [1],
-      fichierExcel: [null,Validators.required]
+      societeId: [null],
+      fichierExcel: [null, Validators.required]
     });
   }
 
   ngOnInit(): void {
-    this.pageTitle = [{ label: 'vos tiers', path: '/', active: true }];
+    this.pageTitle = [{ label: 'Vos tiers', path: '/', active: true }];
+    const societeActiveStr = localStorage.getItem("societeActive");
+    if (societeActiveStr) {
+      this.societeBi = JSON.parse(societeActiveStr);
+      // Patch des valeurs dans les formulaires
+      this.tiersForm.patchValue({ societeId: this.societeBi.id });
+      this.modelImportForm.patchValue({ societeId: this.societeBi.id });
+    }
+    this.chargerSocietes();
     this.chargerTiers();
+    this.chargerComptesComptables();
+    this.initSearchListener();
+  }
+
+  chargerComptesComptables() {
+    this.compteComptableService.getAll().subscribe({
+      next: (data: CompteComptableDTO[]) => {
+        this.comptes = data;
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des comptes comptables', err);
+        this.notification.showError('Erreur lors du chargement des comptes comptables');
+      }
+    });
+  }
+
+  searchFn(term: string, item: any) {
+    if (!term) return true;
+    term = term.toLowerCase();
+    return item.code.toLowerCase().includes(term) ||
+      item.intitule.toLowerCase().includes(term);
+  }
+
+  chargerSocietes() {
+    this.societes = [];
+    this.societeService.getAllSociete().subscribe({
+      next: (data: Societe[]) => this.societes = data.map(d => ({ id: d.id, nom: d.nom })),
+      error: () => this.notification.showError('Erreur lors du chargement des sociétés')
+    });
   }
 
   ajouter(): void {
@@ -98,97 +144,52 @@ export class TiersComponent implements OnInit {
   }
 
   modifier(): void {
-    if (this.selectedIndex !== null) {
-      this.formVisible = true;
-    }
+    if (this.selectedIndex !== null) this.formVisible = true;
   }
 
   supprimer(): void {
     if (this.selectedIndex !== null) {
-      const currentData = this.lignes[this.selectedIndex].value as Tiers;
-      this.tiersForm.setValue(currentData);
-      this.lignes.splice(this.selectedIndex, 1);
-      this.selectedIndex = null;
-      this.deleteTiers(currentData);
+      const tier = this.lignes[this.selectedIndex];
+      this.deleteTiers(tier.value);
     }
-  }
-
-  edit(nature: Tiers): void {
-    this.selected = { ...nature };
-    this.tiersForm.patchValue(this.selected);
-    this.formVisible = true;
-  }
-
-  fermer(): void {
-    this.formVisible = false;
-    this.selectedIndex = null;
-    this.tiersForm.reset();
   }
 
   selectLigne(index: number): void {
     this.selectedIndex = index;
-    const currentData = this.lignes[this.selectedIndex].value as Tiers;
+    const currentData = this.lignes[index].value as Tiers;
     this.tiersForm.setValue(currentData);
-    this.selected = currentData;
   }
 
   enregistrer(): void {
+    console.log(this.tiersForm.value);
     if (this.tiersForm.invalid) {
-      this.showWarning('Formulaire invalide');
+      this.notification.showWarning('Formulaire invalide');
       return;
     }
     this.isLoading = true;
-    const natureOperation = this.tiersForm.value as Tiers;
-    natureOperation.societeId ;
-    const action$ = this.selected?.id
-      ? this.tiersService.update(this.selected.id, natureOperation)
-      : this.tiersService.create(natureOperation);
+    const tierData = {
+      ...this.tiersForm.value,
+      societeId: this.societeBi.id
+    } as Tiers;
+
+    const action$ = tierData.id
+      ? this.tiersService.update(tierData.id, tierData)
+      : this.tiersService.create(tierData);
 
     action$.subscribe({
       next: () => {
-        const msg = this.selected?.id ? 'Modifié' : 'Enregistré';
-        this.showSuccess(`${msg} avec succès`);
+        const msg = tierData.id ? 'Modifié' : 'Enregistré';
+        this.notification.showSuccess(`${msg} avec succès`);
         this.formVisible = false;
         this.tiersForm.reset();
-        this.loading = false;
         this.selectedIndex = null;
-        this.selected = undefined;
         this.lignes = [];
         this.isLoading = false;
         this.chargerTiers();
       },
-      error: () => {
+      error: (err) => {
         this.isLoading = false;
-        this.loading = false;
-        this.showError("Une erreur est survenue lors de l'enregistrement du tiers!");
-      }
-    });
-  }
-
-  chargerTiers(): void {
-    this.tiers = [];
-    this.tiersService.getAll().subscribe({
-      next: (data: Tiers[]) => {
-        this.tiers = data.map(d =>
-          this.fb.group({
-            id: [d.id],
-            compte: [d.compte],
-            intitule: [d.intitule, Validators.required],
-            compteCollectif: [d.compteCollectif, Validators.required],
-            interlocuteur: [d.interlocuteur],
-            telephoneInterlocuteur:[d.telephoneInterlocuteur],
-            telephoneSociete:[d.telephoneSociete],
-            type: [d.type, Validators.required],
-            societeId: [d.societeId]
-          })
-        );
-        this.lignes = this.tiers;
-        this.result = true;
-      },
-      error: (error) => {
-        console.error('Erreur lors du chargement des natures opérations', error);
-        this.result = true;
-        this.showError('Erreur de chargement');
+        this.notification.showError(err);
       }
     });
   }
@@ -196,9 +197,32 @@ export class TiersComponent implements OnInit {
   deleteTiers(tiers: Tiers): void {
     Swal.fire({
       title: 'Supprimer le tiers',
-      html: `
-        <p><strong>Tiers : </strong><span style="color: #009879; font-size: 1.2em;">${tiers.intitule}</span></p>
-      `,
+      html: `<p><strong>Tiers : </strong><span style="color: #009879; font-size: 1.2em;">${tiers.intitule}</span></p>`,
+      showCancelButton: true,
+      confirmButtonText: 'Supprimer',
+      cancelButtonText: 'Annuler',
+      customClass: { confirmButton: 'btn btn-danger', cancelButton: 'btn btn-secondary' },
+      buttonsStyling: false
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.tiersService.delete(tiers.id!).subscribe({
+          next: () => {
+            this.lignes = [];
+            this.chargerTiers();
+            this.notification.showSuccess('Tiers supprimé avec succès !');
+          },
+          error: () => this.notification.showError('Erreur lors de la suppression')
+        });
+      }
+    });
+  }
+
+  deleteTiersConfirm(index: number): void {
+    const tiers = this.lignes[index].value;
+
+    Swal.fire({
+      title: 'Supprimer le cabinet',
+      html: `<p><strong>Cabinet : </strong><span style="color: #009879; font-size: 1.2em;">${tiers.intitule}</span></p>`,
       showCancelButton: true,
       confirmButtonText: '<i class="fa fa-trash-alt"></i> Supprimer',
       cancelButtonText: '<i class="fa fa-ban"></i> Annuler',
@@ -209,162 +233,170 @@ export class TiersComponent implements OnInit {
       },
       buttonsStyling: false
     }).then((result) => {
-      if (result.value) {
+      if (result.isConfirmed) {
         this.tiersService.delete(tiers.id!).subscribe({
           next: () => {
-            this.tiers = [];
-            this.chargerTiers();
+            this.lignes.splice(index, 1);
             Swal.fire('Succès', 'Tiers supprimé avec succès.', 'success');
           },
-          error: () => {
-            Swal.fire('Erreur', 'Une erreur s\'est produite.', 'error');
+          error: (err) => {
+            const msg = err.error?.message || err.message || 'Une erreur est survenue.';
+            Swal.fire('Erreur', msg, 'error');
           }
         });
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
-        Swal.fire('Abandonné', 'Suppression annulée', 'info');
       }
     });
+  }
+
+  // chargerTiers(page: number = 0): void {
+  //   this.currentPage = page;
+  //   this.tiersService.getAllPageable(page, this.pageSize, this.searchLibelle || undefined).subscribe({
+  //     next: (data: any) => {
+  //       this.lignes = data.content.map((d: Tiers) => this.fb.group(d));
+  //       this.totalElements = data.totalElements;
+  //       this.result = true;
+  //     },
+  //     error: () => {
+  //       this.result = true;
+  //       this.notification.showError('Erreur de chargement');
+  //     }
+  //   });
+  // }
+
+  chargerTiers(page: number = 0): void {
+    this.currentPage = page;
+
+    this.tiersService.getAllPageable(
+      page,
+      this.pageSize,
+      this.searchTelTiers || undefined,
+      this.searchTelTiers || undefined,
+      this.searchTelTiers || undefined
+    ).subscribe({
+      next: (data: any) => {
+        this.tiers = data.content;
+        this.lignes = [...this.tiers];
+        this.totalElements = data.totalElements;
+        this.result = true;
+      },
+      error: () => {
+        this.result = true;
+        this.notification.showError('Erreur de chargement');
+      }
+    });
+  }
+
+
+  pages(): number[] {
+    return Array(this.totalPages()).fill(0).map((_, i) => i);
+  }
+
+  goToPage(page: number) {
+    this.chargerTiers(page);
+  }
+
+  totalPages(): number {
+    return Math.ceil(this.totalElements / this.pageSize);
   }
 
   onExcelFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-  
     if (!file) return;
-  
+
     const validExtensions = ['.xls', '.xlsx'];
-    const fileName = file.name.toLowerCase();
-  
-    const isValid = validExtensions.some(ext => fileName.endsWith(ext));
-  
-    if (!isValid) {
+    if (!validExtensions.some(ext => file.name.toLowerCase().endsWith(ext))) {
       this.fileError = 'Seuls les fichiers Excel (.xls, .xlsx) sont autorisés.';
-      this.showError(this.fileError);
-      input.value = ''; // réinitialise le champ
+      this.notification.showError(this.fileError);
+      input.value = '';
       this.modelImportForm.patchValue({ fichierExcel: null });
       return;
     }
-  
+
     this.fileError = null;
     this.modelImportForm.patchValue({ fichierExcel: file });
-    this.modelImportForm.get('fichierExcel')?.updateValueAndValidity();
   }
-  
+
   onSubmit(): void {
     if (this.modelImportForm.invalid) {
-      this.showWarning('Formulaire invalide');
+      this.notification.showWarning('Formulaire invalide');
       return;
     }
-  
+
     const file = this.modelImportForm.value.fichierExcel;
     if (!file) {
-      this.showWarning('Veuillez sélectionner un fichier Excel.');
+      this.notification.showWarning('Veuillez sélectionner un fichier Excel.');
       return;
     }
-  
+
+    const formData = new FormData();
+    formData.append('societeId', this.modelImportForm.value.societeId);
+    formData.append('fichierExcel', file);
+
     this.isLoading = true;
     this.importResult = null;
-  
-    const formData = new FormData();
-    const societeId = this.modelImportForm.value.societeId;
-    const otherData = { ...this.modelImportForm.value };
-    delete otherData.fichierExcel;
-  
-    formData.append('societeId', societeId);
-    //formData.append('modelImport', new Blob([JSON.stringify(otherData)], { type: 'application/json' }));
-    formData.append('fichierExcel', file);
-  
+
     this.tiersService.importerTiers(formData).subscribe({
       next: (result) => {
-        this.lignes=[];
+        this.lignes = [];
         this.chargerTiers();
         this.importResult = result;
         this.isLoading = false;
-  
         if (result.success) {
-          this.showSuccess(`${result.message} (${result.lignesImportees} tiers importés)`);
+          this.notification.showSuccess(`${result.message} (${result.lignesImportees} tiers importés)`);
         } else {
-          this.showError(`${result.message} (${result.erreurs.length} erreurs détectées)`);
+          this.notification.showError(`${result.message} (${result.erreurs.length} erreurs détectées)`);
         }
       },
       error: (err) => {
-        const errorMsg = err.error?.message || 'Erreur lors de l’import.';
-        console.error(errorMsg);
-        this.showError(errorMsg);
-        this.importResult = {
-          success: false,
-          message: errorMsg,
-          lignesImportees: 0,
-          erreurs: []
-        };
+        const msg = err.error?.message || 'Erreur lors de l’import.';
+        this.notification.showError(msg);
+        this.importResult = { success: false, message: msg, lignesImportees: 0, erreurs: [] };
         this.isLoading = false;
       }
     });
   }
 
-  openScrollableModal(content: TemplateRef<NgbModal>): void {
-    //this.codeBudgetaireForm.reset();
-    this.modalService.open(content,
-       {size: 'lg', // set modal size
-        centered: true ,scrollable: true ,
-        backdrop: 'static', // disable modal from closing on click outside
-        keyboard: false,
-        ariaLabelledBy: 'modal-basic-title'}).result.then((result)=> { 
-           this.closeResult = `Closed with: ${result}`; 
-         }, (reason) => { 
-           this.closeResult =  
-              `Dismissed ${this.getDismissReason(reason)}`; 
-         });
-    }
+  openScrollableModal(content: TemplateRef<NgbModal>) {
+    this.modalService.open(content, { size: 'lg', centered: true, scrollable: true, backdrop: 'static', keyboard: false });
+  }
 
-    openEditModal(editcontent: TemplateRef<NgbModal>): void {
-      this.modalService.open(editcontent,
-         {size: 'lg', // set modal size
-          centered: true ,scrollable: true ,
-          backdrop: 'static', // disable modal from closing on click outside
-          keyboard: false,
-          ariaLabelledBy: 'modal-basic-title'}).result.then((result)=> { 
-             this.closeResult = `Closed with: ${result}`; 
-           }, (reason) => { 
-             this.closeResult =  
-                `Dismissed ${this.getDismissReason(reason)}`; 
-           });
-      }
+  openModal() {
+    this.formVisible = true;
+    this.tiersForm.reset();
+    this.selectedIndex = null;
+    this.modalService.open(this.modalContent, { size: 'lg', centered: true });
+  }
 
-  private getDismissReason(reason: any): string { 
-    if (reason === ModalDismissReasons.ESC) { 
-      return 'by pressing ESC'; 
-    } else if (reason === ModalDismissReasons.BACKDROP_CLICK) { 
-      return 'by clicking on a backdrop'; 
-    } else { 
-      return 'with: ${reason}'; 
-    } 
-  } 
+  closeModal(): void {
+    this.modalService.dismissAll();
+    this.tiersForm.reset();
+    this.selectedIndex = null;
+  }
 
-  showSuccess(message: string): void {
-    this.toastr.success(message, 'Succès', {
-      timeOut: 5000,
-      positionClass: 'toast-top-right',
-      progressBar: true,
-      closeButton: true
+  editTiers(index: number) {
+    this.selectedIndex = index;
+    const tierBi = this.lignes[index] as Tiers;
+    console.log(tierBi);
+    this.tiersForm.patchValue(tierBi);
+    this.modalService.open(this.modalContent, { size: 'lg', centered: true });
+  }
+
+  private initSearchListener() {
+    this.search$.pipe(
+      debounceTime(300),
+      switchMap(({ libelle }) => this.tiersService.getAllPageable(0, this.pageSize, libelle || undefined))
+    ).subscribe({
+      next: data => {
+        this.lignes = data.content.map((d: Tiers) => this.fb.group(d));
+        this.totalElements = data.totalElements;
+        this.currentPage = 0;
+      },
+      error: err => console.error('Erreur lors de la recherche', err)
     });
   }
 
-  showError(message: string): void {
-    this.toastr.error(message, 'Erreur', {
-      timeOut: 5000,
-      positionClass: 'toast-top-right',
-      progressBar: true,
-      closeButton: true
-    });
-  }
-
-  showWarning(message: string): void {
-    this.toastr.warning(message, 'Attention', {
-      timeOut: 5000,
-      positionClass: 'toast-top-right',
-      progressBar: true,
-      closeButton: true
-    });
+  onFilterChange(): void {
+    this.search$.next({ libelle: this.searchLibelle });
   }
 }

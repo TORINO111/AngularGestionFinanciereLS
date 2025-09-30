@@ -1,263 +1,152 @@
-<!-- end page title -->
 <app-page-title [breadcrumbItems]="pageTitle" title="Tiers"></app-page-title>
 
-@if (!result) {
-  <div class="loader-container">
-    <div class="lds-dual-ring"></div>
-  </div>
-}
-<!-- start page title -->
-@if (result) {
-  <div class="mt-2 card">
-    <div class="card-body">
-      @if (errorMessage) {
-        <div class="error-message">
-          <span class="error-icon">⚠️</span> {{ errorMessage }}
-        </div>
-      }
-      @if (importResult) {
-        <div class="result-container">
-          <div [ngClass]="{ 'success-message': importResult.success, 'error-message': !importResult.success }">
-            <span class="result-icon">{{ importResult.success ? '✓' : '⚠️' }}</span>
-            {{ importResult.message }}
-            @if (importResult.success) {
-              <span> - {{ importResult.lignesImportees }} comptes importés</span>
-            }
-          </div>
-          @if (importResult?.erreurs?.length ?? 0 > 0) {
-            <table class="error-table">
-              <thead>
-                <tr>
-                  <th>Ligne</th>
-                  <th>Compte</th>
-                  <th>Intitulé</th>
-                  <th>Erreur</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (err of importResult.erreurs; track err) {
-                  <tr>
-                    <td>{{ err.ligne }}</td>
-                    <td>{{ err.compte }}</td>
-                    <td>{{ err.intitule }}</td>
-                    <td>{{ err.erreur }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          }
-        </div>
-      }
-      <br>
-        <form [formGroup]="tiersForm">
-          <!-- Toolbar responsive -->
-          <div class="toolbar d-flex flex-wrap gap-2 mb-3">
-            <button type="button" class="btn btn-success" (click)="ajouter()">Nouveau</button>
-            <button type="button" class="btn btn-success" (click)="modifier()" [disabled]="selectedIndex === null">Modifier</button>
-            <button type="button" class="btn btn-danger" (click)="supprimer()" [disabled]="selectedIndex === null">Supprimer</button>
-            <button type="button" class="btn btn-success" (click)="enregistrer()" [disabled]="!formVisible">Enregistrer</button>
-            <button type="button" class="btn btn-success" (click)="fermer()" [disabled]="!formVisible">Fermer</button>
-            <button type="button" class="btn btn-success" (click)="openScrollableModal(importExcelModal)">Importer</button>
-          </div>
-          <!-- Modal -->
-          <ng-template #importExcelModal let-modal>
-            <div class="modal-header" style="background-color: #128C7E;">
-              <h4 class="modal-title text-light" id="NewTaskModalLabel">IMPORT EXCEL</h4>
-              <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
-            </div>
-            <div class="modal-body">
-              <form (ngSubmit)="onSubmit();modal.close('Close click')" enctype="multipart/form-data" [formGroup]="modelImportForm" class="p-2">
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label>Fichier Excel</label>
-                    <input required type="file" accept=".xls,.xlsx" class="form-control" (change)="onExcelFileSelected($event)">
-                    @if (fileError) {
-                      <div class="text-danger">{{ fileError }}</div>
-                    }
-                  </div>
-                  <!-- <div class="col-md-6 mb-3">
-                  <label>Année</label>
-                  <select required name="annee" formControlName="annee" class="form-select" id="annee">
-                    <option value="null" disabled>---Select Année---</option>
-                    <option *ngFor="let annee of annees" [value]="annee">{{annee}}</option>
-                  </select>
-                  </div> -->
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-danger" (click)="modal.dismiss('')">Fermer</button>
-                <button type="submit" class="btn btn-secondary">Valider</button>
-              </div>
-            </form>
-          </div>
-        </ng-template>
-        <div class="container-fluid">
-          <!-- Formulaire principal -->
-          @if (formVisible) {
-            <div class="row mb-3">
-              <div class="row" >
-                <div class="col-md-2">
-                  <div class="form-group">
-                    <label for="">Type Tiers</label>
-                    <!-- <select required name="type" formControlName="type"  class="form-select" id="type">
-                      <option  value="null" disabled>---Select Type Tiers---</option>
-                      @for (type of types ; track type) {
-                        <option [value]="type.id">{{type.libelle}}</option>
-                      }
-                    </select>
-                    -->
-                    <ng-select
-                      [items]="types"
-                      bindLabel="libelle"
-                      bindValue="id"
-                      formControlName="type"
-                      placeholder="Sélection type">
-                      [searchable]="true">
-                      <ng-template ng-notfound-tmp>
-                        Aucun type disponible
-                      </ng-template>
-                    </ng-select>
-                  </div>
-                </div>
-                <div class="col-12 col-md-2 mb-2">
-                  <div class="form-group">
-                    <label for="">Compte Tiers</label>
-                    <input type="text" id="compte" name="compte" formControlName="compte" class="form-control" placeholder="compte">
-                    @if (tiersForm.get('compte')?.hasError('required') && tiersForm.get('compte')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-                <div class="col-12 col-md-4 mb-2">
-                  <div class="form-group">
-                    <label for="">Intitule du tiers</label>
-                    <input type="text" id="intitule" name="intitule" formControlName="intitule" class="form-control" placeholder="intitule">
-                    @if (tiersForm.get('intitule')?.hasError('required') && tiersForm.get('intitule')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-                <div class="col-12 col-md-2 mb-2">
-                  <div class="form-group">
-                    <label for="">Collectif *</label>
-                    <input type="text" id="compteCollectif" name="compteCollectif" formControlName="compteCollectif" class="form-control" placeholder="Compte Collectif">
-                    @if (tiersForm.get('compteCollectif')?.hasError('required') && tiersForm.get('compteCollectif')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-                <div class="col-12 col-md-2 mb-2">
-                  <div class="form-group">
-                    <label for="">Interlocuteur</label>
-                    <input type="text" id="interlocuteur" name="interlocuteur" formControlName="interlocuteur" class="form-control" placeholder="interlocuteur">
-                    @if (tiersForm.get('interlocuteur')?.hasError('required') && tiersForm.get('interlocuteur')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-                <div class="col-12 col-md-2 mb-2">
-                  <div class="form-group">
-                    <label for="">Tel. Interlocuteur</label>
-                    <input type="text" id="telephoneInterlocuteur" name="telephoneInterlocuteur" formControlName="telephoneInterlocuteur" class="form-control" placeholder="Tel. Interlocuteur">
-                    @if (tiersForm.get('telephoneInterlocuteur')?.hasError('required') && tiersForm.get('telephoneInterlocuteur')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-                <div class="form-group">
-                    <label for="">Société</label>
-                    <!-- <select required name="type" formControlName="type"  class="form-select" id="type">
-                      <option  value="null" disabled>---Select Type Tiers---</option>
-                      @for (type of types ; track type) {
-                        <option [value]="type.id">{{type.libelle}}</option>
-                      }
-                    </select>
-                    -->
-                    <ng-select
-                      [items]="types"
-                      bindLabel="libelle"
-                      bindValue="id"
-                      formControlName="type"
-                      placeholder="Sélection type">
-                      [searchable]="true">
-                      <ng-template ng-notfound-tmp>
-                        Aucun journal disponible
-                      </ng-template>
-                    </ng-select>
-                  </div>
-                <div class="col-12 col-md-2 mb-2">
-                  <div class="form-group">
-                    <label for="">Tel. Societe</label>
-                    <input type="text" id="telephoneSociete" name="telephoneSociete" formControlName="telephoneSociete" class="form-control" placeholder="Tel. Societe">
-                    @if (tiersForm.get('telephoneSociete')?.hasError('required') && tiersForm.get('telephoneSociete')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-      </form>
-      <div class="table-container">
-        <table class="table table-bordered table-sm custom-table">
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Compte</th>
-              <th>Intitulé</th>
-              <th>Compte collectif</th>
-              <th>Interlocuteur</th>
-              <th>Tel. Interlocuteur</th>
-              <th>Tel. Société</th>
-            </tr>
-          </thead>
-          @if (!isLoading) {
-            <tbody>
-              @for (tier of tiers; track tier; let i = $index) {
-                <tr
-                  (click)="selectLigne(i)"
-                  [class.selected]="i === selectedIndex">
-                  <td>{{ tier.value.type }}</td>
-                  <td>{{ tier.value.compte }}</td>
-                  <td>{{ tier.value.intitule }}</td>
-                  <td>{{ tier.value.compteCollectif }}</td>
-                  <td>{{ tier.value.interlocuteur }}</td>
-                  <td>{{ tier.value.telephoneInterlocuteur }}</td>
-                  <td>{{ tier.value.telephoneSociete }}</td>
-                </tr>
-              }
-              @if (tiers?.length == 0) {
-                <tr >
-                  <td  colspan="7"><h3 style="text-align: center;">Aucune donnée trouvée</h3></td>
-                </tr>
-              }
-            </tbody>
-          }
-          @if (isLoading) {
-            <tbody>
-              <tr>
-                <td colspan="7" class="text-center">
-                  <div class="spinner-border text-secondary" role="status">
-                    <span class="visually-hidden">Chargement...</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          }
-        </table>
+<div class="card">
+  <div class="card-body">
+
+    <!-- Boutons -->
+    <div class="mb-3 d-flex gap-2">
+      <button class="btn btn-success" (click)="openModal()" style="background-color: #37a6de; border: #37a6de;">Nouveau Tiers</button>
+
+      <div class="d-flex gap-2 ms-auto">
+        <input #searchInput class="p-2" placeholder="Rechercher par intitule" [(ngModel)]="searchLibelle"
+          (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
       </div>
     </div>
+
+    <!-- Tableau des tiers -->
+    <table class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th style="background-color: #37a6de; color: white;">Code</th>
+          <th style="background-color: #37a6de; color: white;">Intitulé</th>
+          <th style="background-color: #37a6de; color: white;">Interlocuteur</th>
+          <th style="background-color: #37a6de; color: white;">Compte Collectif</th>
+          <th style="background-color: #37a6de; color: white;">Tel. Interlocuteur</th>
+          <th style="background-color: #37a6de; color: white;">Tel. Tiers</th>
+          <th style="background-color: #37a6de; color: white;">Type</th>
+
+          <th style="width:120px; background-color: #37a6de; color: white;">Actions</th>
+        </tr>
+      </thead>
+      <tbody *ngIf="!isLoading && tiers.length > 0">
+        <tr *ngFor="let tier of lignes; let i = index" [class.table-active]="i === selectedIndex">
+          <td>{{ tier.code }}</td>
+          <td>{{ tier.intitule }}</td>
+          <td>{{ tier.interlocuteur }}</td>
+          <td>{{ tier.compteCollectif }}</td>
+          <td>{{ tier.telephoneInterlocuteur }}</td>
+          <td>{{ tier.telephoneTiers }}</td>
+          <td>{{ tier.type }}</td>
+          <td>
+            <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="editTiers(i)"></span>
+            <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x" (click)="deleteTiersConfirm(i)"></span>
+          </td>
+        </tr>
+      </tbody>
+      <tbody *ngIf="!isLoading && lignes.length == 0">
+        <tr>
+          <td colspan="8" class="text-center">
+            <h5>AUCUN TIERS TROUVÉ</h5>
+          </td>
+        </tr>
+      </tbody>
+      <tbody *ngIf="isLoading">
+        <tr>
+          <td colspan="8" class="text-center">
+            <div class="spinner-border text-secondary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav aria-label="Pagination">
+      <ul class="pagination mt-3">
+        <li class="page-item" [class.disabled]="currentPage === 0">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)"
+            [ngStyle]="{'background-color': currentPage === 0 ? '#ccc' : 'transparent'}">Précédent</a>
+        </li>
+        <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)"
+            [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">{{ page + 1 }}
+            <span *ngIf="page === currentPage" class="visually-hidden">(current)</span>
+          </a>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
+          <a class="page-link" href="javascript:void(0)"
+            [ngStyle]="{'background-color': currentPage >= totalPages() - 1 ? '#ccc' : 'transparent'}"
+            (click)="goToPage(currentPage + 1)">Suivant</a>
+        </li>
+      </ul>
+    </nav>
+
   </div>
-}
+</div>
+
+<!-- Modal Création / Modification -->
+<ng-template #modalContent>
+  <div class="modal-header text-white" style="background-color: #37a6de; padding: 6px 10px;">
+    <h4 class="modal-title" style="color: white;">{{ selectedIndex !== null ? 'Modifier Tiers' : 'Nouveau Tiers' }}</h4>
+    <button type="button" class="btn" style="color:white; font-size:1.4rem;" (click)="closeModal()">&times;</button>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="tiersForm">
+      <input type="hidden" formControlName="id">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label>Type</label>
+          <ng-select [items]="types" bindLabel="libelle" bindValue="id" formControlName="type" placeholder="Sélection type">
+            [searchable]="true">
+            <ng-template ng-notfound-tmp>
+              Aucun type disponible
+            </ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-4">
+          <label>Intitulé</label>
+          <input type="text" formControlName="intitule" class="form-control">
+        </div>
+        <div class="col-md-4">
+          <label>Tel. Tiers</label>
+          <input type="text" formControlName="telephoneTiers" class="form-control">
+        </div>
+        <div class="col-md-4">
+          <label>Interlocuteur</label>
+          <input type="text" formControlName="interlocuteur" class="form-control">
+        </div>
+        <div class="col-md-4">
+          <label>Tel. Interlocuteur</label>
+          <input type="text" formControlName="telephoneInterlocuteur" class="form-control">
+        </div>
+        <!-- Compte Collectif -->
+        <div class="col-md-6">
+          <label>Compte Collectif</label>
+          <ng-select [items]="comptes" bindValue="id" placeholder="Sélection Compte"
+            formControlName="compteCollectifId" [searchable]="true" [searchFn]="searchFn"  [disabled]="!tiersForm.value.categorieId">
+
+            <!-- Label affiché dans le select -->
+            <ng-template ng-label-tmp let-item="item">
+              {{item.code}} - {{item.intitule}}
+            </ng-template>
+            <!-- Option dans le dropdown -->
+            <ng-template ng-option-tmp let-item="item">
+              {{item.code}} - {{item.intitule}}
+            </ng-template>
+
+            <ng-template ng-notfound-tmp>
+              Aucun compte comptable disponible
+            </ng-template>
+          </ng-select>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
+    <button type="button" class="btn btn-success" (click)="enregistrer()" style="background-color: #37a6de; border: #37a6de">Enregistrer</button>
+  </div>
+</ng-template>

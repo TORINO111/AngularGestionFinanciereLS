@@ -27,7 +27,7 @@ export class AuthenticationService {
   /**
    * Returns the current user
    */
-  public currentUser(): User | null {
+  public currentUser(): User | null { 
     if (!this.user) {
       this.user = loggedInUser();
     }

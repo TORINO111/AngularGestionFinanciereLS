@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { NatureOperationsComponent } from './nature-operations.component';
+import { EcrituresComponent } from './ecritures.component';
 
-describe('NatureOperationsComponent', () => {
-  let component: NatureOperationsComponent;
-  let fixture: ComponentFixture<NatureOperationsComponent>;
+describe('EcrituresComponent', () => {
+  let component: EcrituresComponent;
+  let fixture: ComponentFixture<EcrituresComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ NatureOperationsComponent ]
+      declarations: [ EcrituresComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(NatureOperationsComponent);
+    fixture = TestBed.createComponent(EcrituresComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

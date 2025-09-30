@@ -1,3 +1,4 @@
+import { TopbarComponent } from './../../../layout/shared/topbar/topbar.component';
 import { Component, OnInit, ViewChild, TemplateRef, ElementRef } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { SocieteService } from 'src/app/services/societe/societe.service';
@@ -7,6 +8,8 @@ import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.
 import { Societe } from 'src/app/models/societe.model';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
 import { debounceTime, Subject, switchMap } from 'rxjs';
+import { AuthenticationService } from 'src/app/core/service/auth.service';
+import { User } from 'src/app/core/models/auth.models';
 
 @Component({
   selector: 'app-cabinets',
@@ -20,6 +23,9 @@ export class CabinetsComponent implements OnInit {
 
   @ViewChild('searchInputNom', { static: true }) searchInputNom!: ElementRef<HTMLInputElement>;
   @ViewChild('searchInputTel', { static: true }) searchInputTel!: ElementRef<HTMLInputElement>;
+
+  currentUser: any;
+  currentSociete: any;
 
   selectedPays?: number;
   private search$ = new Subject<{ nom: string; tel: string; pays?: number }>();
@@ -46,11 +52,14 @@ export class CabinetsComponent implements OnInit {
   result = false;
 
   pays: any[] = [];
+  isFormReady = false;
+  societeBi: any;
 
   constructor(
     private societeService: SocieteService,
     private fb: UntypedFormBuilder,
     private modalService: NgbModal,
+    private authService: AuthenticationService,
     private notification: NotificationService
   ) {
     this.cabinetForm = this.fb.group({
@@ -62,15 +71,22 @@ export class CabinetsComponent implements OnInit {
       numeroIFU: ['', [Validators.required]],
       numeroRccm: ['', [Validators.required]],
       paysId: [],
-      paysNom: [null]
+      paysNom: [null],
+      societeId: [null],
     });
   }
 
   ngOnInit(): void {
     this.pageTitle = [{ label: 'cabinets', path: '/', active: true }];
+    const societeActiveStr = localStorage.getItem("societeActive");
+    if (societeActiveStr) {
+      this.societeBi = JSON.parse(societeActiveStr);
+      // Patch des valeurs dans les formulaires
+      this.cabinetForm.patchValue({ societeId: this.societeBi.id });
+    }
     this.chargerCabinets();
     this.chargerPays();
-    this.initSearchListener()
+    this.initSearchListener();
   }
 
   onFilterChange(): void {
@@ -354,18 +370,12 @@ export class CabinetsComponent implements OnInit {
 
   editCabinet(index: number): void {
     this.selectedIndex = index;
-    console.log(index);
+    if (!this.currentSociete) {
+      console.warn('Société non encore chargée, impossible d’éditer');
+      return;
+    }
     const cabinet = this.lignes[index];
-    this.cabinetForm.patchValue({
-      id: cabinet.id,
-      nom: cabinet.nom,
-      adresse: cabinet.adresse,
-      telephone: cabinet.telephone,
-      email: cabinet.email,
-      numeroIFU: cabinet.numeroIFU,
-      numeroRccm: cabinet.numeroRccm,
-      paysId: cabinet.paysId
-    });
+    this.cabinetForm.patchValue({cabinet});
     this.modalService.open(this.modalContent, { centered: true });
   }
 

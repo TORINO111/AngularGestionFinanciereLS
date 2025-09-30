@@ -1,16 +1,18 @@
 export interface Tiers {
   id?: number;
-  compte: string;
+  code: string;
   intitule: string;
   compteCollectif?: string;
   interlocuteur?: string;
   telephoneInterlocuteur?: string;
-  telephoneSociete?: string;
-  type: string; // enum: 'CLIENT', 'FOURNISSEUR', etc.
+  telephoneTiers?: string;
+  type: TiersNature; // enum: 'CLIENT', 'FOURNISSEUR', etc.
   societeId?: number;
 }
 
 export enum TiersNature {
   CLIENT = 'CLIENT',
-  FOURNISSEUR = 'FOURNISSEUR'
+  FOURNISSEUR = 'FOURNISSEUR',
+  SALARIE = 'SALARIE',
+  PARTENAIRE = 'PARTENAIRE'
 }

@@ -18,12 +18,15 @@ import { Router } from '@angular/router';
 import { ExerciceSelectionService } from 'src/app/services/exercices-selection/exercice-selection.service';
 
 @Component({
-    selector: 'app-topbar',
-    templateUrl: './topbar.component.html',
-    styleUrls: ['./topbar.component.scss'],
-    standalone: false
+  selector: 'app-topbar',
+  templateUrl: './topbar.component.html',
+  styleUrls: ['./topbar.component.scss'],
+  standalone: false
 })
 export class TopbarComponent implements OnInit {
+  static loadSocieteForuser(): any {
+    throw new Error('Method not implemented.');
+  }
 
   @Input() layoutType: string = '';
   @Input() leftSidebarTheme: string = 'light';
@@ -44,28 +47,27 @@ export class TopbarComponent implements OnInit {
   @Output() mobileMenuButtonClicked = new EventEmitter<void>();
   @Output() settingsButtonClicked = new EventEmitter<boolean>();
 
-  societe: Societe[] = [];
+  societe: Societe;
   filteredSocietes: Societe[] = [];
   searchText: string = '';
   selectedSociete: Societe;
   exerciceEnCours?: ExerciceComptable;
   societeId?: number;
 
-  constructor (
+  constructor(
     private exerciceService: ExerciceComptableService,
     private authService: AuthenticationService,
     private eventService: EventService,
     private societeService: SocieteService,
     private societeSelectionService: SocieteSelectionService,
-    private _route:Router,
+    private _route: Router,
     private exerciceSelectionService: ExerciceSelectionService
   ) { }
 
   ngOnInit(): void {
     this.loggedInUser = this.authService.currentUser();
 
-    this.loadSocietes();
-    this.selectedSociete = JSON.parse(localStorage.getItem('societeActive') || 'null');
+    this.loadSocieteForuser();
     this.loadExercice();
     this._fetchMenus();
     this._fetchSearchData();
@@ -81,11 +83,12 @@ export class TopbarComponent implements OnInit {
     document.addEventListener("mozfullscreenchange", this.exitHandler);
   }
 
-  loadSocietes() {
+  loadSocieteForuser() {
     this.societeService.getSocietePourUserConnecte(this.loggedInUser!.id).subscribe(data => {
-      this.societe = data;
-      console.log(this.societe);
-      this.filteredSocietes = data;
+      this.selectedSociete = data;
+      localStorage.setItem('societeActive', JSON.stringify(this.selectedSociete));
+      // console.log(this.selectedSociete);
+      // this.filteredSocietes = data;
     });
   }
 
@@ -96,37 +99,37 @@ export class TopbarComponent implements OnInit {
   //   });
   // }
 
-  filterSocietes() {
-    const term = this.searchText.toLowerCase();
-    this.filteredSocietes = this.societe.filter(s =>
-      s.nom.toLowerCase().includes(term)
-    );
-  }
+  // filterSocietes() {
+  //   const term = this.searchText.toLowerCase();
+  //   this.filteredSocietes = this.societe.filter(s =>
+  //     s.nom.toLowerCase().includes(term)
+  //   );
+  // }
 
   selectSociete(societe: Societe) {
     this.selectedSociete = societe;
     localStorage.setItem('societeActive', JSON.stringify(societe));
-    this.societeSelectionService.setSociete(societe); // 🔁 notifier tous les composants
+    this.societeSelectionService.setSociete(societe);
     this.loadExercice();
   }
 
   loadExercice(): void {
     this.societeSelectionService.selectedSociete$.subscribe(societe => {
       //this.societeActive = societe;
-      if (societe!== undefined) {
-        this.societeId=societe!.id;
-        
+      if (societe !== undefined) {
+        this.societeId = societe!.id;
+
         this.exerciceService.getExerciceEnCoursBySociete(this.societeId!).subscribe({
           next: (data) => {
             //console.log(data)
-              this.exerciceEnCours = data
+            this.exerciceEnCours = data
           },
           error: () => this.exerciceEnCours = undefined
         });
       }
-      
+
     });
-    
+
   }
 
   loadExercice1(): void {
@@ -136,7 +139,7 @@ export class TopbarComponent implements OnInit {
         this.exerciceService.getExerciceEnCoursBySociete(societeId!).subscribe({
           next: (data) => {
             console.log(data)
-              this.exerciceEnCours = data
+            this.exerciceEnCours = data
             this.exerciceSelectionService.setSelectedExercice(data);
           },
           error: () => {
@@ -318,7 +321,7 @@ export class TopbarComponent implements OnInit {
    */
   _fetchProfileOptions(): void {
     this.profileOptions = [
-      
+
       {
         label: 'Mon Compte',
         icon: 'user',

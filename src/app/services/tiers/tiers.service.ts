@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Tiers } from '../../models/tiers.model';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -16,21 +16,40 @@ export interface ImportTiersResultDTO {
   message: string;
   lignesImportees: number;
   erreurs: TiersImportDTO[];
-} 
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class TiersService {
+
   //private host:string='//4.222.22.46:8082/gest-fin';
   //private host:string='http://localhost:8082';
 
   private baseUrl = `${environment.apiUrl}/api/tiers`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getAll(): Observable<Tiers[]> {
     return this.http.get<Tiers[]>(this.baseUrl);
+  }
+
+  getAllPageable(
+    page: number = 0,
+    size: number = 20,
+    telTiers?: string,
+    intituleTiers?: string,
+    typeTiers?: string
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    if (telTiers) params = params.set('telTiers', telTiers);
+    if (intituleTiers) params = params.set('intituleTiers', intituleTiers);
+    if (typeTiers) params = params.set('typeTiers', typeTiers);
+
+    return this.http.get<any>(`${this.baseUrl}/pageable`, { params });
   }
 
   create(tiers: Tiers): Observable<Tiers> {
@@ -51,7 +70,7 @@ export class TiersService {
   }
 
   importerTiers(formData: FormData) {
-    return this.http.post<ImportTiersResultDTO>(`${this.baseUrl}/api/import-tiers`,formData);
+    return this.http.post<ImportTiersResultDTO>(`${this.baseUrl}/api/import-tiers`, formData);
   }
-  
+
 }
