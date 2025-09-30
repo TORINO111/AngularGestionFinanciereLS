@@ -1,6 +1,6 @@
 import { CompteComptableDTO } from 'src/app/models/compte-comptable';
 import { Component, OnInit, ViewChild, TemplateRef, ViewEncapsulation, ElementRef } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { CompteComptableService } from 'src/app/services/comptes-comptables/comptes-comptables.service';
@@ -20,11 +20,11 @@ import Swal from 'sweetalert2';
 export class ComptesComptablesComponent implements OnInit {
 
   @ViewChild('modalContent') modalContent!: TemplateRef<any>;
-
+  
   @ViewChild('searchIntituleChamp', { static: true }) searchIntituleChamp!: ElementRef<HTMLInputElement>;
   @ViewChild('searchCodeChamp', { static: true }) searchCodeChamp!: ElementRef<HTMLInputElement>;
 
-  comptes: UntypedFormGroup[] = [];
+  comptes: FormGroup[] = [];
   lignes: any[] = [];
   plansComptables: any[] = [];
   selectedIndex: number | null = null;
@@ -38,7 +38,6 @@ export class ComptesComptablesComponent implements OnInit {
   searchCode: string = '';
   selectedPlan: number;
 
-
   excelFile: File | null = null;
   fileError: string | null = null;
   errorMessage: string | null = null;
@@ -46,20 +45,18 @@ export class ComptesComptablesComponent implements OnInit {
   closeResult: string = '';
   modelImportForm!: FormGroup;
 
-  compteForm: UntypedFormGroup;
+  compteForm: FormGroup;
   formVisible = false;
   isLoading = false;
 
   selectedFile: File | null = null;
   http: any;
 
-
   constructor(
     private fb: FormBuilder,
     private compteService: CompteComptableService,
     private planService: PlanComptableService,
     private notification: NotificationService,
-    private planComptableService: PlanComptableService,
     private modalService: NgbModal,
     private toastr: ToastrService
   ) {
@@ -75,6 +72,11 @@ export class ComptesComptablesComponent implements OnInit {
     });
   }
 
+  /**
+   * Initialise le composant.
+   * Configure le titre, charge les plans comptables et la liste des comptes,
+   * et initialise l'écoute des changements de recherche.
+   */
   ngOnInit(): void {
     this.pageTitle = [{ label: 'Vos comptes comptables', path: '/', active: true }];
     this.loadPlansComptables();
@@ -86,14 +88,20 @@ export class ComptesComptablesComponent implements OnInit {
     });
   }
 
+  /**
+   * Autorise uniquement les chiffres dans un champ de saisie.
+   * @param event événement clavier
+   */
   allowOnlyNumbers(event: KeyboardEvent) {
     const charCode = event.which ? event.which : event.keyCode;
-    // 48-57 correspond aux touches 0-9
     if (charCode < 48 || charCode > 57) {
       event.preventDefault();
     }
   }
 
+  /**
+   * Charge tous les comptes comptables depuis le service.
+   */
   loadComptes(): void {
     this.isLoading = true;
     this.compteService.getAll().subscribe({
@@ -116,6 +124,9 @@ export class ComptesComptablesComponent implements OnInit {
     });
   }
 
+  /**
+   * Charge tous les plans comptables depuis le service.
+   */
   loadPlansComptables(): void {
     this.planService.getAll().subscribe({
       next: (data) => {
@@ -125,47 +136,30 @@ export class ComptesComptablesComponent implements OnInit {
     });
   }
 
+  /**
+   * Ouvre un modal scrollable et centré.
+   * @param content template du contenu du modal
+   */
   openScrollableModal(content: TemplateRef<NgbModal>): void {
     this.modalService.open(content,
       {
-        size: '', // set modal size
+        size: '',
         centered: true, scrollable: true,
-        backdrop: 'static', // disable modal from closing on click outside
+        backdrop: 'static',
         keyboard: false,
         ariaLabelledBy: 'modal-basic-title'
       }).result.then((result) => {
         this.closeResult = `Closed with: ${result}`;
       }, (reason) => {
-        this.closeResult =
-          `Dismissed ${this.getDismissReason(reason)}`;
+        this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
       });
   }
 
-  // onExcelFileSelected(event: Event): void {
-  //   const input = event.target as HTMLInputElement;
-  //   const file = input.files?.[0];
-
-  //   if (!file) return;
-
-  //   const validExtensions = ['.xls', '.xlsx'];
-  //   const fileName = file.name.toLowerCase();
-
-  //   const isValid = validExtensions.some(ext => fileName.endsWith(ext));
-
-  //   if (!isValid) {
-  //     this.fileError = 'Seuls les fichiers Excel (.xls, .xlsx) sont autorisés.';
-  //     this.notification.showError(this.fileError);
-  //     input.value = ''; // réinitialise le champ
-  //     this.modelImportForm.patchValue({ fichierExcel: null });
-  //     return;
-  //   }
-
-  //   this.fileError = null;
-  //   this.modelImportForm.patchValue({ fichierExcel: file });
-  //   this.modelImportForm.get('fichierExcel')?.updateValueAndValidity();
-  // }
-
-  /* Nouvelle logique onExcelFileSelected() et onSubmit()*/
+  /**
+   * Sélection d’un fichier Excel pour l’import.
+   * Vérifie l’extension et met à jour le formulaire d’import.
+   * @param event événement de sélection de fichier
+   */
   onExcelFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -189,87 +183,45 @@ export class ComptesComptablesComponent implements OnInit {
     this.modelImportForm.patchValue({ fichierExcel: file });
   }
 
+  /**
+   * Soumet le formulaire d’import Excel.
+   * Valide le formulaire, envoie le fichier et le plan au service,
+   * affiche une notification et recharge la liste après réussite.
+   */
   onSubmit(): void {
     if (this.modelImportForm.invalid) return;
 
     const formData = new FormData();
-    formData.append(
-      'file',
-      this.modelImportForm.get('fichierExcel')?.value
-    );
-    formData.append(
-      'planId',
-      this.modelImportForm.get('planId')?.value
-    );
+    formData.append('file', this.modelImportForm.get('fichierExcel')?.value);
+    formData.append('planId', this.modelImportForm.get('planId')?.value);
 
     this.compteService.importExcel(formData).subscribe({
-      next: () => this.notification.showSuccess('Import réussi'),
+      next: () => {
+        this.notification.showSuccess('Import réussi');
+        this.chargerComptesComptables();
+      },
       error: (err: any) => this.notification.showError('Échec import: ' + err)
     });
   }
 
+  /**
+   * Détermine la raison de fermeture d’un modal.
+   * @param reason raison de fermeture
+   * @returns description de la fermeture
+   */
   private getDismissReason(reason: any): string {
     if (reason === ModalDismissReasons.ESC) {
       return 'by pressing ESC';
     } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
       return 'by clicking on a backdrop';
     } else {
-      return 'with: ${reason}';
+      return `with: ${reason}`;
     }
   }
 
-  // onSubmit(): void {
-  //   if (this.modelImportForm.invalid) {
-  //     this.notification.showWarning('Formulaire invalide');
-  //     return;
-  //   }
-
-  //   const file = this.modelImportForm.value.fichierExcel;
-  //   if (!file) {
-  //     this.notification.showWarning('Veuillez sélectionner un fichier Excel.');
-  //     return;
-  //   }
-
-  //   this.isLoading = true;
-  //   this.importResult = null;
-
-  //   const formData = new FormData();
-  //   const societeId = this.modelImportForm.value.societeId;
-  //   const otherData = { ...this.modelImportForm.value };
-  //   delete otherData.fichierExcel;
-
-  //   formData.append('societeId', societeId);
-  //   //formData.append('modelImport', new Blob([JSON.stringify(otherData)], { type: 'application/json' }));
-  //   formData.append('fichierExcel', file);
-
-  //   this.planComptableService.importerPlanAnalytique(formData).subscribe({
-  //     next: (result) => {
-  //       this.lignes = [];
-  //       // this.chargerPlanAnalytiques();
-  //       this.importResult = result;
-  //       this.isLoading = false;
-
-  //       if (result.success) {
-  //         this.notification.showSuccess(`${result.message} (${result.lignesImportees} comptes importés)`);
-  //       } else {
-  //         this.notification.showError(`${result.message} (${result.erreurs.length} erreurs détectées)`);
-  //       }
-  //     },
-  //     error: (err) => {
-  //       const errorMsg = err.error?.message || 'Erreur lors de l’import.';
-  //       console.error(errorMsg);
-  //       this.notification.showError(errorMsg);
-  //       this.importResult = {
-  //         success: false,
-  //         message: errorMsg,
-  //         lignesImportees: 0,
-  //         erreurs: []
-  //       };
-  //       this.isLoading = false;
-  //     }
-  //   });
-  // }
-
+  /**
+   * Ouvre le modal de création de compte et initialise le formulaire.
+   */
   openModal(): void {
     this.formVisible = true;
     this.compteForm.reset();
@@ -277,6 +229,10 @@ export class ComptesComptablesComponent implements OnInit {
     this.modalService.open(this.modalContent, { size: 'lg', centered: true });
   }
 
+  /**
+   * Prépare l’édition d’un compte existant dans le modal.
+   * @param index index du compte à éditer
+   */
   editCompte(index: number): void {
     this.selectedIndex = index;
     const compte = this.lignes[index];
@@ -285,20 +241,11 @@ export class ComptesComptablesComponent implements OnInit {
     this.modalService.open(this.modalContent, { centered: true, size: 'lg' });
   }
 
-  // deleteCompte(index: number): void {
-  //   const compte = this.lignes[index];
-  //   console.log(compte);
-  //   if (!confirm(`Voulez-vous vraiment supprimer le compte "${compte.intitule}" ?`)) return;
-
-  //   this.compteService.delete(compte.id).subscribe({
-  //     next: () => {
-  //       this.toastr.success('Compte supprimé avec succès');
-  //       this.loadComptes();
-  //     },
-  //     error: () => this.toastr.error('Erreur suppression compte')
-  //   });
-  // }
- deleteCompte(index: number): void {
+  /**
+   * Supprime un compte avec confirmation.
+   * @param index index du compte à supprimer
+   */
+  deleteCompte(index: number): void {
     const compte = this.lignes[index];
     Swal.fire({
       title: 'Supprimer la section',
@@ -314,19 +261,21 @@ export class ComptesComptablesComponent implements OnInit {
       buttonsStyling: false
     }).then((result) => {
       if (result.isConfirmed) {
-        this.compteService.delete(compte.id)
-          .subscribe({
-            next: () => {
-              this.lignes.splice(index, 1);
-              this.selectedIndex = null;
-              this.notification.showSuccess('Compte supprimé avec succès !');
-            },
-            error: (error) => this.notification.showError(error)
-          });
+        this.compteService.delete(compte.id).subscribe({
+          next: () => {
+            this.lignes.splice(index, 1);
+            this.selectedIndex = null;
+            this.notification.showSuccess('Compte supprimé avec succès !');
+          },
+          error: (error) => this.notification.showError(error)
+        });
       }
     });
   }
 
+  /**
+   * Enregistre un compte (création ou mise à jour) via le formulaire.
+   */
   saveCompte(): void {
     if (this.compteForm.invalid) {
       this.toastr.warning('Formulaire invalide');
@@ -350,6 +299,9 @@ export class ComptesComptablesComponent implements OnInit {
     });
   }
 
+  /**
+   * Ferme le modal et réinitialise le formulaire.
+   */
   closeModal(): void {
     this.modalService.dismissAll();
     this.compteForm.reset();
@@ -357,14 +309,19 @@ export class ComptesComptablesComponent implements OnInit {
     this.formVisible = false;
   }
 
+  /**
+   * Charge la liste des comptes comptables avec pagination et filtres.
+   * @param page numéro de la page (optionnel)
+   */
   chargerComptesComptables(page: number = 0): void {
     this.currentPage = page;
 
-    this.compteService.getAllCompteComptablePageable(page,
+    this.compteService.getAllCompteComptablePageable(
+      page,
       this.pageSize,
-      this.searchCode ? this.searchCode : undefined,
-      this.searchIntitule ? this.searchIntitule : undefined,
-      this.selectedPlan ? this.selectedPlan : undefined,
+      this.searchCode || undefined,
+      this.searchIntitule || undefined,
+      this.selectedPlan || undefined
     ).subscribe({
       next: (data: any) => {
         this.lignes = data.content;
@@ -377,22 +334,40 @@ export class ComptesComptablesComponent implements OnInit {
     });
   }
 
+  /**
+   * Retourne un tableau de pages pour la pagination.
+   * @returns tableau d’index de pages
+   */
   pages(): number[] {
     return Array(this.totalPages()).fill(0).map((_, i) => i);
   }
 
+  /**
+   * Navigue vers une page spécifique.
+   * @param page numéro de la page
+   */
   goToPage(page: number = 0) {
     this.chargerComptesComptables(page);
   }
 
+  /**
+   * Calcule le nombre total de pages pour la pagination.
+   * @returns nombre total de pages
+   */
   totalPages(): number {
     return Math.ceil(this.totalElements / this.pageSize);
   }
 
+  /**
+   * Déclenche la recherche dès que les filtres changent.
+   */
   onFilterChange(): void {
     this.search$.next({ code: this.searchCode, intitule: this.searchIntitule, plan: this.selectedPlan });
   }
 
+  /**
+   * Initialise l’écoute des changements sur les filtres avec debounce.
+   */
   private initSearchListener(): void {
     this.search$
       .pipe(
@@ -404,7 +379,7 @@ export class ComptesComptablesComponent implements OnInit {
             this.pageSize,
             code || undefined,
             intitule || undefined,
-            plan || undefined,
+            plan || undefined
           );
         })
       )

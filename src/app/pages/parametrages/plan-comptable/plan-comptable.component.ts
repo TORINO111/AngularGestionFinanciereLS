@@ -41,7 +41,7 @@ export class PlanComptableComponent implements OnInit {
   plansComptablesList: PlanComptable[] = [];
   selected: boolean = false;
 
-  plansComptables: UntypedFormGroup[] = [];
+  plansComptables: any[] = [];
   lignes: any[] = [];
   societes: any[] = [];
 
@@ -79,6 +79,9 @@ export class PlanComptableComponent implements OnInit {
       Validators.pattern('^[a-zA-Z0-9 -]+$'),
       Validators.minLength(3)
       ]],
+      code: ['', [Validators.required,
+      Validators.pattern('^[a-zA-Z0-9]+$'),
+      Validators.maxLength(5)]]
     });
     this.modelImportForm = this.fb.group({
       fichierExcel: [null, Validators.required]
@@ -290,16 +293,14 @@ export class PlanComptableComponent implements OnInit {
 
   editPlan(index: number): void {
     this.selectedIndex = index;
-    const plan = this.plansComptables[index].value;
-    console.log(plan);
+    const plan = this.plansComptables[index];
     this.planComptableForm.patchValue(plan);
-    this.formVisible = true;
+
     this.modalService.open(this.modalContent, { size: 'lg', centered: true });
   }
 
   deletePlan(index: number): void {
-    const plan = this.plansComptables[index].value;
-    if (!plan?.id) return;
+    const plan = this.plansComptables[index];
     Swal.fire({
       title: 'Supprimer la section',
       text: `Voulez-vous vraiment supprimer le plan : "${plan.intitule}" ?`,

@@ -15,7 +15,7 @@
       <!-- Bouton Nouvelle catégorie -->
       <button (click)="openModal()" type="button" class="btn btn-success">
         Nouvelle Catégorie
-      </button> 
+      </button>
 
       <!-- Barre de recherche + filtre -->
       <div class="d-flex gap-2 ms-auto">
@@ -96,10 +96,10 @@
 
         <!-- Pages dynamiques -->
         <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
-          <a class="page-link" href="javascript:void(0)"
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)"
             [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">
             {{ page + 1 }}
-            <span *ngIf="page === currentPage" class="visually-hidden" (click)="goToPage(page)">(current)</span>
+            <span *ngIf="page === currentPage" class="visually-hidden">(current)</span>
           </a>
         </li>
 
@@ -133,6 +133,7 @@
 
       <div class="row g-3">
         <div class="col-md-6">
+          <!-- Libellé -->
           <label>Libellé</label>
           <input type="text" class="form-control" formControlName="libelle" placeholder="Libellé">
           <div *ngIf="categorieForm.get('libelle')?.hasError('required') && categorieForm.get('libelle')?.touched"
@@ -141,6 +142,7 @@
             class="text-danger">Minimum 5 caractères !</div>
         </div>
 
+        <!-- Type -->
         <div class="col-md-6">
           <label>Type</label>
           <ng-select formControlName="type" [items]="types" bindLabel="libelle" bindValue="id" [clearable]="false"
@@ -150,6 +152,28 @@
           <div *ngIf="categorieForm.get('type')?.hasError('required') && categorieForm.get('type')?.touched"
             class="text-danger">Champ obligatoire !</div>
         </div>
+
+        <!-- Compte Comptable -->
+        <div class="col-md-6">
+          <label>Compte Comptable</label>
+          <ng-select [items]="comptes" bindValue="id" placeholder="Sélection Compte" formControlName="compteComptableId"
+            [searchable]="true" [searchFn]="searchFn" [disabled]="!categorieForm.value.categorieId">
+
+            <!-- Label affiché dans le select -->
+            <ng-template ng-label-tmp let-item="item">
+              {{item.code}} - {{item.intitule}}
+            </ng-template>
+            <!-- Option dans le dropdown -->
+            <ng-template ng-option-tmp let-item="item">
+              {{item.code}} - {{item.intitule}}
+            </ng-template>
+
+            <ng-template ng-notfound-tmp>
+              Aucun compte comptable disponible
+            </ng-template>
+          </ng-select>
+        </div>
+
       </div>
     </form>
   </div>

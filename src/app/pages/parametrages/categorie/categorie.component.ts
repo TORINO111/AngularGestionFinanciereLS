@@ -8,6 +8,8 @@ import { TypeCategorieService } from 'src/app/services/type-categorie/type-categ
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
 import { debounceTime, switchMap } from 'rxjs';
 import { Subject } from 'rxjs';
+import { CompteComptableService } from 'src/app/services/comptes-comptables/comptes-comptables.service';
+import { CompteComptableDTO } from 'src/app/models/compte-comptable';
 
 @Component({
   selector: 'app-categorie',
@@ -55,18 +57,21 @@ export class CategorieComponent implements OnInit {
   errorMessage: string;
   selectedIndex: number | null = null;
   selected?: boolean = false;
+  comptes: CompteComptableDTO[];
 
   constructor(
     private categorieService: CategorieService,
     private modalService: NgbModal,
     private fb: UntypedFormBuilder,
     private typeCategorieService: TypeCategorieService,
+    private compteComptableService: CompteComptableService,
     private notification: NotificationService
   ) {
     this.categorieForm = this.fb.group({
       id: [null],
       libelle: ['', [Validators.required, Validators.minLength(5)]],
       type: ['null', [Validators.required]],
+      compteComptableId: ['null', [Validators.required]]
     });
   }
 
@@ -74,7 +79,27 @@ export class CategorieComponent implements OnInit {
     this.pageTitle = [{ label: 'Vos Catégories', path: '/', active: true }];
     this.chargerCategories();
     this.chargerTypesCategorie();
-    this.initSearchListener()
+    this.initSearchListener();
+    this.chargerComptesComptables()
+  }
+
+  chargerComptesComptables() {
+    this.compteComptableService.getAll().subscribe({
+      next: (data: CompteComptableDTO[]) => {
+        this.comptes = data;
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des comptes comptables', err);
+        this.notification.showError('Erreur lors du chargement des comptes comptables');
+      }
+    });
+  }
+
+  searchFn(term: string, item: any) {
+    if (!term) return true;
+    term = term.toLowerCase();
+    return item.code.toLowerCase().includes(term) ||
+      item.intitule.toLowerCase().includes(term);
   }
 
   onFilterChange(): void {
@@ -105,12 +130,6 @@ export class CategorieComponent implements OnInit {
         error: err => console.error('Erreur lors de la recherche', err)
       });
   }
-
-
-  /** Appelé dans le template sur (keyup) */
-  // onKeyup(value: string): void {
-  //   this.search$.next(value);
-  // }
 
   onSelected(event: Event) {
     // récupère l'id du type sélectionné
@@ -146,7 +165,7 @@ export class CategorieComponent implements OnInit {
   pages(): number[] {
     return Array(this.totalPages()).fill(0).map((_, i) => i);
   }
-  
+
   goToPage(page: number) {
     this.chargerCategories(page);
   }
@@ -241,7 +260,7 @@ export class CategorieComponent implements OnInit {
   openModal(): void {
     this.categorieForm.reset();
     this.selectedIndex = null;
-    this.modalService.open(this.categorieModal, { centered: true });
+    this.modalService.open(this.categorieModal, { size: 'lg', centered: true });
   }
 
   editCategorie(index: number): void {

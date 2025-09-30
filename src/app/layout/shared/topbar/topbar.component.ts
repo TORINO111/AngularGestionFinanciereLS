@@ -44,10 +44,10 @@ export class TopbarComponent implements OnInit {
   @Output() mobileMenuButtonClicked = new EventEmitter<void>();
   @Output() settingsButtonClicked = new EventEmitter<boolean>();
 
-  societes: Societe[] = [];
+  societe: Societe[] = [];
   filteredSocietes: Societe[] = [];
   searchText: string = '';
-  selectedSociete: Societe | null = null;
+  selectedSociete: Societe;
   exerciceEnCours?: ExerciceComptable;
   societeId?: number;
 
@@ -62,6 +62,8 @@ export class TopbarComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.loggedInUser = this.authService.currentUser();
+
     this.loadSocietes();
     this.selectedSociete = JSON.parse(localStorage.getItem('societeActive') || 'null');
     this.loadExercice();
@@ -72,7 +74,6 @@ export class TopbarComponent implements OnInit {
     this._fetchLanguages();
     this._fetchProfileOptions();
 
-    this.loggedInUser = this.authService.currentUser();
     //console.log(this.loggedInUser)
 
     document.addEventListener('fullscreenchange', this.exitHandler);
@@ -81,15 +82,23 @@ export class TopbarComponent implements OnInit {
   }
 
   loadSocietes() {
-    this.societeService.getSocietesPourComptableConnecte().subscribe(data => {
-      this.societes = data;
+    this.societeService.getSocietePourUserConnecte(this.loggedInUser!.id).subscribe(data => {
+      this.societe = data;
+      console.log(this.societe);
       this.filteredSocietes = data;
     });
   }
 
+  // loadSocietes() {
+  //   this.societeService.getSocietesPourComptableConnecte().subscribe(data => {
+  //     this.societes = data;
+  //     this.filteredSocietes = data;
+  //   });
+  // }
+
   filterSocietes() {
     const term = this.searchText.toLowerCase();
-    this.filteredSocietes = this.societes.filter(s =>
+    this.filteredSocietes = this.societe.filter(s =>
       s.nom.toLowerCase().includes(term)
     );
   }

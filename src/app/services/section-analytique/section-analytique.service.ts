@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SectionAnalytique } from 'src/app/models/section-analytique';
@@ -9,11 +9,12 @@ import { environment } from 'src/environments/environment';
   providedIn: 'root'
 })
 export class SectionAnalytiqueService {
+
   private baseUrlSectionAnalytique = `${environment.apiUrl}/api/sections-analytiques`;
 
   constructor(private _http: HttpClient) { }
 
-  creerSectionAnalytique(sectionAnalytique: SectionAnalytiqueRequest): Observable<SectionAnalytiqueDTO>  {
+  creerSectionAnalytique(sectionAnalytique: SectionAnalytiqueRequest): Observable<SectionAnalytiqueDTO> {
     return this._http.post<SectionAnalytiqueDTO>(this.baseUrlSectionAnalytique, sectionAnalytique, {
       headers: new HttpHeaders().set('Content-Type', 'application/json')
     });
@@ -28,6 +29,23 @@ export class SectionAnalytiqueService {
   getAllSectionAnalytiques(): Observable<SectionAnalytiqueDTO[]> {
     return this._http.get<SectionAnalytiqueDTO[]>(this.baseUrlSectionAnalytique, {
       headers: new HttpHeaders().set('Content-Type', 'application/json')
+    });
+  }
+
+  getAllPageable(
+    page: number = 0,
+    size: number = 20,
+    searchLibelle?: string,
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    if (searchLibelle) params = params.set('searchLibelle', searchLibelle);
+
+    return this._http.get<Observable<any>>(`${this.baseUrlSectionAnalytique}/pageable`, {
+      headers: new HttpHeaders().set('Content-Type', 'application/json'),
+      params: params
     });
   }
 

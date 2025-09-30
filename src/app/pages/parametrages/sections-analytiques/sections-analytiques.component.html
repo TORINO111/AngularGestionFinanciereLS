@@ -3,11 +3,22 @@
 <div class="card">
     <div class="card-body">
 
-        <!-- Bouton -->
-        <div class="mb-3 d-flex gap-2">
-            <button class="btn btn-success" style="background-color: #37a6de; border: #37a6de;"
-                (click)="openModal()">Nouvelle
-                Section</button>
+        <!-- Boutons et filtres -->
+        <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
+            <div class="d-flex">
+                <div>
+                    <button class="btn btn-success" style="background-color: #37a6de; border: #37a6de;"
+                        (click)="openModal()">Nouvelle
+                        Section</button>
+                </div>
+            </div>
+
+            <!-- Barres de recherche -->
+            <div class="d-flex gap-2 ms-auto">
+                <input #searchLibelleChamp class="p-2" placeholder="Rechercher par intitulé" [(ngModel)]="searchLibelle"
+                    (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+            </div>
+
         </div>
 
         <!-- Tableau des sections analytiques -->
@@ -27,7 +38,7 @@
             </thead>
 
             <tbody class="tbody-custom">
-                <tr *ngFor="let section of sections; let i = index">
+                <tr *ngFor="let section of lignes; let i = index">
                     <td style="width: 200px;">{{ section.code }}</td>
                     <td>{{ section.libelle }}</td>
                     <td>
@@ -37,11 +48,41 @@
                             (click)="deleteSection(i)"></span>
                     </td>
                 </tr>
-                <tr *ngIf="sections.length === 0">
+                <tr *ngIf="lignes.length === 0">
                     <td colspan="3" class="text-center">Aucune section trouvée</td>
                 </tr>
             </tbody>
         </table>
+
+        <!-- Pagination -->
+        <nav aria-label="Pagination">
+            <ul class="pagination mt-3">
+
+                <!-- Bouton Précédent -->
+                <li class="page-item" [class.disabled]="currentPage === 0">
+                    <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)"
+                        [ngStyle]="{'background-color': currentPage === 0 ? '#ccc' : 'transparent'}">Précédent</a>
+                </li>
+
+                <!-- Pages dynamiques -->
+                <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
+                    <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)"
+                        [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">
+                        {{ page + 1 }}
+                        <span *ngIf="page === currentPage" class="visually-hidden">(current)</span>
+                    </a>
+                </li>
+
+                <!-- Bouton Suivant -->
+                <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
+                    <a class="page-link" href="javascript:void(0)"
+                        [ngStyle]="{'background-color': currentPage >= totalPages() - 1 ? '#ccc' : 'transparent'}"
+                        (click)="goToPage(currentPage + 1)">Suivant</a>
+                </li>
+
+            </ul>
+        </nav>
+
     </div>
 </div>
 
@@ -61,7 +102,7 @@
             <div class="mb-3">
                 <label class="form-label">Libellé</label>
                 <input formControlName="libelle" class="form-control">
-                <div *ngIf="sectionForm.get('intitule')?.invalid && sectionForm.get('intitule')?.touched"
+                <div *ngIf="sectionForm.get('libelle')?.invalid && sectionForm.get('libelle')?.touched"
                     class="text-danger">
                     <span *ngIf="sectionForm.get('libelle')?.hasError('required')">Libellé obligatoire</span>
                     <span *ngIf="sectionForm.get('libelle')?.hasError('pattern')">Uniquement des lettres et
@@ -84,5 +125,5 @@
         <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
         <button type="button" class="btn btn-success" (click)="saveSection()">Enregistrer</button>
     </div>
-    
+
 </ng-template>

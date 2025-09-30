@@ -27,7 +27,7 @@ export class CabinetsComponent implements OnInit {
   searchTel: string = '';
 
   totalElements: number = 0;
-  pageSize: number = 3;
+  pageSize: number = 1;
   currentPage: number = 0;
 
   closeResult: string = '';

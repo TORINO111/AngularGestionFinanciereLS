@@ -73,7 +73,6 @@ export class TopnavComponent implements OnInit {
 
   };
 
-
   /**
    * activate the menuitems
    */

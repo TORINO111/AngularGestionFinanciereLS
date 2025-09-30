@@ -33,6 +33,26 @@ export class NatureOperationService {
     );
   }
 
+  getAllPageable(
+    page: number = 0,
+    size: number = 20,
+    searchCodeChamp?: string,
+    searchCategorie?: number,
+    searchJournal?: number,
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    if (searchCodeChamp) params = params.set('searchCodeChamp', searchCodeChamp);
+    if (searchCategorie) params = params.set('searchCategorie', searchCategorie);
+    if (searchJournal) params = params.set('searchJournal', searchJournal);
+
+    return this.http.get<any>(`${environment.apiUrl}/api/natures/pageable`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   getAllCodeJournal(): Observable<any[]> {
     return this.http.get<any[]>(`${environment.apiUrl}/api/codes-journals`).pipe(
       catchError(this.handleError)

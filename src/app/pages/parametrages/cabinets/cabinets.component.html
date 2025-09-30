@@ -100,10 +100,10 @@
 
           <!-- Pages dynamiques -->
           <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
-            <a class="page-link" href="javascript:void(0)"
+            <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)"
               [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">
               {{ page + 1 }}
-              <span *ngIf="page === currentPage" class="visually-hidden" (click)="goToPage(page)">(current)</span>
+              <span *ngIf="page === currentPage" class="visually-hidden">(current)</span>
             </a>
           </li>
 
@@ -113,6 +113,7 @@
               [ngStyle]="{'background-color': currentPage >= totalPages() - 1 ? '#ccc' : 'transparent'}"
               (click)="goToPage(currentPage + 1)">Suivant</a>
           </li>
+
         </ul>
       </nav>
 

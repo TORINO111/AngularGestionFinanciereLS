@@ -71,6 +71,7 @@
         </tr>
       </tbody>
     </table>
+
     <!-- Pagination -->
     <nav aria-label="Pagination">
       <ul class="pagination mt-3">
@@ -83,10 +84,10 @@
 
         <!-- Pages dynamiques -->
         <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
-          <a class="page-link" href="javascript:void(0)"
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)"
             [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">
             {{ page + 1 }}
-            <span *ngIf="page === currentPage" class="visually-hidden" (click)="goToPage(page)">(current)</span>
+            <span *ngIf="page === currentPage" class="visually-hidden">(current)</span>
           </a>
         </li>
 
@@ -154,20 +155,14 @@
   </div>
 
   <div class="modal-body">
-    <form (ngSubmit)="onSubmit(); modal.close('Close click')"
-          enctype="multipart/form-data"
-          [formGroup]="modelImportForm"
-          class="p-2">
+    <form (ngSubmit)="onSubmit(); modal.close('Close click')" enctype="multipart/form-data"
+      [formGroup]="modelImportForm" class="p-2">
 
       <div class="row">
         <!-- Sélection du plan -->
         <div class="col-md-12 mb-3">
           <label>Plan comptable</label>
-          <ng-select
-            formControlName="planId"
-            [items]="plansComptables"
-            bindLabel="intitule"
-            bindValue="id"
+          <ng-select formControlName="planId" [items]="plansComptables" bindLabel="intitule" bindValue="id"
             placeholder="Choisir le plan à affecter">
           </ng-select>
         </div>
@@ -175,10 +170,7 @@
         <!-- Fichier Excel -->
         <div class="col-md-12 mb-3">
           <label>Fichier Excel</label>
-          <input required type="file"
-                 accept=".xls,.xlsx"
-                 class="form-control"
-                 (change)="onExcelFileSelected($event)">
+          <input required type="file" accept=".xls,.xlsx" class="form-control" (change)="onExcelFileSelected($event)">
           <div *ngIf="fileError" class="text-danger">{{ fileError }}</div>
         </div>
       </div>

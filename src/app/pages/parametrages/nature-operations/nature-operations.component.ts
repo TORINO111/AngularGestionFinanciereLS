@@ -1,6 +1,6 @@
 import { PlanAnalytiqueDTO } from './../../../models/plan-analytique.model';
 import { PlansAnalytiquesService } from './../../../services/plans-analytiques/plans-analytiques.service';
-import { Component, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, ElementRef, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
 import { CategorieService } from 'src/app/services/categories/categorie.service';
 import { PlanComptableService } from 'src/app/services/plan-comptable/plan-comptable.service';
@@ -19,6 +19,7 @@ import { CompteComptableDTO } from 'src/app/models/compte-comptable';
 import { PlanComptable } from 'src/app/models/plan-comptable.model';
 import { NatureOperationDto } from 'src/app/models/nature-operation.model';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { debounceTime, Subject, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-nature-operations',
@@ -31,19 +32,29 @@ export class NatureOperationsComponent implements OnInit {
 
   @ViewChild('modalContent') modalContent!: TemplateRef<any>;
 
+  @ViewChild('searchCodeChamp', { static: true }) searchCodeChamp!: ElementRef<HTMLInputElement>;
+  @ViewChild('searchCategorie', { static: true }) searchCategorie!: ElementRef<HTMLInputElement>;
+  @ViewChild('searchJournal', { static: true }) searchJournal!: ElementRef<HTMLInputElement>;
 
-  natureList: NatureOperationDto[] = [];
+
   selected?: NatureOperationDto | null;
 
-  // Utilisation de FormGroup[] avec typage clair
-  natureOperations: UntypedFormGroup[] = [];
-  lignes: UntypedFormGroup[] = [];
+  natureOperations: any[] = [];
+  lignes: any[] = [];
 
-  plansAnalytiques: UntypedFormGroup[] = [];
+  totalElements: number = 0;
+  pageSize: number = 40;
+  currentPage: number = 0;
+  private search$ = new Subject<{ code: string, categorie: number, journal: number }>();
+  searchCate: number;
+  searchCode: string = '';
+  selectedJournal: number;
+
+  plansAnalytiques: any[] = [];
   analytiques: Select2Data = [];
   comptables: PlanComptable[] = [];  // Fait référence aux Plans comptables
   categories: any[] = [];
-  comptes: any[] = [];
+  comptes: CompteComptableDTO[] = [];
   listeSens = [{ id: 'CREDIT', libelle: 'CREDIT' }, { id: 'DEBIT', libelle: 'DEBIT' }];
   codesjournaux: CodeJournal[] = [];
 
@@ -87,14 +98,12 @@ export class NatureOperationsComponent implements OnInit {
     private planAnalytiqueService: PlansAnalytiquesService,
     private fb: UntypedFormBuilder,
     private notification: NotificationService,
-    private typeCategorieService: TypeCategorieService,
     private sectionAnalytiqueService: SectionAnalytiqueService,
     private modalService: NgbModal
-
   ) {
     this.natureOperationForm = this.fb.group({
       id: [],
-      code: ['', Validators.required],
+      montant: ['', Validators.required],
       libelle: ['', [Validators.required, Validators.minLength(2)]],
       compteComptableId: ['', Validators.required],
       sectionAnalytiqueId: [null],
@@ -114,7 +123,8 @@ export class NatureOperationsComponent implements OnInit {
     this.chargerPlansAnalytiques();
     this.chargerCodeJournal();
     this.chargerSectionsAnalytiques();
-    this.chargerComptesComptables()
+    this.chargerComptesComptables();
+    this.initSearchListener()
   }
 
   onCategorieChange(): void {
@@ -327,23 +337,23 @@ export class NatureOperationsComponent implements OnInit {
     });
   }
 
-  chargerComptesComptables() {
-    this.compteComptableService.getAll().subscribe({
-      next: (data: CompteComptableDTO[]) => {
-        this.comptes = data.map(d => ({
-          id: d.id,
-          code: d.code,
-          intitule: d.intitule
-        }));
-        this.result = true;
-      },
-      error: (error: any) => {
-        this.result = true;
-        console.log('Erreur lors du chargement des categories', error);
-        this.notification.showError("Erreur lors du chargement des catégories");
-      }
-    });
-  }
+  // chargerNatureOperations() {
+  //   this.natureOperationService.getAll().subscribe({
+  //     next: (data: CompteComptableDTO[]) => {
+  //       this.comptes = data.map(d => ({
+  //         id: d.id,
+  //         code: d.code,
+  //         intitule: d.intitule
+  //       }));
+  //       this.result = true;
+  //     },
+  //     error: (error: any) => {
+  //       this.result = true;
+  //       console.log('Erreur lors du chargement des categories', error);
+  //       this.notification.showError("Erreur lors du chargement des catégories");
+  //     }
+  //   });
+  // }
 
   chargerSectionsAnalytiques() {
     this.sectionAnalytiqueService.getAllSectionAnalytiques().subscribe(
@@ -387,6 +397,25 @@ export class NatureOperationsComponent implements OnInit {
         this.notification.showError("Erreur..");
       }
     });
+  }
+
+  chargerComptesComptables() {
+    this.compteComptableService.getAll().subscribe({
+      next: (data: CompteComptableDTO[]) => {
+        this.comptes = data;
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des comptes comptables', err);
+        this.notification.showError('Erreur lors du chargement des comptes comptables');
+      }
+    });
+  }
+
+  searchFn(term: string, item: any) {
+    if (!term) return true;
+    term = term.toLowerCase();
+    return item.code.toLowerCase().includes(term) ||
+      item.intitule.toLowerCase().includes(term);
   }
 
   deleteNatureOperationDto(nature: NatureOperationDto): void {
@@ -448,6 +477,66 @@ export class NatureOperationsComponent implements OnInit {
   deleteNature(index: number): void {
     const nature = this.natureOperations[index].value;
     this.deleteNatureOperationDto(nature);
+  }
+
+  chargerNaturesOperations(page: number = 0): void {
+    this.currentPage = page;
+
+    this.natureOperationService.getAllPageable(page,
+      this.pageSize,
+      this.searchCode ? this.searchCode : undefined,
+      this.searchCate ? this.searchCate : undefined,
+      this.selectedJournal ? this.selectedJournal : undefined,
+    ).subscribe({
+      next: (data: any) => {
+        this.lignes = data.content;
+        this.totalElements = data.totalElements;
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des plans comptables', error);
+        this.notification.showError('Erreur de chargement');
+      }
+    });
+  }
+
+  pages(): number[] {
+    return Array(this.totalPages()).fill(0).map((_, i) => i);
+  }
+
+  goToPage(page: number = 0) {
+    this.chargerNaturesOperations(page);
+  }
+
+  totalPages(): number {
+    return Math.ceil(this.totalElements / this.pageSize);
+  }
+
+  onFilterChange(): void {
+    this.search$.next({ code: this.searchCode, categorie: this.searchCate, journal: this.selectedJournal });
+  }
+
+  private initSearchListener(): void {
+    this.search$
+      .pipe(
+        debounceTime(300),
+        switchMap(({ code, categorie, journal }) => {
+          this.currentPage = 0;
+          return this.natureOperationService.getAllPageable(
+            0,
+            this.pageSize,
+            code || undefined,
+            categorie || undefined,
+            journal || undefined,
+          );
+        })
+      )
+      .subscribe({
+        next: data => {
+          this.lignes = data.content;
+          this.currentPage = 0;
+        },
+        error: err => console.error('Erreur lors de la recherche', err)
+      });
   }
 
 }

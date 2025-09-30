@@ -17,3 +17,14 @@
   background-color: #37a6de;
   border: #37a6de;
 }
+
+nav[aria-label="Pagination"] {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 0;
+}
+
+.pagination .page-item + .page-item {
+  margin-left: 5px;
+}

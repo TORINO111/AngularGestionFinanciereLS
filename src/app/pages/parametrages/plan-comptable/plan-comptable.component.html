@@ -19,6 +19,9 @@
       <thead>
         <tr>
           <th style="background-color: #37a6de; color: white;">
+            <h4 style="color: white;"><strong>Code</strong> </h4>
+          </th>
+          <th style="background-color: #37a6de; color: white;">
             <h4 style="color: white;"><strong>Intitulé</strong> </h4>
           </th>
           <th style="width:120px; background-color: #37a6de; color: white;">
@@ -28,6 +31,7 @@
       </thead>
       <tbody *ngIf="!isLoading && lignes.length > 0">
         <tr *ngFor="let plan of lignes; let i = index" [class.table-active]="i === selectedIndex">
+          <td>{{ plan.code }}</td>
           <td>{{ plan.intitule }}</td>
           <td>
             <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="editPlan(i)"></span>
@@ -65,10 +69,10 @@
 
         <!-- Pages dynamiques -->
         <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
-          <a class="page-link" href="javascript:void(0)"
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)"
             [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">
             {{ page + 1 }}
-            <span *ngIf="page === currentPage" class="visually-hidden" (click)="goToPage(page)">(current)</span>
+            <span *ngIf="page === currentPage" class="visually-hidden">(current)</span>
           </a>
         </li>
 
@@ -100,9 +104,19 @@
       <input type="hidden" formControlName="id">
 
       <div class="row g-3">
-        <div class="mb-3 col-md-12">
+        <div class="mb-3 col-md-6">
+          <label>Code</label>
+          <input type="text" formControlName="code" class="form-control">
+          <div *ngIf="planComptableForm.get('code')?.hasError('required') && planComptableForm.get('code')?.touched"
+            class="text-danger">Champ obligatoire !</div>
+          <div *ngIf="planComptableForm.get('code')?.hasError('pattern') && planComptableForm.get('code')?.touched"
+            class="text-danger">Seuls lettres, chiffres et tirets sont autorisés (pas d'espace) !</div>
+          <div *ngIf="planComptableForm.get('code')?.hasError('maxlength') && planComptableForm.get('code')?.touched"
+            class="text-danger">Seuls 5 caractères sont autorisés !</div>
+        </div>
+        <div class="mb-3 col-md-6">
           <label>Intitulé</label>
-          <input type="text" formControlName="intitule" class="form-control" pattern="^[a-zA-Z0-9 -]+$">
+          <input type="text" formControlName="intitule" class="form-control" pattern='^[a-zA-Z0-9]+$'>
           <div
             *ngIf="planComptableForm.get('intitule')?.hasError('required') && planComptableForm.get('intitule')?.touched"
             class="text-danger">Champ obligatoire !</div>

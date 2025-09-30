@@ -1,11 +1,11 @@
 <app-page-title [breadcrumbItems]="pageTitle" title="Nature Opération"></app-page-title>
 
-<!-- Tableau des natures d'opération -->
 <div class="card ">
   <div class="card-body">
-    <!-- Toolbar principale -->
+    <!-- Boutons principaux -->
     <div class="mb-3 d-flex gap-2 ">
-      <button class="btn btn-success" (click)="openModal()">Nouvelle Opération </button>
+      <button class="btn btn-success" (click)="openModal()" style="background-color: #37a6de">Nouvelle Opération
+      </button>
     </div>
 
     <!-- Tableau des Natures d'Opérations -->
@@ -70,6 +70,35 @@
         </tr>
       </tbody>
     </table>
+
+    <!-- Pagination -->
+    <nav aria-label="Pagination">
+      <ul class="pagination mt-3">
+
+        <!-- Bouton Précédent -->
+        <li class="page-item" [class.disabled]="currentPage === 0">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)"
+            [ngStyle]="{'background-color': currentPage === 0 ? '#ccc' : 'transparent'}">Précédent</a>
+        </li>
+
+        <!-- Pages dynamiques -->
+        <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)"
+            [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">
+            {{ page + 1 }}
+            <span *ngIf="page === currentPage" class="visually-hidden">(current)</span>
+          </a>
+        </li>
+
+        <!-- Bouton Suivant -->
+        <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
+          <a class="page-link" href="javascript:void(0)"
+            [ngStyle]="{'background-color': currentPage >= totalPages() - 1 ? '#ccc' : 'transparent'}"
+            (click)="goToPage(currentPage + 1)">Suivant</a>
+        </li>
+
+      </ul>
+    </nav>
   </div>
 </div>
 
@@ -89,8 +118,29 @@
       <input type="hidden" formControlName="id">
 
       <div class="row g-3">
+
+        <!-- Libellé -->
+        <div class="col-md-4">
+          <label>Intitulé</label>
+          <input type="text" class="form-control" formControlName="libelle" placeholder="Intitulé">
+          <div
+            *ngIf="natureOperationForm.get('libelle')?.hasError('required') && natureOperationForm.get('libelle')?.touched"
+            class="text-danger">
+            Champ obligatoire !
+          </div>
+        </div>
+
+        <!-- Code journal -->
+        <div class="col-md-4">
+          <label>Code journal</label>
+          <ng-select [items]="codesjournaux" bindLabel="libelle" bindValue="code" placeholder="Sélection Journal"
+            formControlName="codeJournalId" [searchable]="true">
+            <ng-template ng-notfound-tmp>Aucun journal disponible</ng-template>
+          </ng-select>
+        </div>
+
         <!-- Catégorie -->
-        <div class="col-md-6">
+        <div class="col-md-4">
           <label>Catégorie</label>
           <ng-select [items]="categories" bindLabel="libelle" bindValue="id" placeholder="Sélection Catégorie"
             formControlName="categorieId" [searchable]="true" (change)="onCategorieChange()">
@@ -103,31 +153,12 @@
           </div>
         </div>
 
-        <!-- Code journal -->
-        <div class="col-md-6">
-          <label>Code journal</label>
-          <ng-select [items]="codesjournaux" bindLabel="libelle" bindValue="code" placeholder="Sélection Journal"
-            formControlName="codeJournalId" [searchable]="true">
-            <ng-template ng-notfound-tmp>Aucun journal disponible</ng-template>
-          </ng-select>
-        </div>
 
         <!-- Code -->
-        <div class="col-md-6">
-          <label>Code</label>
-          <input type="text" class="form-control" formControlName="code" placeholder="Code">
-          <div *ngIf="natureOperationForm.get('code')?.hasError('required') && natureOperationForm.get('code')?.touched"
-            class="text-danger">
-            Champ obligatoire !
-          </div>
-        </div>
-
-        <!-- Libellé -->
-        <div class="col-md-6">
-          <label>Libellé</label>
-          <input type="text" class="form-control" formControlName="libelle" placeholder="Libellé">
-          <div
-            *ngIf="natureOperationForm.get('libelle')?.hasError('required') && natureOperationForm.get('libelle')?.touched"
+        <div class="col-md-4">
+          <label>Montant</label>
+          <input type="text" class="form-control" formControlName="montant" placeholder="Montant (FCFA)">
+          <div *ngIf="natureOperationForm.get('montant')?.hasError('required') && natureOperationForm.get('montant')?.touched"
             class="text-danger">
             Champ obligatoire !
           </div>
@@ -136,14 +167,26 @@
         <!-- Compte Comptable -->
         <div class="col-md-6">
           <label>Compte Comptable</label>
-          <ng-select [items]="comptes" bindLabel="intitule" bindValue="id" placeholder="Sélection Compte Comptable"
-            formControlName="compteComptableId" [searchable]="true">
-            <ng-template ng-notfound-tmp>Aucun compte comptable disponible</ng-template>
+          <ng-select [items]="comptes" bindValue="id" placeholder="Sélection Compte"
+            formControlName="compteComptableId" [searchable]="true" [searchFn]="searchFn"  [disabled]="!natureOperationForm.value.categorieId">
+
+            <!-- Label affiché dans le select -->
+            <ng-template ng-label-tmp let-item="item">
+              {{item.code}} - {{item.intitule}}
+            </ng-template>
+            <!-- Option dans le dropdown -->
+            <ng-template ng-option-tmp let-item="item">
+              {{item.code}} - {{item.intitule}}
+            </ng-template>
+
+            <ng-template ng-notfound-tmp>
+              Aucun compte comptable disponible
+            </ng-template>
           </ng-select>
         </div>
 
         <!-- Section Analytique -->
-        <div class="col-md-6" *ngIf="isExploitation">
+        <div class="col-md-4" *ngIf="isExploitation">
           <label>Section Analytique</label>
           <ng-select [items]="sectionsAnalytiques" bindLabel="libelle" bindValue="id"
             placeholder="Sélection Section Analytique" formControlName="sectionAnalytiqueId" [searchable]="true">
@@ -151,20 +194,20 @@
           </ng-select>
         </div>
 
-        <!-- Sens -->
+        <!-- Sens 
         <div class="col-md-6">
           <label>Sens</label>
           <ng-select [items]="listeSens" bindLabel="libelle" bindValue="id" placeholder="Sélection Sens"
             formControlName="sensParDefaut" [searchable]="true">
             <ng-template ng-notfound-tmp>Aucun sens disponible</ng-template>
           </ng-select>
-        </div>
+        </div> -->
 
-        <!-- Contre-Partie -->
+        <!-- Contre-Partie 
         <div class="col-md-6" *ngIf="isTresorerie">
           <label>Contre-Partie</label>
           <input type="text" class="form-control" formControlName="compteContrePartie" placeholder="Contre-Partie">
-        </div>
+        </div> -->
       </div>
     </form>
 

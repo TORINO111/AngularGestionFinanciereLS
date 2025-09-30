@@ -10,6 +10,11 @@ import { environment } from 'src/environments/environment';
 })
 export class SocieteService {
 
+  private baseUrlSociete = `${environment.apiUrl}/api/societe`;
+  private baseUrlSocietes = `${environment.apiUrl}/api/societes`;
+
+  constructor(private http: HttpClient) { }
+
   getCabinets(
     page: number = 0,
     size: number = 20,
@@ -28,17 +33,12 @@ export class SocieteService {
     return this.http.get<any>(`${environment.apiUrl}/api/cabinet-comptables/pageable`, { params });
   }
 
-  private baseUrlSociete = `${environment.apiUrl}/api/societe`;
-  private baseUrlSocietes = `${environment.apiUrl}/api/societes`;
-
-  constructor(private http: HttpClient) { }
-
   getAllSociete(): Observable<Societe[]> {
     return this.http.get<Societe[]>(this.baseUrlSocietes);
   }
 
-  getSocietesPourComptableConnecte(): Observable<Societe[]> {
-    return this.http.get<Societe[]>(this.baseUrlSocietes);
+  getSocietePourUserConnecte(userId: number): Observable<Societe[]> {
+    return this.http.get<Societe[]>(`${this.baseUrlSociete}/user/${userId}`);
   }
 
   getAllPays(): Observable<Pays[]> {
