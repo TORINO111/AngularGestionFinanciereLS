@@ -1,5 +1,8 @@
-export interface CodeJournal{
+export interface CodeJournal {
+    id: number;
     code: string;
     libelle: string;
-    typeJournal: string
+    typeJournalId: number;
+    typeJournalCode: string;
+    typeJournalLibelle: string;
 }

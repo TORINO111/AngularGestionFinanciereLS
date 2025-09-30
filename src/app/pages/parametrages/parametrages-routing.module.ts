@@ -1,3 +1,4 @@
+import { CodeJournalModule } from './code-journal/code-journal.module';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../../core/guards/auth.guard';
@@ -72,6 +73,12 @@ const routes: Routes = [
   {
     path: 'sections-analytiques',
     loadChildren: () => import('./sections-analytiques/sections-analytiques.module').then(m => m.SectionsAnalytiquesModule),
+    canActivate: [AuthGuard],
+    data: { roles: ['ADMIN'] }
+  },
+  {
+    path: 'code-journaux',
+    loadChildren: () => import('./code-journal/code-journal.module').then(m => m.CodeJournalModule),
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }
   },

@@ -43,6 +43,12 @@
           <th>
             <h5>Type</h5>
           </th>
+          <th>
+            <h5>Intitulé compte comptable</h5>
+          </th>
+          <th>
+            <h5>Code compte comptable</h5>
+          </th>
           <th style="width:120px;">
             <h5>Actions</h5>
           </th>
@@ -55,7 +61,8 @@
           <td>{{ cat.code }}</td>
           <td>{{ cat.libelle }}</td>
           <td>{{ cat.type }}</td>
-
+          <td>{{ cat.compteComptableIntitule}}</td>
+          <td>{{ cat.compteComptableCode }}</td>
           <td>
             <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="editCategorie(i)"></span>
             <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x" (click)="deleteCategorie(i)"></span>

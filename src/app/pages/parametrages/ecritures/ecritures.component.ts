@@ -56,7 +56,7 @@ export class EcrituresComponent implements OnInit {
   comptables: PlanComptable[] = [];  // Fait référence aux Plans comptables
   categories: any[] = [];
   tiersList: any[] = [];
-  
+
   comptes: CompteComptableDTO[] = [];
   listeSens = [{ id: 'CREDIT', libelle: 'CREDIT' }, { id: 'DEBIT', libelle: 'DEBIT' }];
   codesjournaux: CodeJournal[] = [];
@@ -75,8 +75,6 @@ export class EcrituresComponent implements OnInit {
   sectionsAnalytiques: SectionAnalytique[] = [];
   types: any[] = [];
 
-  selectedTypeNature = '';
-
   selectedIndex: number | null = null;
   natureOperationForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
@@ -86,13 +84,16 @@ export class EcrituresComponent implements OnInit {
   result = false;
   formVisible = false;
 
+  isTiersObligatoire = false;
+  selectedCategorie: any;
+  selectedTypeNature: string = '';
   showTiers = false;
   tiersRequired = false;
   isExploitation = false;
   isType = false;
   isTresorerie = false;
+  showSectionAnalytique = false;
   prefixe: string;
-  selectedCategorie: any;
   lastTypeId: any;
   tiersObligatoire: boolean;
 
@@ -116,10 +117,11 @@ export class EcrituresComponent implements OnInit {
       categorieId: [null, Validators.required],
       societeId: [null, Validators.required],
       typeNature: [null],
-      sectionAnalytiqueId: [null],  // optionnel selon catégorie
-      tiersId: [null],               // obligatoire/facultatif selon catégorie
-      montant: ['', Validators.required],   // montant HT
-      tva: [''],                            // TVA
+      sectionAnalytiqueId: [null],
+      tiersId: [null],
+      montantHt: [0, Validators.required],
+      tva: [0],
+      montantTtc: [{ value: 0, disabled: true }]
     });
   }
 
@@ -132,32 +134,74 @@ export class EcrituresComponent implements OnInit {
     this.chargerSectionsAnalytiques();
     this.chargerComptesComptables();
     this.chargerTiers();
-    this.initSearchListener()
+    this.initSearchListener();
+    this.natureOperationForm.get('montantHt')?.valueChanges.subscribe(() => this.calculerMontantTtc());
+    this.natureOperationForm.get('tva')?.valueChanges.subscribe(() => this.calculerMontantTtc());
+  }
+
+  calculerMontantTtc() {
+    const ht = Number(this.natureOperationForm.get('montantHt')?.value) || 0;
+    const tva = Number(this.natureOperationForm.get('tva')?.value) || 0;
+    const ttc = ht + (ht * tva / 100);
+    this.natureOperationForm.patchValue({ montantTtc: ttc }, { emitEvent: false });
   }
 
   onCategorieChange(): void {
     const selectedId = this.natureOperationForm.get('categorieId')?.value;
-    if (!selectedId) return;
+    if (!selectedId) {
+      this.resetCategorieRules();
+      return;
+    }
 
     this.selectedCategorie = this.categories.find(c => c.id === +selectedId);
-    if (!this.selectedCategorie) return;
+    if (!this.selectedCategorie) {
+      this.resetCategorieRules();
+      return;
+    }
 
-    const type = this.selectedCategorie.type || '';
-    this.selectedTypeNature = type;
-
-    // Compte comptable lié à la catégorie
+    // affecter compte comptable lié à la catégorie
     this.natureOperationForm.patchValue({
       compteComptableId: this.selectedCategorie.compteComptableId || null
     });
 
-    // Section analytique optionnelle pour RECETTE ou DEPENSE
-    this.isExploitation = ['RECETTE', 'DEPENSE'].includes(type);
-    if (!this.isExploitation) this.natureOperationForm.patchValue({ sectionAnalytiqueId: null });
+    this.selectedTypeNature = this.selectedCategorie.type;
 
-    // Tiers obligatoire ou facultatif
-    this.tiersObligatoire = ['RECETTE', 'DEPENSE', 'SALAIRE'].includes(type);
+    // Section analytique visible si RECETTE ou DEPENSE
+    this.showSectionAnalytique = ['RECETTE', 'DEPENSE'].includes(this.selectedTypeNature);
 
-    this.chargerComptables(type);
+    // Tiers obligatoire si RECETTE, DEPENSE, SALAIRE
+    if (['RECETTE', 'DEPENSE', 'SALAIRE'].includes(this.selectedTypeNature)) {
+      this.showTiers = true;
+      this.isTiersObligatoire = true;
+      this.natureOperationForm.get('tiersId')?.setValidators([Validators.required]);
+    }
+    // Tiers facultatif si IMMOBILISATION, TRESORERIE, TRANSFERT
+    else if (['IMMOBILISATION', 'TRESORERIE', 'TRANSFERT'].includes(this.selectedTypeNature)) {
+      this.showTiers = true;
+      this.isTiersObligatoire = false;
+      this.natureOperationForm.get('tiersId')?.clearValidators();
+    }
+    // Sinon pas de Tiers
+    else {
+      this.resetCategorieRules();
+    }
+
+    this.natureOperationForm.get('tiersId')?.updateValueAndValidity();
+  }
+
+  resetCategorieRules(): void {
+    this.showSectionAnalytique = false;
+    this.showTiers = false;
+    this.isTiersObligatoire = false;
+    this.natureOperationForm.patchValue({ sectionAnalytiqueId: null, tiersId: null });
+    this.natureOperationForm.get('tiersId')?.clearValidators();
+    this.natureOperationForm.get('tiersId')?.updateValueAndValidity();
+  }
+
+  searchFn(term: string, item: any) {
+    if (!term) return true;
+    term = term.toLowerCase();
+    return item.intitule?.toLowerCase().includes(term) || item.code?.toLowerCase().includes(term);
   }
 
   ajouter(): void {
@@ -310,7 +354,7 @@ export class EcrituresComponent implements OnInit {
     );
   }
 
-   chargerTiers() {
+  chargerTiers() {
     this.tiersService.getAll().subscribe(
       {
         next: (data: any) => {
@@ -328,13 +372,8 @@ export class EcrituresComponent implements OnInit {
 
   chargerCategories() {
     this.categorieService.getAllCategories().subscribe({
-      next: (data: Categorie[]) => {
-        this.categories = data.map(d => ({
-          id: d.id,
-          code: d.code,
-          libelle: d.libelle,
-          type: d.type
-        }));
+      next: (data: any[]) => {
+        this.categories = data;
         this.result = true;
       },
       error: (error: any) => {
@@ -417,13 +456,6 @@ export class EcrituresComponent implements OnInit {
         this.notification.showError('Erreur lors du chargement des comptes comptables');
       }
     });
-  }
-
-  searchFn(term: string, item: any) {
-    if (!term) return true;
-    term = term.toLowerCase();
-    return item.code.toLowerCase().includes(term) ||
-      item.intitule.toLowerCase().includes(term);
   }
 
   deleteNatureOperationDto(nature: NatureOperationDto): void {
