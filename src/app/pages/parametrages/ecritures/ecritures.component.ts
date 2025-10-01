@@ -50,16 +50,22 @@ export class EcrituresComponent implements OnInit {
   searchCate: number;
   searchCode: string = '';
   selectedJournal: number;
+  selectedJournalId?: number;
+  selectedCategorieId?: number;
 
   plansAnalytiques: any[] = [];
   analytiques: Select2Data = [];
   comptables: PlanComptable[] = [];  // Fait référence aux Plans comptables
-  categories: any[] = [];
   tiersList: any[] = [];
 
   comptes: CompteComptableDTO[] = [];
   listeSens = [{ id: 'CREDIT', libelle: 'CREDIT' }, { id: 'DEBIT', libelle: 'DEBIT' }];
-  codesjournaux: CodeJournal[] = [];
+
+  codeJournaux: CodeJournal[] = [];
+  filteredJournaux: CodeJournal[] = [];
+  categories: Categorie[] = [];
+  filteredCategories: Categorie[] = [];
+
 
   typeNatures = [
     { label: 'Dépense', value: 'DEPENSE' },
@@ -76,7 +82,7 @@ export class EcrituresComponent implements OnInit {
   types: any[] = [];
 
   selectedIndex: number | null = null;
-  natureOperationForm!: UntypedFormGroup;
+  ecritureForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
 
   loading = false;
@@ -93,9 +99,12 @@ export class EcrituresComponent implements OnInit {
   isType = false;
   isTresorerie = false;
   showSectionAnalytique = false;
+  showTVA = false;
+  showTTC = false;
   prefixe: string;
   lastTypeId: any;
   tiersObligatoire: boolean;
+  societeBi: any;
 
   constructor(
     private natureOperationService: NatureOperationService,
@@ -109,7 +118,7 @@ export class EcrituresComponent implements OnInit {
     private tiersService: TiersService,
     private modalService: NgbModal
   ) {
-    this.natureOperationForm = this.fb.group({
+    this.ecritureForm = this.fb.group({
       id: [],
       libelle: ['', [Validators.required, Validators.minLength(2)]],
       compteComptableId: ['', Validators.required],
@@ -130,72 +139,152 @@ export class EcrituresComponent implements OnInit {
     this.chargerNatureOperationDtos();
     this.chargerCategories();
     this.chargerPlansAnalytiques();
-    this.chargerCodeJournal();
+    this.chargerCodesJournaux();
     this.chargerSectionsAnalytiques();
     this.chargerComptesComptables();
     this.chargerTiers();
     this.initSearchListener();
-    this.natureOperationForm.get('montantHt')?.valueChanges.subscribe(() => this.calculerMontantTtc());
-    this.natureOperationForm.get('tva')?.valueChanges.subscribe(() => this.calculerMontantTtc());
+    const societeActiveStr = localStorage.getItem("societeActive");
+    if (societeActiveStr) {
+      this.societeBi = JSON.parse(societeActiveStr);
+      // Patch des valeurs dans les formulaires
+      this.ecritureForm.patchValue({ societeId: this.societeBi.id });
+    }
+    this.ecritureForm.get('montantHt')?.valueChanges.subscribe(() => this.calculerMontantTtc());
+    this.ecritureForm.get('tva')?.valueChanges.subscribe(() => this.calculerMontantTtc());
   }
 
   calculerMontantTtc() {
-    const ht = Number(this.natureOperationForm.get('montantHt')?.value) || 0;
-    const tva = Number(this.natureOperationForm.get('tva')?.value) || 0;
+    const ht = Number(this.ecritureForm.get('montantHt')?.value) || 0;
+    const tva = Number(this.ecritureForm.get('tva')?.value) || 0;
     const ttc = ht + (ht * tva / 100);
-    this.natureOperationForm.patchValue({ montantTtc: ttc }, { emitEvent: false });
+    this.ecritureForm.patchValue({ montantTtc: ttc }, { emitEvent: false });
   }
 
-  onCategorieChange(): void {
-    const selectedId = this.natureOperationForm.get('categorieId')?.value;
-    if (!selectedId) {
-      this.resetCategorieRules();
+  onJournalChange(journalId: number) {
+    this.selectedJournalId = journalId;
+
+    const journal = this.codeJournaux.find((j: { id: number; }) => j.id === journalId);
+    console.log(journal);
+    if (journal?.allowedCategoryTypes?.length) {
+      this.filteredCategories = this.categories.filter(cat =>
+        journal.allowedCategoryTypes?.includes(cat.type)
+      );
+    } else {
+      this.filteredCategories = [...this.categories];
+    }
+
+    // Si une catégorie est déjà sélectionnée, vérifier qu'elle est toujours valide
+    if (this.selectedCategorieId && !this.filteredCategories.some(c => c.id === this.selectedCategorieId)) {
+      this.selectedCategorieId = undefined;
+      this.ecritureForm.patchValue({ categorieId: null });
+    }
+  }
+
+  onCategorieChange(categorieId: number | null) {
+    if (!categorieId) {
+      this.resetCategorieSelection();
       return;
     }
 
-    this.selectedCategorie = this.categories.find(c => c.id === +selectedId);
-    if (!this.selectedCategorie) {
-      this.resetCategorieRules();
+    const categorie = this.categories.find(c => c.id === categorieId);
+    this.selectedCategorie = categorie;
+
+    if (!categorie) {
+      this.resetCategorieSelection();
       return;
     }
 
-    // affecter compte comptable lié à la catégorie
-    this.natureOperationForm.patchValue({
-      compteComptableId: this.selectedCategorie.compteComptableId || null
+    this.selectedTypeNature = categorie.type;
+    this.loadComptesForCategorie(categorie);
+    this.filterJournauxForCategorie(categorie);
+    this.applyCategorieRules(categorie);
+    this.checkSelectedJournal();
+  }
+
+  private resetCategorieSelection() {
+    this.selectedCategorie = null;
+    this.selectedTypeNature = " ";
+    this.comptes = [];
+    this.showTVA = false;
+    this.showTTC = false;
+    this.showSectionAnalytique = false;
+    this.showTiers = false;
+    this.isTiersObligatoire = false;
+
+    this.ecritureForm.patchValue({
+      categorieId: null,
+      compteComptableId: null,
+      tva: 0,
+      montantTtc: 0,
+      tiersId: null,
+      sectionAnalytiqueId: null
     });
 
-    this.selectedTypeNature = this.selectedCategorie.type;
+    this.resetCategorieRules();
+  }
 
-    // Section analytique visible si RECETTE ou DEPENSE
-    this.showSectionAnalytique = ['RECETTE', 'DEPENSE'].includes(this.selectedTypeNature);
+  private loadComptesForCategorie(categorie: Categorie) {
+    this.comptes = categorie.compteComptableIds.map((id, i) => ({
+      id,
+      code: categorie.compteComptableCodes[i],
+      intitule: categorie.compteComptableIntitules[i],
+      planComptableId: 0,
+      classeCompte: ''
+    })) as CompteComptableDTO[];
 
-    // Tiers obligatoire si RECETTE, DEPENSE, SALAIRE
-    if (['RECETTE', 'DEPENSE', 'SALAIRE'].includes(this.selectedTypeNature)) {
+    this.ecritureForm.patchValue({
+      compteComptableId: this.comptes.length > 0 ? this.comptes[0].id : null
+    });
+  }
+
+  private filterJournauxForCategorie(categorie: Categorie) {
+    this.filteredJournaux = this.codeJournaux.filter(j =>
+      !j.allowedCategoryTypes?.length || j.allowedCategoryTypes.includes(categorie.type)
+    );
+  }
+
+  private applyCategorieRules(categorie: Categorie) {
+    this.showSectionAnalytique = ['RECETTE', 'DEPENSE'].includes(categorie.type);
+    this.showTVA = this.showSectionAnalytique;
+    this.showTTC = this.showSectionAnalytique;
+
+    if (!this.showTVA) {
+      this.ecritureForm.patchValue({
+        tva: 0,
+        montantTtc: this.ecritureForm.value.montantHt
+      });
+    }
+
+    if (['RECETTE', 'DEPENSE', 'SALAIRE'].includes(categorie.type)) {
       this.showTiers = true;
       this.isTiersObligatoire = true;
-      this.natureOperationForm.get('tiersId')?.setValidators([Validators.required]);
-    }
-    // Tiers facultatif si IMMOBILISATION, TRESORERIE, TRANSFERT
-    else if (['IMMOBILISATION', 'TRESORERIE', 'TRANSFERT'].includes(this.selectedTypeNature)) {
+      this.ecritureForm.get('tiersId')?.setValidators([Validators.required]);
+    } else if (['IMMOBILISATION', 'TRESORERIE', 'TRANSFERT'].includes(categorie.type)) {
       this.showTiers = true;
       this.isTiersObligatoire = false;
-      this.natureOperationForm.get('tiersId')?.clearValidators();
-    }
-    // Sinon pas de Tiers
-    else {
+      this.ecritureForm.get('tiersId')?.clearValidators();
+    } else {
       this.resetCategorieRules();
     }
+  }
 
-    this.natureOperationForm.get('tiersId')?.updateValueAndValidity();
+  private checkSelectedJournal() {
+    if (this.selectedJournalId && !this.filteredJournaux.some(j => j.id === this.selectedJournalId)) {
+      this.selectedJournalId = undefined;
+      this.ecritureForm.patchValue({ codeJournalId: null });
+    }
+
+    this.ecritureForm.get('tiersId')?.updateValueAndValidity();
   }
 
   resetCategorieRules(): void {
     this.showSectionAnalytique = false;
     this.showTiers = false;
     this.isTiersObligatoire = false;
-    this.natureOperationForm.patchValue({ sectionAnalytiqueId: null, tiersId: null });
-    this.natureOperationForm.get('tiersId')?.clearValidators();
-    this.natureOperationForm.get('tiersId')?.updateValueAndValidity();
+    this.ecritureForm.patchValue({ sectionAnalytiqueId: null, tiersId: null });
+    this.ecritureForm.get('tiersId')?.clearValidators();
+    this.ecritureForm.get('tiersId')?.updateValueAndValidity();
   }
 
   searchFn(term: string, item: any) {
@@ -205,8 +294,8 @@ export class EcrituresComponent implements OnInit {
   }
 
   ajouter(): void {
-    this.natureOperationForm.reset();
-    this.natureOperationForm.patchValue({
+    this.ecritureForm.reset();
+    this.ecritureForm.patchValue({
       societeId: 1
     });
     this.formVisible = true;
@@ -223,7 +312,7 @@ export class EcrituresComponent implements OnInit {
   supprimer(): void {
     if (this.selectedIndex !== null) {
       const currentData = this.lignes[this.selectedIndex].value as NatureOperationDto;
-      this.natureOperationForm.setValue(currentData);
+      this.ecritureForm.setValue(currentData);
       this.lignes.splice(this.selectedIndex, 1);
       this.selectedIndex = null;
       this.deleteNatureOperationDto(currentData);
@@ -232,14 +321,14 @@ export class EcrituresComponent implements OnInit {
 
   edit(nature: NatureOperationDto): void {
     this.selected = { ...nature };
-    this.natureOperationForm.patchValue(this.selected);
+    this.ecritureForm.patchValue(this.selected);
     this.formVisible = true;
   }
 
   fermer(): void {
     this.formVisible = false;
     this.selectedIndex = null;
-    this.natureOperationForm.reset();
+    this.ecritureForm.reset();
   }
 
   selectLigne(index: number): void {
@@ -247,27 +336,28 @@ export class EcrituresComponent implements OnInit {
     const currentData = this.lignes[this.selectedIndex].value as NatureOperationDto;
     this.selected = currentData;
 
-    this.natureOperationForm.patchValue({
+    this.ecritureForm.patchValue({
       ...currentData,
       categorieId: currentData.categorieId
     });
 
     // Chargement des comptes selon typeNature
-    console.log(currentData.typeNature);
-    this.chargerComptables(currentData.typeNature);
+    // console.log(currentData.typeNature);
+    // this.chargerComptables(currentData.typeNature);
   }
 
   enregistrer(): void {
-    //   console.log(this.natureOperationForm.value)
-    //  return;
-    if (this.natureOperationForm.invalid) {
+
+    console.log(this.ecritureForm.value)
+
+    if (this.ecritureForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
       return;
     }
 
     this.isLoading = true;
 
-    const natureOperation = this.natureOperationForm.value as NatureOperationDto;
+    const natureOperation = this.ecritureForm.value as NatureOperationDto;
 
     const action$ = this.selected?.id
       ? this.natureOperationService.update(this.selected.id, natureOperation)
@@ -278,12 +368,12 @@ export class EcrituresComponent implements OnInit {
         const msg = this.selected?.id ? 'Modifié' : 'Enregistré';
         this.notification.showSuccess(`${msg} avec succès`);
         this.formVisible = false;
-        this.natureOperationForm.reset();
+        this.ecritureForm.reset();
         this.loading = false;
         this.selectedIndex = null;
         this.selected = undefined;
-        this.lignes = [];
         this.chargerNatureOperationDtos();
+        this.closeModal();
       },
       error: () => {
         this.loading = false;
@@ -293,38 +383,16 @@ export class EcrituresComponent implements OnInit {
   }
 
   chargerNatureOperationDtos(): void {
+    this.isLoading = true;
+    this.result = false;
     this.natureOperations = [];
+
     this.natureOperationService.getAll().subscribe({
       next: (data: NatureOperationDto[]) => {
-        this.natureOperations = data.map(d =>
-          this.fb.group({
-            id: [d.id],
-            code: [d.code],
-            libelle: [d.libelle],
+        // On suppose que le backend renvoie déjà un tableau plat prêt à l'affichage
+        this.natureOperations = data;
+        console.log(this.natureOperations);
 
-            // Relations pour création/modification
-            compteComptableId: [d.compteComptableId],
-            compteContrePartieId: [d.compteContrePartieId],
-            sectionAnalytiqueId: [d.sectionAnalytiqueId],
-            categorieId: [d.categorieId],
-            codeJournalId: [d.codeJournalId],
-            societeId: [d.societeId],
-
-            // Relations pour affichage lisible
-            compteComptableLibelle: [d.compteComptableLibelle],
-            compteContrePartieLibelle: [d.compteContrePartieLibelle],
-            sectionAnalytiqueLibelle: [d.sectionAnalytiqueLibelle],
-            categorieLibelle: [d.categorieLibelle],
-            categorieType: [d.categorieType],
-            codeJournal: [d.codeJournal],
-            libelleJournal: [d.libelleJournal],
-            societeLibelle: [d.societeLibelle],
-
-            typeNature: [d.typeNature],
-            sensParDefaut: [d.sensParDefaut],
-            sensLibelle: [d.sensLibelle]
-          })
-        );
         this.lignes = this.natureOperations;
         this.result = true;
         this.isLoading = false;
@@ -338,11 +406,12 @@ export class EcrituresComponent implements OnInit {
     });
   }
 
-  chargerCodeJournal() {
+  chargerCodesJournaux() {
     this.natureOperationService.getAllCodeJournal().subscribe(
       {
         next: (data: any) => {
-          this.codesjournaux = data;
+          this.codeJournaux = data;
+          this.filteredJournaux = [...this.codeJournaux];
           this.result = true;
         },
         error: (error: any) => {
@@ -374,6 +443,7 @@ export class EcrituresComponent implements OnInit {
     this.categorieService.getAllCategories().subscribe({
       next: (data: any[]) => {
         this.categories = data;
+        this.filteredCategories = [...this.categories];
         this.result = true;
       },
       error: (error: any) => {
@@ -494,14 +564,14 @@ export class EcrituresComponent implements OnInit {
   openModal(): void {
     this.formVisible = true;
     this.selectedIndex = null;
-    this.natureOperationForm.reset();
-    this.natureOperationForm.patchValue({ societeId: 1 });
+    this.ecritureForm.reset();
+    this.ecritureForm.patchValue({ societeId: 1 });
     this.modalService.open(this.modalContent, { size: 'lg', centered: true });
   }
 
   closeModal(): void {
     this.modalService.dismissAll();
-    this.natureOperationForm.reset();
+    this.ecritureForm.reset();
     this.selectedIndex = null;
     this.formVisible = false;
   }
@@ -509,7 +579,7 @@ export class EcrituresComponent implements OnInit {
   editNature(index: number): void {
     this.selectedIndex = index;
     const nature = this.natureOperations[index].value;
-    this.natureOperationForm.patchValue(nature);
+    this.ecritureForm.patchValue(nature);
     this.formVisible = true;
     this.modalService.open(this.modalContent, { size: 'lg', centered: true });
   }

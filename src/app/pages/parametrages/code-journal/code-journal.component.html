@@ -1,144 +1,159 @@
-<app-page-title [breadcrumbItems]="[{ label: 'Vos Journaux', path: '/', active: true }]" title="Journaux"></app-page-title>
+<app-page-title [breadcrumbItems]="[{ label: 'Vos Journaux', path: '/', active: true }]"
+    title="Journaux"></app-page-title>
 
 <!-- Loader global -->
 <div *ngIf="isLoading" class="loader-container">
-  <div class="lds-dual-ring"></div>
+    <div class="lds-dual-ring"></div>
 </div>
 
 <!-- Contenu principal -->
 <div *ngIf="!isLoading" class="card">
-  <div class="card-body">
+    <div class="card-body">
 
-    <!-- Bouton + filtres -->
-    <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
-      <button type="button" class="btn btn-success" (click)="openModal()">Nouveau Journal</button>
+        <!-- Bouton + filtres -->
+        <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
+            <button type="button" class="btn btn-success" (click)="openModal()">Nouveau Journal</button>
 
-      <div class="d-flex gap-2 ms-auto">
-        <input #searchInput type="text" class="form-control p-2" placeholder="Rechercher par libellé"
-               [(ngModel)]="searchTerm" (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+            <div class="d-flex gap-2 ms-auto">
+                <input #searchInput type="text" class="form-control p-2" placeholder="Rechercher par libellé"
+                    [(ngModel)]="searchTerm" (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
 
-        <ng-select class="mt-1" [items]="typesJournaux" bindLabel="libelle" bindValue="id"
-                   [(ngModel)]="selectedTypeJournalId" placeholder="Filtrer par type"
-                   (ngModelChange)="onFilterChange()">
-          <ng-template ng-notfound-tmp>Aucun type disponible</ng-template>
-        </ng-select>
-      </div>
+                <ng-select class="mt-1" [items]="typesJournaux" bindLabel="libelle" bindValue="id"
+                    [(ngModel)]="selectedTypeJournalId" placeholder="Filtrer par type"
+                    (ngModelChange)="onFilterChange()">
+                    <ng-template ng-notfound-tmp>Aucun type disponible</ng-template>
+                </ng-select>
+            </div>
+        </div>
+
+        <!-- Tableau -->
+        <table class="table table-bordered table-striped">
+            <thead class="table-custom">
+                <tr>
+                    <th>
+                        <h5>Libellé</h5>
+                    </th>
+                    <th>
+                        <h5>Type Journal</h5>
+                    </th>
+                    <th>
+                        <h5>Type(s) de catégorie autorisé(s)</h5>
+                    </th>
+                    <th style="width:120px;">
+                        <h5>Actions</h5>
+                    </th>
+                </tr>
+            </thead>
+
+            <!-- Données -->
+            <tbody *ngIf="!isLoading && lignes.length > 0">
+                <tr *ngFor="let j of lignes; let i = index">
+                    <td>{{ j.libelle }}</td>
+                    <td>{{ j.typeJournalLibelle }}</td>
+                    <td>
+                        <span *ngFor="let type of j.allowedCategoryTypes" class="badge bg-primary me-1">
+                            {{ type }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="fa fa-edit fa-2x me-3" style="cursor:pointer; color:blue"
+                            (click)="editJournal(i)"></span>
+                        <span class="fa fa-trash fa-2x" style="cursor:pointer; color:red"
+                            (click)="deleteJournal(i)"></span>
+                    </td>
+                </tr>
+            </tbody>
+
+            <!-- Pas de données -->
+            <tbody *ngIf="!isLoading && lignes.length === 0">
+                <tr>
+                    <td colspan="3" class="text-center">
+                        <h5>Aucune donnée trouvée</h5>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <nav aria-label="Pagination">
+            <ul class="pagination mt-3">
+                <li class="page-item" [class.disabled]="currentPage === 0">
+                    <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)"
+                        [ngStyle]="{'background-color': currentPage === 0 ? '#ccc' : 'transparent'}">Précédent</a>
+                </li>
+
+                <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
+                    <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)"
+                        [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">{{ page + 1
+                        }}</a>
+                </li>
+
+                <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
+                    <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage + 1)"
+                        [ngStyle]="{'background-color': currentPage >= totalPages() - 1 ? '#ccc' : 'transparent'}">Suivant</a>
+                </li>
+            </ul>
+        </nav>
+
     </div>
-
-    <!-- Tableau -->
-    <table class="table table-bordered table-striped">
-      <thead class="table-custom">
-        <tr>
-          <th><h5>Libellé</h5></th>
-          <th><h5>Type Journal</h5></th>
-          <th style="width:120px;"><h5>Actions</h5></th>
-        </tr>
-      </thead>
-
-      <!-- Données -->
-      <tbody *ngIf="!isLoading && lignes.length > 0">
-        <tr *ngFor="let j of lignes; let i = index">
-          <td>{{ j.libelle }}</td>
-          <td>{{ j.typeJournal?.libelle }}</td>
-          <td>
-            <span class="fa fa-edit fa-2x me-3" style="cursor:pointer; color:blue" (click)="editJournal(i)"></span>
-            <span class="fa fa-trash fa-2x" style="cursor:pointer; color:red" (click)="deleteJournal(i)"></span>
-          </td>
-        </tr>
-      </tbody>
-
-      <!-- Pas de données -->
-      <tbody *ngIf="!isLoading && lignes.length === 0">
-        <tr>
-          <td colspan="3" class="text-center"><h5>Aucune donnée trouvée</h5></td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- Pagination -->
-    <nav aria-label="Pagination">
-      <ul class="pagination mt-3">
-        <li class="page-item" [class.disabled]="currentPage === 0">
-          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)"
-             [ngStyle]="{'background-color': currentPage === 0 ? '#ccc' : 'transparent'}">Précédent</a>
-        </li>
-
-        <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
-          <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)"
-             [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">{{ page + 1 }}</a>
-        </li>
-
-        <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
-          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage + 1)"
-             [ngStyle]="{'background-color': currentPage >= totalPages() - 1 ? '#ccc' : 'transparent'}">Suivant</a>
-        </li>
-      </ul>
-    </nav>
-
-  </div>
 </div>
 
 <!-- MODAL CREATION / MODIFICATION -->
 <ng-template #journalModal>
-  <div class="modal-header text-white" style="background-color: #37a6de; padding: 6px 10px;">
-    <h4 class="modal-title">{{ selectedIndex !== null ? 'Modifier Journal' : 'Nouveau Journal' }}</h4>
-    <button type="button" class="btn" style="color:white; font-size:1.4rem;" (click)="closeModal()">&times;</button>
-  </div>
+    <div class="modal-header text-white" style="background-color: #37a6de; padding: 6px 10px;">
+        <h4 class="modal-title">{{ selectedIndex !== null ? 'Modifier Journal' : 'Nouveau Journal' }}</h4>
+        <button type="button" class="btn" style="color:white; font-size:1.4rem;" (click)="closeModal()">&times;</button>
+    </div>
 
-  <div class="modal-body">
-    <form [formGroup]="journalForm" class="p-2">
-      <input type="hidden" formControlName="id">
+    <div class="modal-body">
+        <form [formGroup]="journalForm" class="p-2">
+            <input type="hidden" formControlName="id">
 
-      <div class="row g-3">
-        <!-- Libellé -->
-        <div class="col-md-6">
-          <label>Libellé</label>
-          <input type="text" class="form-control" formControlName="libelle" placeholder="Libellé">
-          <div *ngIf="journalForm.get('libelle')?.hasError('required') && journalForm.get('libelle')?.touched"
-               class="text-danger">Champ obligatoire !</div>
-          <div *ngIf="journalForm.get('libelle')?.hasError('minlength') && journalForm.get('libelle')?.touched"
-               class="text-danger">Minimum 3 caractères !</div>
-        </div>
+            <div class="row g-3">
+                <!-- Libellé -->
+                <div class="col-md-6">
+                    <label>Libellé</label>
+                    <input type="text" class="form-control" formControlName="libelle" placeholder="Libellé">
+                    <div *ngIf="journalForm.get('libelle')?.hasError('required') && journalForm.get('libelle')?.touched"
+                        class="text-danger">Champ obligatoire !</div>
+                    <div *ngIf="journalForm.get('libelle')?.hasError('minlength') && journalForm.get('libelle')?.touched"
+                        class="text-danger">Minimum 3 caractères !</div>
+                </div>
 
-        <!-- Type Journal -->
-        <div class="col-md-6">
-          <label>Type Journal</label>
-          <ng-select formControlName="typeJournalId" [items]="typesJournaux" bindLabel="libelle" bindValue="id"
-                     [clearable]="false" placeholder="Sélection type">
-            <ng-template ng-notfound-tmp>Aucun type disponible</ng-template>
-          </ng-select>
-          <div *ngIf="journalForm.get('typeJournalId')?.hasError('required') && journalForm.get('typeJournalId')?.touched"
-               class="text-danger">Champ obligatoire !</div>
-        </div>
+                <!-- Type Journal -->
+                <div class="col-md-6">
+                    <label>Type Journal</label>
+                    <ng-select formControlName="typeJournalId" [items]="typesJournaux" bindLabel="libelle"
+                        bindValue="id" [clearable]="false" placeholder="Sélection type">
+                        <ng-template ng-notfound-tmp>Aucun type disponible</ng-template>
+                    </ng-select>
+                    <div *ngIf="journalForm.get('typeJournalId')?.hasError('required') && journalForm.get('typeJournalId')?.touched"
+                        class="text-danger">Champ obligatoire !</div>
+                </div>
 
-        <!-- Types de catégories autorisés -->
-        <div class="col-md-6">
-          <label>Types de catégories autorisés (optionnel)</label>
-          <ng-select [items]="types"
-                     bindLabel="libelle"
-                     bindValue="id"
-                     formControlName="allowedCategoryTypes"
-                     [multiple]="true"
-                     placeholder="Sélectionner types de catégories"
-                     [clearable]="true">
-            <ng-template ng-label-tmp let-item="item">
-              {{item.libelle}}
-            </ng-template>
-            <ng-template ng-option-tmp let-item="item">
-              {{item.libelle}}
-            </ng-template>
-            <ng-template ng-notfound-tmp>
-              Aucun type disponible
-            </ng-template>
-          </ng-select>
-        </div>
+                <!-- Types de catégories autorisés -->
+                <div class="col-md-6">
+                    <label>Types de catégories autorisés (optionnel)</label>
+                    <ng-select [items]="types" bindLabel="libelle" bindValue="id" formControlName="allowedCategoryTypes"
+                        [multiple]="true" placeholder="Sélectionner types de catégories" [clearable]="true">
+                        <ng-template ng-label-tmp let-item="item">
+                            {{item.libelle}}
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item">
+                            {{item.libelle}}
+                        </ng-template>
+                        <ng-template ng-notfound-tmp>
+                            Aucun type disponible
+                        </ng-template>
+                    </ng-select>
+                </div>
 
-      </div>
-    </form>
-  </div>
+            </div>
+        </form>
+    </div>
 
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
-    <button type="button" class="btn btn-success" (click)="save()">Enregistrer</button>
-  </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
+        <button type="button" class="btn btn-success" (click)="save()">Enregistrer</button>
+    </div>
 </ng-template>

@@ -44,10 +44,7 @@
             <h5>Type</h5>
           </th>
           <th>
-            <h5>Intitulé compte comptable</h5>
-          </th>
-          <th>
-            <h5>Code compte comptable</h5>
+            <h5>Compte(s) comptable(s) affilié(s)</h5>
           </th>
           <th style="width:120px;">
             <h5>Actions</h5>
@@ -61,8 +58,15 @@
           <td>{{ cat.code }}</td>
           <td>{{ cat.libelle }}</td>
           <td>{{ cat.type }}</td>
-          <td>{{ cat.compteComptableIntitule}}</td>
-          <td>{{ cat.compteComptableCode }}</td>
+          <td>
+            <div *ngFor="let code of cat.compteComptableCodes; let i = index">
+              {{ code }} ({{ cat.compteComptableIntitules[i] }})
+            </div>
+          </td>
+
+
+
+
           <td>
             <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="editCategorie(i)"></span>
             <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x" (click)="deleteCategorie(i)"></span>
@@ -157,20 +161,22 @@
             <ng-template ng-notfound-tmp>Aucun type disponible</ng-template>
           </ng-select>
           <div *ngIf="categorieForm.get('type')?.hasError('required') && categorieForm.get('type')?.touched"
-            class="text-danger">Champ obligatoire !</div>
+            class="text-danger">Champ oblig atoire !</div>
         </div>
 
-        <!-- Compte Comptable -->
-        <div class="col-md-6">
-          <label>Compte Comptable</label>
-          <ng-select [items]="comptes" bindValue="id" placeholder="Sélection Compte" formControlName="compteComptableId"
-            [searchable]="true" [searchFn]="searchFn" [disabled]="!categorieForm.value.categorieId">
+        <!-- Comptes Comptables liés -->
+        <div class="col-md-8">
+          <label>Comptes Comptables</label>
+          <ng-select [items]="comptes" bindValue="id" [multiple]="true" placeholder="Sélectionner Comptes"
+            formControlName="comptesComptablesIds" [searchable]="true" [searchFn]="searchFn"
+            [disabled]="!categorieForm.value.type">
 
-            <!-- Label affiché dans le select -->
+            <!-- Label affiché -->
             <ng-template ng-label-tmp let-item="item">
               {{item.code}} - {{item.intitule}}
             </ng-template>
-            <!-- Option dans le dropdown -->
+
+            <!-- Option dropdown -->
             <ng-template ng-option-tmp let-item="item">
               {{item.code}} - {{item.intitule}}
             </ng-template>

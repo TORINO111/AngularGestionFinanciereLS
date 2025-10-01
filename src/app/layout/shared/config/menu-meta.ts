@@ -175,9 +175,9 @@ const MENU_ITEMS: MenuItem[] = [
         roles: ['ADMIN']
     },
     {
-        key: 'codeJournaux',
-        label: 'Codes Journaux',
-        link: '/parametrages/code-journaux',
+        key: 'journaux',
+        label: 'Journaux',
+        link: '/parametrages/journaux',
         icon: 'package',
         isTitle: false,
         roles: ['ADMIN']

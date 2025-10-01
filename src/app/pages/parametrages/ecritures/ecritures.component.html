@@ -2,49 +2,47 @@
 
 <div class="card ">
   <div class="card-body">
-    <!-- Boutons principaux -->
-    <div class="mb-3 d-flex gap-2 ">
+    <!-- Boutons et filtres -->
+    <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
+      
+      <!-- Bouton Nouvelle Écriture -->
       <button class="btn btn-success" (click)="openModal()" style="background-color: #37a6de">Nouvelle Écriture
       </button>
+
+      <!-- Barre de recherche + filtre -->
+      <!-- <div class="d-flex gap-2 ms-auto">
+        <input #searchInput class="p-2" placeholder="Rechercher par libellé" [(ngModel)]="searchTerm"
+          (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+
+        <ng-select class="mt-1" [items]="types" placeholder="Filtrer par type" bindLabel="libelle" bindValue="id"
+          [(ngModel)]="selectedType" (ngModelChange)="onFilterChange()">
+          <ng-template ng-notfound-tmp>Aucun type disponible</ng-template>
+        </ng-select>
+      </div> -->
+
     </div>
 
     <!-- Tableau des Natures d'Opérations -->
     <table class="table table-bordered table-striped">
+      <!-- Entêtes du tableau -->
       <thead class="table-custom">
-        <tr>
-          <th>
-            <h5>Code</h5>
-          </th>
-          <th>
-            <h5>Libellé</h5>
-          </th>
-          <th>
-            <h5>Compte comptable</h5>
-          </th>
-          <th>
-            <h5>Section Analytique</h5>
-          </th>
-          <th>
-            <h5>Catégorie</h5>
-          </th>
-          <th>
-            <h5>Code journal</h5>
-          </th>
-          <th></th>
-          <th>Sens</th>
-          <th>Actions</th>
-        </tr>
+        <th><h5>Date</h5></th>
+      <th><h5>Code</h5></th>
+      <th><h5>Libellé</h5></th>
+      <th><h5>Compte comptable</h5></th>
+      <th><h5>Tiers</h5></th>
+      <th><h5>Montant TTC</h5></th>
+      <th><h5>Actions</h5></th>
       </thead>
 
-      <tbody *ngIf="!isLoading && natureOperations.length > 0">
-        <tr *ngFor="let nature of natureOperations; let i = index" [class.table-active]="i === selectedIndex">
-          <td>{{ nature.value.code }}</td>
-          <td>{{ nature.value.libelle }}</td>
-          <td>{{ nature.value.compteComptableLibelle }}</td>
-          <td>{{ nature.value.sectionAnalytiqueLibelle }}</td>
-          <td>{{ nature.value.categorieLibelle }}</td>
-          <td>{{ nature.value.codeJournal }}</td>
-          <td>{{ nature.value.sensParDefaut }}</td>
+      <tbody *ngIf="!isLoading && lignes.length > 0">
+        <tr *ngFor="let e of lignes; let i = index" [class.table-active]="i === selectedIndex">
+          <td>{{ e.date | date:'dd/MM/yyyy' }}</td>
+      <td>{{ e.code }}</td>
+      <td>{{ e.libelle }}</td>
+      <td>{{ e.compteComptableCode }} - {{ e.compteComptableIntitule }}</td>
+      <td>{{ e.tiersLibelle || '-' }}</td>
+      <td>{{ e.montantTtc | number:'1.0-0' }} FCFA</td>
           <td>
             <span class="fa fa-edit fa-2x text-primary me-2" style="cursor:pointer" (click)="editNature(i)"></span>
             <span class="fa fa-trash fa-2x text-danger" style="cursor:pointer" (click)="deleteNature(i)"></span>
@@ -52,10 +50,10 @@
         </tr>
       </tbody>
 
-      <tbody *ngIf="!isLoading && natureOperations.length === 0">
+      <tbody *ngIf="!isLoading && lignes.length === 0">
         <tr>
           <td colspan="8" class="text-center">
-            <h5>Aucune donnée trouvée</h5>
+            <h5>Aucun Exercice trouvé</h5>
           </td>
         </tr>
       </tbody>
@@ -111,7 +109,7 @@
   </div>
 
   <div class="modal-body">
-    <form [formGroup]="natureOperationForm">
+    <form [formGroup]="ecritureForm">
       <input type="hidden" formControlName="id">
 
       <div class="row g-3">
@@ -120,12 +118,11 @@
         <div class="col-md-4">
           <label>Intitulé</label>
           <input type="text" class="form-control" formControlName="libelle" placeholder="Intitulé">
-          <div
-            *ngIf="natureOperationForm.get('libelle')?.hasError('required') && natureOperationForm.get('libelle')?.touched"
+          <div *ngIf="ecritureForm.get('libelle')?.hasError('required') && ecritureForm.get('libelle')?.touched"
             class="text-danger">Champ obligatoire !</div>
         </div>
 
-        <!-- Journal -->
+        <!-- Journal 
         <div class="col-md-4">
           <label>Code journal</label>
           <ng-select [items]="codesjournaux" bindLabel="libelle" bindValue="code" placeholder="Sélection Journal"
@@ -134,7 +131,7 @@
           </ng-select>
         </div>
 
-        <!-- Catégorie -->
+        Catégorie 
         <div class="col-md-4">
           <label>Catégorie</label>
           <ng-select [items]="categories" bindLabel="libelle" bindValue="id" placeholder="Sélection Catégorie"
@@ -142,50 +139,64 @@
             <ng-template ng-notfound-tmp>Aucune catégorie disponible</ng-template>
           </ng-select>
           <div
-            *ngIf="natureOperationForm.get('categorieId')?.hasError('required') && natureOperationForm.get('categorieId')?.touched"
+            *ngIf="ecritureForm.get('categorieId')?.hasError('required') && ecritureForm.get('categorieId')?.touched"
             class="text-danger">Champ obligatoire !</div>
+        </div> -->
+
+        <!-- Journal -->
+        <div class="col-md-4">
+          <label>Journal</label>
+          <ng-select [items]="filteredJournaux" bindLabel="libelle" bindValue="id" formControlName="codeJournalId"
+            (ngModelChange)="onJournalChange($event)" placeholder="Sélectionner un journal">
+          </ng-select>
+        </div>
+
+        <!-- Catégorie -->
+        <div class="col-md-4">
+          <label>Catégorie</label>
+          <ng-select [items]="filteredCategories" bindLabel="libelle" bindValue="id" formControlName="categorieId"
+            (ngModelChange)="onCategorieChange($event)" placeholder="Sélectionner une catégorie">
+          </ng-select>
         </div>
 
         <!-- Montant HT -->
         <div class="col-md-4">
           <label>Montant (hors taxe)</label>
-          <input type="number" class="form-control" formControlName="montantHt" placeholder="Montant (FCFA)">
+          <div class="input-group">
+            <input type="number" class="form-control" formControlName="montantHt" placeholder="Montant">
+            <span class="input-group-text">FCFA</span>
+          </div>
         </div>
 
         <!-- TVA -->
-        <div class="col-md-4">
+        <div class="col-md-4" *ngIf="showTVA">
           <label>TVA (%)</label>
           <input type="number" class="form-control" formControlName="tva" placeholder="Ex: 18">
         </div>
 
         <!-- Montant TTC (readonly) -->
-        <div class="col-md-4">
+        <div class="col-md-4" *ngIf="showTTC">
           <label>Montant TTC</label>
-          <input type="number" class="form-control" formControlName="montantTtc" placeholder="Montant TTC" readonly>
+          <div class="input-group">
+            <input type="number" class="form-control" formControlName="montantTtc" placeholder="Montant TTC" readonly>
+            <span class="input-group-text">FCFA</span>
+          </div>
         </div>
 
-        <!-- Compte Comptable lié à la catégorie -->
-        <div class="col-md-6">
-          <label>Compte Comptable</label>
-          <input type="text" class="form-control"
-            [value]="selectedCategorie?.compteComptableCode + ' - ' + selectedCategorie?.compteComptableIntitule"
-            readonly>
-          <input type="hidden" formControlName="compteComptableId">
-        </div>
-
-        <!-- Compte Comptable 
+        <!-- Compte Comptable -->
         <div class="col-md-6">
           <label>Compte Comptable</label>
           <ng-select [items]="comptes" bindValue="id" placeholder="Sélection Compte" formControlName="compteComptableId"
-            [searchable]="true" [disabled]="!natureOperationForm.value.categorieId">
-            <ng-template ng-label-tmp let-item="item">{{item.code}} - {{item.intitule}}</ng-template>
-            <ng-template ng-option-tmp let-item="item">{{item.code}} - {{item.intitule}}</ng-template>
+            [searchable]="true" [disabled]="comptes.length === 0">
+            <ng-template ng-label-tmp let-item="item">{{ item.code }} ({{ item.intitule }})</ng-template>
+            <ng-template ng-option-tmp let-item="item">{{ item.code }} ({{ item.intitule }})</ng-template>
             <ng-template ng-notfound-tmp>Aucun compte comptable disponible</ng-template>
           </ng-select>
-        </div> -->
+        </div>
+
 
         <!-- Section Analytique -->
-        <div class="col-md-4" *ngIf="showSectionAnalytique">
+        <div class="col-md-6" *ngIf="showSectionAnalytique">
           <label>Section Analytique</label>
           <ng-select [items]="sectionsAnalytiques" bindLabel="libelle" bindValue="id"
             placeholder="Sélection Section Analytique" formControlName="sectionAnalytiqueId" [searchable]="true">
@@ -201,7 +212,7 @@
             <ng-template ng-notfound-tmp>Aucun tiers disponible</ng-template>
           </ng-select>
           <div
-            *ngIf="isTiersObligatoire && natureOperationForm.get('tiersId')?.hasError('required') && natureOperationForm.get('tiersId')?.touched"
+            *ngIf="isTiersObligatoire && ecritureForm.get('tiersId')?.hasError('required') && ecritureForm.get('tiersId')?.touched"
             class="text-danger">Champ obligatoire !</div>
         </div>
 

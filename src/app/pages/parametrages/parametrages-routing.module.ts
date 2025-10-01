@@ -76,8 +76,8 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }
   },
-  {
-    path: 'code-journaux',
+  { 
+    path: 'journaux',
     loadChildren: () => import('./code-journal/code-journal.module').then(m => m.CodeJournalModule),
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }

@@ -32,7 +32,7 @@ export class SectionsAnalytiquesComponent implements OnInit {
   pageTitle: BreadcrumbItem[] = [];
 
   totalElements: number = 0;
-  pageSize: number = 1;
+  pageSize: number = 10;
   currentPage: number = 0;
   private search$ = new Subject<{ libelle: string }>();
   searchLibelle: string = '';

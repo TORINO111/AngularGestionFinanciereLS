@@ -1,9 +1,11 @@
-
 export interface Categorie {
-    id?: number;
-    libelle: string;
-    code: string;
-    //type: 'RECETTE' | 'DEPENSE' | 'SALAIRE';
-    type: string;
-  }
-  
+  id?: number;
+  code: string;
+  libelle: string;
+  type: string;
+
+  // Comptes liés à la catégorie
+  compteComptableIds: number[];
+  compteComptableCodes: string[];
+  compteComptableIntitules: string[];
+}

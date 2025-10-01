@@ -7,3 +7,9 @@ export interface CompteComptableDTO {
   type?: string;
   classeCompte: string;
 }
+
+export interface CompteSelect {
+  id: number;
+  code: string;
+  intitule: string;
+}

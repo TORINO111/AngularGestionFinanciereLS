@@ -143,12 +143,14 @@ export class CodeJournalComponent implements OnInit {
   editJournal(index: number): void {
     this.selectedIndex = index;
     const j = this.codeJournaux[index];
+    console.log(j);
     this.journalForm.patchValue({
       id: j.id,
       libelle: j.libelle,
-      typeJournalId: j.typeJournal?.id
+      typeJournalId: j.typeJournal?.id,
+      allowedCategoryTypes: j.allowedCategoryTypes
     });
-    this.modalService.open(this.journalModal, { centered: true });
+    this.modalService.open(this.journalModal, { size: 'lg', centered: true });
   }
 
   deleteJournal(index: number): void {
@@ -182,5 +184,6 @@ export class CodeJournalComponent implements OnInit {
       error: err => this.notification.showError(err),
       complete: () => this.modalService.dismissAll()
     });
+    this.loadCodeJournaux();
   }
 }

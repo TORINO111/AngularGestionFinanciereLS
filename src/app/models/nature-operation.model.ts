@@ -14,27 +14,35 @@ export class NatureOperationRequest {
 }
 
 export class NatureOperationDto {
-    id: number;
-    code: string;
-    libelle: string;
+  id: number;
+  code: string;
+  libelle: string;
 
-    compteComptableId: number;
-    compteContrePartieId: number;
-    sectionAnalytiqueId: number;
-    categorieId: number;
-    codeJournalId: number;
-    societeId: number;
+  compteComptableId: number;
+  compteComptableCode: string;
+  compteComptableIntitule: string;
 
-    compteComptableLibelle: string;
-    compteContrePartieLibelle: string;
-    sectionAnalytiqueLibelle: string;
-    categorieLibelle: string;
-    categorieType: string;
-    codeJournal: string;
-    libelleJournal: string;
-    societeLibelle: string;
+  categorieId: number;
+  categorieLibelle: string;
 
-    typeNature: string;
-    sensParDefaut: string;
-    sensLibelle: string;
+  codeJournalId: number;
+  codeJournalLibelle: string;
+
+  societeId: number;
+  societeNom: string;
+
+  sectionAnalytiqueId?: number;
+  sectionAnalytiqueLibelle?: string;
+
+  tiersId?: number;
+  tiersLibelle?: string;
+
+  montantHt: number;
+  tva: number;
+  montantTtc: number;
+
+  sequence: number;
+  date: string; // ou Date si tu parsages en date côté TS
+
 }
+

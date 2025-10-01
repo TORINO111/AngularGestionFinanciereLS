@@ -71,7 +71,7 @@ export class CategorieComponent implements OnInit {
       id: [null],
       libelle: ['', [Validators.required, Validators.minLength(5)]],
       type: ['null', [Validators.required]],
-      compteComptableId: ['null', [Validators.required]]
+      comptesComptablesIds: [[], [Validators.required]]
     });
   }
 
@@ -263,16 +263,30 @@ export class CategorieComponent implements OnInit {
     this.modalService.open(this.categorieModal, { size: 'lg', centered: true });
   }
 
+  // editCategorie(index: number): void {
+  //   this.selectedIndex = index;
+  //   const c = this.categories[index];
+  //   this.categorieForm.patchValue(c); 
+  //   this.modalService.open(this.categorieModal, { centered: true });
+  // }
+
   editCategorie(index: number): void {
     this.selectedIndex = index;
     const c = this.categories[index];
+
+    // Patcher le formulaire avec les autres valeurs et les comptes sélectionnés
+    // Précharger le formulaire avec les valeurs existantes
     this.categorieForm.patchValue({
       id: c.id,
       libelle: c.libelle,
-      type: c.type
+      type: c.type,
+      comptesComptablesIds: [...c.compteComptableIds]
     });
+
     this.modalService.open(this.categorieModal, { centered: true });
   }
+
+
 
   deleteCategorie(index: number): void {
     const c = this.categories[index];

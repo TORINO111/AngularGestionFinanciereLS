@@ -5,4 +5,5 @@ export interface CodeJournal {
     typeJournalId: number;
     typeJournalCode: string;
     typeJournalLibelle: string;
+    allowedCategoryTypes?: string[];
 }
