@@ -1,6 +1,7 @@
 // 
 // buttons.scss
 //
+@use "sass:color";
 
 .btn {
     color: $white;
@@ -84,7 +85,7 @@
 
     &:hover,
     &:focus {
-        background-color: fade-in(rgba($bg, $btn-soft-bg-opacity), .05);
+        background-color: color.adjust(rgba($bg, $btn-soft-bg-opacity), $alpha: 0.05);
         color: $color;
     }
 }

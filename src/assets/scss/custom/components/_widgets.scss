@@ -1,6 +1,7 @@
 // 
 // widgets.scss
 //
+@use "sass:color";
 
 
 // Simple tile box
@@ -41,7 +42,7 @@
     }
 
     .ctext-wrap {
-        background: lighten($primary, 32%);
+        background: color.adjust($primary, $lightness: 32%);
         color: $primary;
         border-radius: $border-radius;
         display: inline-block;
@@ -71,10 +72,10 @@
             width: 0;
             position: absolute;
             pointer-events: none;
-            border-top-color: lighten($primary, 32%);
+            border-top-color: color.adjust($primary, $lightness: 32%);
             border-width: 6px;
             margin-left: -1px;
-            border-right-color: lighten($primary, 32%);
+            border-right-color: color.adjust($primary, $lightness: 32%);
         }
     }
 

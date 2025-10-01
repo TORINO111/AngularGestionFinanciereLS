@@ -1,6 +1,7 @@
 //
 // menu.scss
 //
+@use "sass:color";
 
 // Wrapper
 #wrapper {
@@ -567,7 +568,7 @@ body[data-sidebar-color="dark"] {
 
                     > a.mm-active {
                         color: $menu-item-active-color-dark;
-                        background-color: lighten($bg-leftbar-dark, 2.5%);
+                        background-color: color.adjust($bg-leftbar-dark, $lightness: 2.5%);
                     }
                 }
             }

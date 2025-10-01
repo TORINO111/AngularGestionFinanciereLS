@@ -29,7 +29,7 @@
               <span> - {{ importResult.lignesImportees }} opérations importées</span>
             }
           </div>
-          @if (importResult?.erreurs?.length ?? 0 > 0) {
+          @if (importResult.erreurs.length > 0) {
             <table class="error-table">
               <thead>
                 <tr>
@@ -211,7 +211,7 @@
                     <td>{{ operation.value.tiers }}</td>
                   </tr>
                 }
-                @if (operations?.length == 0) {
+                @if (operations.length == 0) {
                   <tr >
                     <td  colspan="5"><h3 style="text-align: center;">Aucune donnée trouvée</h3></td>
                   </tr>

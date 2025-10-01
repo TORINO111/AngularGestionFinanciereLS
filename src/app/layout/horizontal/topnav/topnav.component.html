@@ -30,7 +30,7 @@
 <ng-template #MenuItemWithChildren let-menu="menu" let-className="className" let-linkClassName="linkClassName">
   <li [class]="className" [ngClass]="{'active': activeMenuItems.includes(menu.key)}" ngbDropdown>
     <a [class]="linkClassName" [ngClass]="{'active': activeMenuItems.includes(menu.key)}"
-      href="javascript: void(0);" role="button" id="topnav-{{menu.key}}" attr.aria-haspopup="true"
+      href="javascript: void(0);" role="button" id="topnav-{{menu.key}}" aria-haspopup="true"
       [attr.aria-expanded]="!menu.collapsed" [attr.data-menu-key]="menu.key" (click)="toggleMenuItem(menu)">
       @if (menu.icon) {
         <i [attr.data-feather]="menu.icon" appFeatherIcon></i>

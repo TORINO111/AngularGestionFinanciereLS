@@ -1,6 +1,7 @@
 //
 // right-sidebar.scss
 //
+@use "sass:color";
 
 .right-bar {
     background-color: $rightbar-bg;
@@ -22,7 +23,7 @@
     }
 
     .right-bar-toggle {
-        background-color: lighten($dark, 7%);
+        background-color: color.adjust($dark, $lightness: 7%);
         height: 24px;
         width: 24px;
         line-height: 27px;
@@ -32,7 +33,7 @@
         margin-top: -4px;
 
         &:hover {
-            background-color: lighten($dark, 10%);
+            background-color: color.adjust($dark, $lightness: 10%);
         }
     }
 

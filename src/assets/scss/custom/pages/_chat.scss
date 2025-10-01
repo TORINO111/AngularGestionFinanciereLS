@@ -1,6 +1,7 @@
 //
 //  chat.scss
 //
+@use "sass:color";
 
 /* Search */
 .chat-search {
@@ -18,7 +19,7 @@
         background-color: $chat-secondary-user-bg !important;
         border-color: $chat-secondary-user-bg !important;
         &::placeholder {
-            color: darken($gray-500, 10%);
+            color: color.adjust($gray-500, $lightness: -10%);
         }
     }
 
