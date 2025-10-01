@@ -1,12 +1,5 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "dist/shreyu-angular/**",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    { "src": "/(.*)", "dest": "dist/shreyu-angular/index.html" }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
