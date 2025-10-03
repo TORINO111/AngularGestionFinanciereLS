@@ -100,7 +100,6 @@ export class TiersComponent implements OnInit {
     const societeActiveStr = localStorage.getItem("societeActive");
     if (societeActiveStr) {
       this.societeBi = JSON.parse(societeActiveStr);
-      // Patch des valeurs dans les formulaires
       this.tiersForm.patchValue({ societeId: this.societeBi.id });
       this.modelImportForm.patchValue({ societeId: this.societeBi.id });
     }

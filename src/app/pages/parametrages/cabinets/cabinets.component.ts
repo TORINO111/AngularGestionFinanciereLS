@@ -7,7 +7,7 @@ import Swal from 'sweetalert2';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { Societe } from 'src/app/models/societe.model';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
-import { debounceTime, Subject, switchMap } from 'rxjs';
+import { debounceTime, Subject, switchMap, tap } from 'rxjs';
 import { AuthenticationService } from 'src/app/core/service/auth.service';
 import { User } from 'src/app/core/models/auth.models';
 
@@ -81,7 +81,6 @@ export class CabinetsComponent implements OnInit {
     const societeActiveStr = localStorage.getItem("societeActive");
     if (societeActiveStr) {
       this.societeBi = JSON.parse(societeActiveStr);
-      // Patch des valeurs dans les formulaires
       this.cabinetForm.patchValue({ societeId: this.societeBi.id });
     }
     this.chargerCabinets();
@@ -97,6 +96,9 @@ export class CabinetsComponent implements OnInit {
     this.search$
       .pipe(
         debounceTime(300),
+        tap(() => {
+          this.isLoading = true;
+        }),
         switchMap(({ nom, tel, pays }) => {
           this.currentPage = 0;
           return this.societeService.getCabinets(
@@ -114,8 +116,13 @@ export class CabinetsComponent implements OnInit {
           this.lignes = data.content;
           this.totalElements = data.totalElements;
           this.currentPage = 0;
+          this.isLoading = false;
         },
-        error: err => console.error('Erreur lors de la recherche', err)
+        error: err => {
+          console.error('Erreur lors de la recherche', err)
+          this.result = true;
+          this.isLoading = false; 
+        }
       });
   }
 
@@ -168,39 +175,10 @@ export class CabinetsComponent implements OnInit {
     });
   }
 
-  // chargerCabinets(): void {
-  //   this.lignes = [];
-  //   this.societeService.getAllCabinet().subscribe({
-  //     next: (data: Societe[]) => {
-  //       this.lignes = data.map(d =>
-  //         this.fb.group({
-  //           id: [d.id],
-  //           nom: [d.nom, Validators.required],
-  //           telephone: [d.telephone],
-  //           email: [d.email, [Validators.required, Validators.email]],
-  //           adresse: [d.adresse],
-  //           numeroIFU: [d.numeroIFU],
-  //           numeroRccm: [d.numeroRccm],
-  //           paysId: [d.paysId],
-  //           paysNom: [d.paysNom]
-  //         })
-  //       );
-  //       this.result = true;
-  //       this.loading = false;
-  //       this.isLoading = false;
-  //     },
-  //     error: (error) => {
-  //       console.error('Erreur lors du chargement des cabinets', error);
-  //       this.result = true;
-  //       this.isLoading = false;
-  //       this.loading = false;
-  //       this.notification.showError('Erreur de chargement');
-  //     }
-  //   });
-  // }
-
   chargerCabinets(page: number = 0) {
     this.result = false;
+    this.isLoading = true;
+
     this.currentPage = page;
 
     this.societeService.getCabinets(
@@ -216,9 +194,11 @@ export class CabinetsComponent implements OnInit {
           this.lignes = [...this.categories];
           this.totalElements = data.totalElements;
           this.result = true;
+          this.isLoading = false;
         },
         error: (error) => {
           this.result = true;
+          this.isLoading = false;
           console.error("Erreur lors du chargement des cabinets:", error);
         }
       });
@@ -302,22 +282,6 @@ export class CabinetsComponent implements OnInit {
       });
   }
 
-  // openEditModal(editcontent: TemplateRef<NgbModal>): void {
-  //   this.modalService.open(editcontent,
-  //     {
-  //       size: 'lg',
-  //       centered: true, scrollable: true,
-  //       backdrop: 'static',
-  //       keyboard: false,
-  //       ariaLabelledBy: 'modal-basic-title'
-  //     }).result.then((result) => {
-  //       this.closeResult = `Closed with: ${result}`;
-  //     }, (reason) => {
-  //       this.closeResult =
-  //         `Dismissed ${this.getDismissReason(reason)}`;
-  //     });
-  // }
-
   private getDismissReason(reason: any): string {
     if (reason === ModalDismissReasons.ESC) {
       return 'by pressing ESC';
@@ -375,7 +339,7 @@ export class CabinetsComponent implements OnInit {
       return;
     }
     const cabinet = this.lignes[index];
-    this.cabinetForm.patchValue({cabinet});
+    this.cabinetForm.patchValue({ cabinet });
     this.modalService.open(this.modalContent, { centered: true });
   }
 

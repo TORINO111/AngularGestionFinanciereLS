@@ -6,7 +6,7 @@ import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TypeCategorieService } from 'src/app/services/type-categorie/type-categorie.service';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
-import { debounceTime, switchMap } from 'rxjs';
+import { debounceTime, switchMap, tap } from 'rxjs';
 import { Subject } from 'rxjs';
 import { CompteComptableService } from 'src/app/services/comptes-comptables/comptes-comptables.service';
 import { CompteComptableDTO } from 'src/app/models/compte-comptable';
@@ -40,7 +40,7 @@ export class CategorieComponent implements OnInit {
   closeResult: string = '';
   pageTitle: BreadcrumbItem[] = [];
   loading: boolean = false;
-  result: boolean = false;
+  result = false;
   types: any[] = [];
   lastTypeId: number;
   selectedTypeId: number;
@@ -58,6 +58,7 @@ export class CategorieComponent implements OnInit {
   selectedIndex: number | null = null;
   selected?: boolean = false;
   comptes: CompteComptableDTO[];
+  societeBi: any;
 
   constructor(
     private categorieService: CategorieService,
@@ -71,7 +72,8 @@ export class CategorieComponent implements OnInit {
       id: [null],
       libelle: ['', [Validators.required, Validators.minLength(5)]],
       type: ['null', [Validators.required]],
-      comptesComptablesIds: [[], [Validators.required]]
+      comptesComptablesIds: [[], [Validators.required]],
+      societeId: [null]
     });
   }
 
@@ -80,7 +82,15 @@ export class CategorieComponent implements OnInit {
     this.chargerCategories();
     this.chargerTypesCategorie();
     this.initSearchListener();
-    this.chargerComptesComptables()
+    this.chargerComptesComptables();
+
+    const societeActiveStr = localStorage.getItem("societeActive");
+    if (societeActiveStr) {
+      this.societeBi = JSON.parse(societeActiveStr);
+      console.log(this.societeBi);
+      // Patch des valeurs dans les formulaires
+      this.categorieForm.patchValue({ societeId: this.societeBi.id });
+    };
   }
 
   chargerComptesComptables() {
@@ -110,6 +120,9 @@ export class CategorieComponent implements OnInit {
     this.search$
       .pipe(
         debounceTime(300),
+        tap(() => {
+          this.isLoading = true;
+        }),
         switchMap(({ libelle, type }) => {
           this.currentPage = 0;
           return this.categorieService.getCategories(
@@ -126,8 +139,12 @@ export class CategorieComponent implements OnInit {
           this.lignes = this.categories;
           this.totalElements = data.totalElements;
           this.currentPage = 0;
+          this.isLoading = false;
         },
-        error: err => console.error('Erreur lors de la recherche', err)
+        error: err => {
+          this.isLoading = false;
+          console.error('Erreur lors de la recherche', err)
+        }
       });
   }
 
@@ -140,6 +157,8 @@ export class CategorieComponent implements OnInit {
 
   chargerCategories(page: number = 0) {
     this.result = false;
+    this.isLoading = true;
+
     this.currentPage = page;
 
     this.categorieService.getCategories(
@@ -154,10 +173,13 @@ export class CategorieComponent implements OnInit {
           this.lignes = [...this.categories];
           this.totalElements = data.totalElements;
           this.result = true;
+          this.isLoading = false;
         },
         error: (error) => {
           this.result = true;
+          this.isLoading = false;
           console.error("Erreur lors du chargement des catégories:", error);
+          this.notification.showError('Erreur de chargement');
         }
       });
   }
@@ -173,25 +195,6 @@ export class CategorieComponent implements OnInit {
   totalPages(): number {
     return Math.ceil(this.totalElements / this.pageSize);
   }
-
-  // chargerCategories() {
-  //   this.categories = [];
-  //   this.categorieService.getAllCategories().subscribe({
-  //     next: (data: Categorie[]) => {
-  //       this.categories = data.map(d => ({
-  //         id: d.id,
-  //         code: d.code,
-  //         libelle: d.libelle,
-  //         type: d.type
-  //       }));
-  //       this.result = true;
-  //     },
-  //     error: (error: any) => {
-  //       this.result = true;
-  //       this.notification.showError("Erreur lors du chargement des catégories: " + error);
-  //     }
-  //   });
-  // }
 
   chargerTypesCategorie() {
     this.typeCategorieService.getAll().subscribe({
@@ -263,30 +266,20 @@ export class CategorieComponent implements OnInit {
     this.modalService.open(this.categorieModal, { size: 'lg', centered: true });
   }
 
-  // editCategorie(index: number): void {
-  //   this.selectedIndex = index;
-  //   const c = this.categories[index];
-  //   this.categorieForm.patchValue(c); 
-  //   this.modalService.open(this.categorieModal, { centered: true });
-  // }
-
   editCategorie(index: number): void {
     this.selectedIndex = index;
     const c = this.categories[index];
+    console.log(c);
 
-    // Patcher le formulaire avec les autres valeurs et les comptes sélectionnés
-    // Précharger le formulaire avec les valeurs existantes
     this.categorieForm.patchValue({
       id: c.id,
       libelle: c.libelle,
       type: c.type,
-      comptesComptablesIds: [...c.compteComptableIds]
+      comptesComptablesIds: c.compteComptableIds || []
     });
 
-    this.modalService.open(this.categorieModal, { centered: true });
+    this.modalService.open(this.categorieModal, { size: 'lg', centered: true });
   }
-
-
 
   deleteCategorie(index: number): void {
     const c = this.categories[index];
@@ -302,7 +295,6 @@ export class CategorieComponent implements OnInit {
   }
 
   enregistrer(): void {
-    console.log(this.categorieForm.value);
     if (this.categorieForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
       return;
@@ -310,7 +302,7 @@ export class CategorieComponent implements OnInit {
 
     this.isLoading = true;
 
-    const categorie = this.categorieForm.value as Categorie;
+    const categorie = this.categorieForm.value;
     console.log(categorie);
 
     const action$ = categorie.id!
@@ -325,18 +317,17 @@ export class CategorieComponent implements OnInit {
         this.categorieForm.reset();
         this.selectedIndex = null;
         this.selected = undefined;
-        this.isLoading = false;
         this.chargerCategories();
       },
       error: (error: any) => {
         this.notification.showError(error);
-        this.isLoading = false;
         this.categorieForm.reset();
         this.selectedIndex = null;
         this.selected = false;
         this.chargerCategories();
       }
     });
+    this.isLoading = false;
     this.closeModal();
   }
 

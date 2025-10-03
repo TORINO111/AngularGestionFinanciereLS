@@ -70,6 +70,7 @@ export class PlanAnalytiqueComponent implements OnInit {
   fileError: string | null = null;
   errorMessage: string | null = null;
   importResult: ImportPlanComptableResultDTO | null = null;
+  societeBi: any;
 
   constructor(
     private fb: UntypedFormBuilder,
@@ -94,7 +95,15 @@ export class PlanAnalytiqueComponent implements OnInit {
     this.chargerPlanAnalytiques();
     this.chargerSectionsAnalytiques();
     this.chargerSocietes();
-    this.initSearchListener()
+    this.initSearchListener();
+    
+    const societeActiveStr = localStorage.getItem("societeActive");
+    if (societeActiveStr) {
+      this.societeBi = JSON.parse(societeActiveStr);
+      console.log(this.societeBi);
+      this.planAnalytiqueForm.patchValue({ societeId: this.societeBi.id });
+      this.modelImportForm.patchValue({ societeId: this.societeBi.id });
+    };
   }
 
   allowAlphaNumeric(event: KeyboardEvent) {
@@ -241,9 +250,9 @@ export class PlanAnalytiqueComponent implements OnInit {
         this.planAnalytiqueForm.reset();
         this.selectedIndex = null;
         this.selected = undefined;
-        this.isLoading = false;
         this.chargerPlanAnalytiques();
-        this.closeModal()
+        this.closeModal();
+        this.isLoading = false;
       },
       error: (error: any) => {
         this.notification.showError(error);
@@ -258,38 +267,10 @@ export class PlanAnalytiqueComponent implements OnInit {
     });
   }
 
-  // chargerPlanAnalytiques(): void {
-  //   this.planComptableService.getAllPlanAnalytique().subscribe({
-  //     next: (data: PlanAnalytiqueDTO[]) => {
-  //       this.plansAnalytiques = [];
-
-  //       data.forEach(plan => {
-  //         (plan.sectionsAnalytiques || []).forEach(section => {
-  //           this.plansAnalytiques.push(
-  //             this.fb.group({
-  //               planId: [plan.id],
-  //               sectionId: [section.id],
-  //               sectionAnalytique: [section.libelle],
-  //               societe: [plan.societe]
-  //             })
-  //           );
-  //         });
-  //       });
-
-  //       this.lignes = this.plansAnalytiques;
-  //       this.selected = false;
-  //       this.result = true;
-  //     },
-  //     error: (error) => {
-  //       console.error('Erreur lors du chargement des plans analytiques', error);
-  //       this.result = true;
-  //       this.notification.showError('Erreur de chargement');
-  //     }
-  //   });
-  // }
-
   chargerPlanAnalytiques(page: number = 0) {
     this.result = false;
+    this.isLoading = true; 
+
     this.currentPage = page;
 
     this.plansAnalytiquesService.getAllPlanAnalytiquePageable(
@@ -302,9 +283,13 @@ export class PlanAnalytiqueComponent implements OnInit {
         this.lignes = [...this.plansAnalytiques];
         this.totalElements = data.totalElements;
         this.result = true;
+        this.isLoading = false;
+
       },
       error: (error: any) => {
         this.result = true;
+        this.isLoading = false;
+
         console.error("Erreur lors du chargement des plans analytiques:", error);
         this.notification.showError('Erreur lors du chargement des plans analytiques!');
       }

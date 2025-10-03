@@ -66,9 +66,7 @@ export class TopbarComponent implements OnInit {
 
   ngOnInit(): void {
     this.loggedInUser = this.authService.currentUser();
-
     this.loadSocieteForuser();
-    this.loadExercice();
     this._fetchMenus();
     this._fetchSearchData();
     this._fetchNotifications();
@@ -87,69 +85,64 @@ export class TopbarComponent implements OnInit {
     this.societeService.getSocietePourUserConnecte(this.loggedInUser!.id).subscribe(data => {
       this.selectedSociete = data;
       localStorage.setItem('societeActive', JSON.stringify(this.selectedSociete));
-      // console.log(this.selectedSociete);
-      // this.filteredSocietes = data;
+
+      // Charger l'exercice après avoir récupéré la société
+      this.loadExercice();
     });
   }
 
-  // loadSocietes() {
-  //   this.societeService.getSocietesPourComptableConnecte().subscribe(data => {
-  //     this.societes = data;
-  //     this.filteredSocietes = data;
-  //   });
-  // }
-
-  // filterSocietes() {
-  //   const term = this.searchText.toLowerCase();
-  //   this.filteredSocietes = this.societe.filter(s =>
-  //     s.nom.toLowerCase().includes(term)
-  //   );
-  // }
+  loadExercice() {
+    if (this.selectedSociete?.id !== undefined) {
+      this.exerciceService.getExerciceEnCoursBySociete(this.selectedSociete.id).subscribe({
+        next: (data) => {
+          this.exerciceEnCours = data;
+          if (data) {
+            localStorage.setItem('exerciceEnCours', JSON.stringify(data));
+          } else {
+            localStorage.removeItem('exerciceEnCours');
+            console.log("Aucun exercice trouvé pour cette société");
+          }
+        },
+        error: () => {
+          this.exerciceEnCours = undefined;
+          localStorage.removeItem('exerciceEnCours');
+          console.log("Erreur lors du chargement de l'exercice");
+        }
+      });
+    } else {
+      this.exerciceEnCours = undefined;
+      localStorage.removeItem('exerciceEnCours');
+      console.log("Erreur : société non définie");
+    }
+  }
 
   selectSociete(societe: Societe) {
     this.selectedSociete = societe;
     localStorage.setItem('societeActive', JSON.stringify(societe));
     this.societeSelectionService.setSociete(societe);
+
     this.loadExercice();
   }
 
-  loadExercice(): void {
-    this.societeSelectionService.selectedSociete$.subscribe(societe => {
-      //this.societeActive = societe;
-      if (societe !== undefined) {
-        this.societeId = societe!.id;
 
-        this.exerciceService.getExerciceEnCoursBySociete(this.societeId!).subscribe({
-          next: (data) => {
-            //console.log(data)
-            this.exerciceEnCours = data
-          },
-          error: () => this.exerciceEnCours = undefined
-        });
-      }
+  // loadExercice(): void {
+  //   this.societeSelectionService.selectedSociete$.subscribe(societe => {
+  //     //this.societeActive = societe;
+  //     if (societe !== undefined) {
+  //       this.societeId = societe!.id;
 
-    });
+  //       this.exerciceService.getExerciceEnCoursBySociete(this.societeId!).subscribe({
+  //         next: (data) => {
+  //           //console.log(data)
+  //           this.exerciceEnCours = data
+  //         },
+  //         error: () => this.exerciceEnCours = undefined
+  //       });
+  //     }
 
-  }
+  //   });
 
-  loadExercice1(): void {
-    this.societeSelectionService.selectedSociete$.subscribe(societe => {
-      if (societe) {
-        const societeId = societe.id;
-        this.exerciceService.getExerciceEnCoursBySociete(societeId!).subscribe({
-          next: (data) => {
-            console.log(data)
-            this.exerciceEnCours = data
-            this.exerciceSelectionService.setSelectedExercice(data);
-          },
-          error: () => {
-            this.exerciceEnCours = undefined;
-            this.exerciceSelectionService.setSelectedExercice(null);
-          }
-        });
-      }
-    });
-  }
+  // }
 
   ouvrirNouvelExercice(): void {
     this._route.navigate(['/parametrages/exercice-comptable']);

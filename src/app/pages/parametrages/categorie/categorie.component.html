@@ -63,10 +63,6 @@
               {{ code }} ({{ cat.compteComptableIntitules[i] }})
             </div>
           </td>
-
-
-
-
           <td>
             <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="editCategorie(i)"></span>
             <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x" (click)="deleteCategorie(i)"></span>
@@ -138,6 +134,7 @@
     </button>
   </div>
 
+  <!-- Champs Formulaire -->
   <div class="modal-body">
     <form [formGroup]="categorieForm" class="p-2">
       <input type="hidden" formControlName="id">
@@ -165,7 +162,7 @@
         </div>
 
         <!-- Comptes Comptables liés -->
-        <div class="col-md-8">
+        <div class="col-md-6">
           <label>Comptes Comptables</label>
           <ng-select [items]="comptes" bindValue="id" [multiple]="true" placeholder="Sélectionner Comptes"
             formControlName="comptesComptablesIds" [searchable]="true" [searchFn]="searchFn"

@@ -1,4 +1,4 @@
-import { SectionAnalytiqueDTO } from 'src/app/models/section-analytique.model';
+import { SectionAnalytiqueDTO, SectionAnalytiqueRequest } from 'src/app/models/section-analytique.model';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
 import { Component, OnInit, ViewChild, TemplateRef, ElementRef } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
@@ -7,8 +7,8 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import Swal from 'sweetalert2';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { PlansAnalytiquesService } from 'src/app/services/plans-analytiques/plans-analytiques.service';
-import { PlanAnalytique } from 'src/app/models/plan-analytique.model';
-import { debounceTime, Subject, switchMap } from 'rxjs';
+import { PlanAnalytique, PlanAnalytiqueDTO } from 'src/app/models/plan-analytique.model';
+import { debounceTime, Subject, switchMap, tap } from 'rxjs';
 
 @Component({
   selector: 'app-sections-analytiques.component',
@@ -37,6 +37,10 @@ export class SectionsAnalytiquesComponent implements OnInit {
   private search$ = new Subject<{ libelle: string }>();
   searchLibelle: string = '';
   lignes: any[] = [];
+  societeBi: any;
+
+  isLoading = false;
+  result = false;
 
 
   constructor(
@@ -47,9 +51,9 @@ export class SectionsAnalytiquesComponent implements OnInit {
     private modalService: NgbModal
   ) {
     this.sectionForm = this.fb.group({
-      id: [null],
       planAnalytiqueId: [null, Validators.required],
       libelle: ['', [Validators.required, Validators.pattern(/^[\p{L}\p{M}\d\s\-']+$/u)]],
+      societeId: [null]
     });
   }
 
@@ -57,13 +61,20 @@ export class SectionsAnalytiquesComponent implements OnInit {
     this.pageTitle = [{ label: 'Vos sections analytiques', path: '/', active: true }];
     this.chargerSectionsAnalytiques();
     this.chargerPlansAnalytiques();
-    this.initSearchListener()
+    this.initSearchListener();
+
+    const societeActiveStr = localStorage.getItem("societeActive");
+    if (societeActiveStr) {
+      this.societeBi = JSON.parse(societeActiveStr);
+      console.log(this.societeBi);
+      this.sectionForm.patchValue({ societeId: this.societeBi.id });
+    };
   }
 
   chargerPlansAnalytiques() {
     this.planAnalytiqueService.getAllPlanAnalytique().subscribe(
       {
-        next: (data: PlanAnalytique[]) => {
+        next: (data: PlanAnalytiqueDTO[]) => {
           this.plans = data.map(d => ({
             id: d.id,
             intitule: d.intitule,
@@ -86,7 +97,6 @@ export class SectionsAnalytiquesComponent implements OnInit {
 
   openModal(): void {
     this.formVisible = true;
-    this.sectionForm.reset();
     this.selectedIndex = null;
     this.modalService.open(this.modalContent, { centered: true });
   }
@@ -94,7 +104,10 @@ export class SectionsAnalytiquesComponent implements OnInit {
   editSection(index: number): void {
     this.selectedIndex = index;
     const section = this.sections[index];
-    this.sectionForm.patchValue(section);
+    this.sectionForm.patchValue({
+      libelle: section.libelle,
+      planAnalytiqueId: this.plans.find(p => p.nom === section.planAnalytique)?.id || null,
+    });
     this.formVisible = true;
     this.modalService.open(this.modalContent, { centered: true });
   }
@@ -122,40 +135,57 @@ export class SectionsAnalytiquesComponent implements OnInit {
   }
 
   saveSection(): void {
-    if (this.sectionForm.invalid) {
+    if (this.sectionForm.invalid) { 
       this.notification.showWarning('Formulaire invalide');
       return;
     }
+
+    this.result = false;
+    this.isLoading = true;
 
     const payload = this.sectionForm.value;
 
     if (this.selectedIndex !== null) {
       // Update
       const sectionId = this.sections[this.selectedIndex].id!;
-      this.sectionService.modifierSectionAnalytique(sectionId, payload).subscribe({
+      this.sectionService.modifierSectionAnalytique(sectionId, payload as SectionAnalytiqueRequest).subscribe({
         next: (updated) => {
           this.sections[this.selectedIndex!] = updated;
           this.notification.showSuccess('Section modifiée avec succès');
           this.modalService.dismissAll();
+          this.chargerSectionsAnalytiques();
+          this.isLoading = false;
+          this.result = true;
         },
-        error: (err) => this.notification.showError(err)
+        error: (err) => {
+          this.isLoading = false;
+          this.result = true;
+          this.notification.showError(err)
+        }
       });
     } else {
       // Create
-      this.sectionService.creerSectionAnalytique(payload).subscribe({
+      this.sectionService.creerSectionAnalytique(payload as SectionAnalytiqueRequest).subscribe({
         next: (created) => {
           this.sections.push(created);
           this.notification.showSuccess('Section créée avec succès');
           this.modalService.dismissAll();
+          this.chargerSectionsAnalytiques();
+          this.result = true;
+          this.isLoading = false;
         },
-        error: (err) => this.notification.showError(err)
+        error: (err) => {
+          this.result = true;
+          this.isLoading = false;
+          this.notification.showError(err)
+        }
       });
     }
+    this.closeModal();
   }
 
   closeModal(): void {
     this.modalService.dismissAll();
-    this.sectionForm.reset();
     this.selectedIndex = null;
     this.formVisible = false;
   }
@@ -164,7 +194,10 @@ export class SectionsAnalytiquesComponent implements OnInit {
     * Charge la liste des sections analytiques avec pagination et filtres.
     * @param page numéro de la page (optionnel)
     */
-  chargerSectionsAnalytiques(page: number = 0): void {
+  chargerSectionsAnalytiques(page: number = 0) {
+    this.result = false;
+    this.isLoading = true;
+
     this.currentPage = page;
 
     this.sectionService.getAllPageable(
@@ -172,16 +205,21 @@ export class SectionsAnalytiquesComponent implements OnInit {
       this.pageSize,
       this.searchLibelle || undefined,
     ).subscribe({
-      next: (data: any) => {
+      next: (data) => {
         this.sections = data.content;
         this.lignes = [...this.sections];
         this.totalElements = data.totalElements;
+        this.result = true;
+        this.isLoading = false;
       },
       error: (error) => {
+        this.result = true;
+        this.isLoading = false;
         console.error('Erreur lors du chargement des sections analytiques', error);
         this.notification.showError('Erreur de chargement');
+
       }
-    });
+    })
   }
 
   /**
@@ -219,9 +257,13 @@ export class SectionsAnalytiquesComponent implements OnInit {
    * Initialise l’écoute des changements sur les filtres avec debounce.
    */
   private initSearchListener(): void {
+
     this.search$
       .pipe(
         debounceTime(300),
+        tap(() => {
+          this.isLoading = true;
+        }),
         switchMap(({ libelle }) => {
           this.currentPage = 0;
           return this.sectionService.getAllPageable(
@@ -236,8 +278,14 @@ export class SectionsAnalytiquesComponent implements OnInit {
           this.lignes = data.content;
           this.totalElements = data.totalElements;
           this.currentPage = 0;
+          this.isLoading = false;
         },
-        error: err => console.error('Erreur lors de la recherche', err)
+        error: err => {
+          console.error('Erreur lors de la recherche', err);
+          this.result = true;
+
+          this.isLoading = false;
+        }
       });
   }
 

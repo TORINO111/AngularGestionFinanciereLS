@@ -65,6 +65,7 @@ export class PlanComptableComponent implements OnInit {
   fileError: string | null = null;
   errorMessage: string | null = null;
   importResult: ImportPlanComptableResultDTO | null = null;
+  societeBi: any;
 
   constructor(
     private planComptableService: PlanComptableService,
@@ -76,12 +77,13 @@ export class PlanComptableComponent implements OnInit {
     this.planComptableForm = this.fb.group({
       id: [''],
       intitule: ['', [Validators.required,
-      Validators.pattern('^[a-zA-Z0-9 -]+$'),
+      Validators.pattern('^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$'),
       Validators.minLength(3)
       ]],
       code: ['', [Validators.required,
       Validators.pattern('^[a-zA-Z0-9]+$'),
-      Validators.maxLength(5)]]
+      Validators.maxLength(5)]],
+      societeId: [null]
     });
     this.modelImportForm = this.fb.group({
       fichierExcel: [null, Validators.required]
@@ -92,6 +94,12 @@ export class PlanComptableComponent implements OnInit {
     this.pageTitle = [{ label: 'vos plans comptables', path: '/', active: true }];
     this.chargerPlanComptables();
     this.chargerSocietes();
+    const societeActiveStr = localStorage.getItem("societeActive");
+    if (societeActiveStr) {
+      this.societeBi = JSON.parse(societeActiveStr);
+      console.log(this.societeBi);
+      this.planComptableForm.patchValue({ societeId: this.societeBi.id });
+    };
     this.initSearchListener()
   }
 
@@ -111,12 +119,6 @@ export class PlanComptableComponent implements OnInit {
         this.notification.showError("Erreur lors du chargement des sociétés");
       }
     });
-  }
-
-  ajouter(): void {
-    this.planComptableForm.reset();
-    this.formVisible = true;
-    this.selectedIndex = null;
   }
 
   modifier(): void {
@@ -147,6 +149,8 @@ export class PlanComptableComponent implements OnInit {
     const planComptable: any = {
       id: formValue.id ?? null,
       intitule: formValue.intitule,
+      code: formValue.code,
+      societeId: this.societeBi.id
     };
 
     // Choisir create ou update selon présence d'un ID
@@ -171,7 +175,8 @@ export class PlanComptableComponent implements OnInit {
         this.isLoading = false;
         this.notification.showError(error);
       }
-    });
+    })
+    this.closeModal();
   }
 
   onExcelFileSelected(event: Event): void {
@@ -329,8 +334,8 @@ export class PlanComptableComponent implements OnInit {
   }
 
   chargerPlanComptables(page: number = 0): void {
-    this.plansComptables = [];
-    this.currentPage = page;
+    this.result = false;
+    this.isLoading = true;
 
     this.planComptableService.getAllPageable(page,
       this.pageSize,
@@ -341,11 +346,13 @@ export class PlanComptableComponent implements OnInit {
         this.lignes = [...this.plansComptables];
         this.totalElements = data.totalElements;
         this.result = true;
+        this.isLoading = false;
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des plans comptables', error);
         this.result = true;
+        this.isLoading = false;
         this.notification.showError('Erreur de chargement');
+        console.error('Erreur lors du chargement des plans comptables', error);
       }
     });
   }

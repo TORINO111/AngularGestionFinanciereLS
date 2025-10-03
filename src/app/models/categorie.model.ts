@@ -8,4 +8,5 @@ export interface Categorie {
   compteComptableIds: number[];
   compteComptableCodes: string[];
   compteComptableIntitules: string[];
+  societeId: number
 }

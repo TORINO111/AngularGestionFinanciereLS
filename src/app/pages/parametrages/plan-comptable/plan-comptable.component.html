@@ -116,7 +116,7 @@
         </div>
         <div class="mb-3 col-md-6">
           <label>Intitulé</label>
-          <input type="text" formControlName="intitule" class="form-control" pattern='^[a-zA-Z0-9]+$'>
+          <input type="text" formControlName="intitule" class="form-control">
           <div
             *ngIf="planComptableForm.get('intitule')?.hasError('required') && planComptableForm.get('intitule')?.touched"
             class="text-danger">Champ obligatoire !</div>

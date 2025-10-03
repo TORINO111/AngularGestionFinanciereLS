@@ -20,7 +20,7 @@ export class SectionAnalytiqueService {
     });
   }
 
-  modifierSectionAnalytique(id: number, sectionAnalytique: SectionAnalytique): Observable<SectionAnalytiqueDTO> {
+  modifierSectionAnalytique(id: number, sectionAnalytique: SectionAnalytiqueRequest): Observable<SectionAnalytiqueDTO> {
     return this._http.put<SectionAnalytiqueDTO>(`${this.baseUrlSectionAnalytique}/${id}`, sectionAnalytique, {
       headers: new HttpHeaders().set('Content-Type', 'application/json')
     });

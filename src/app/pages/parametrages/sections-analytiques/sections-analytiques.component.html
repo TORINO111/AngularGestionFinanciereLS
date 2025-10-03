@@ -1,5 +1,12 @@
 <app-page-title [breadcrumbItems]="pageTitle" title="Sections Analytiques"></app-page-title>
 
+@if (!result) {
+<div class="loader-container">
+    <div class="lds-dual-ring"></div>
+</div>
+}
+
+@if (result){
 <div class="card">
     <div class="card-body">
 
@@ -31,16 +38,21 @@
                     <th>
                         <h5>Intitulé</h5>
                     </th>
+                    <th>
+                        <h5>Plan Analytique</h5>
+                    </th>
                     <th style="width:120px;">
                         <h5>Actions</h5>
                     </th>
                 </tr>
             </thead>
 
-            <tbody class="tbody-custom">
+            <!-- Cas ou les données existent -->
+            <tbody class="tbody-custom" *ngIf="!isLoading && lignes.length > 0">
                 <tr *ngFor="let section of lignes; let i = index">
                     <td style="width: 200px;">{{ section.code }}</td>
                     <td>{{ section.libelle }}</td>
+                    <td>{{ section.planAnalytique }}</td>
                     <td>
                         <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x mr-1 me-3"
                             (click)="editSection(i)"></span>
@@ -50,6 +62,26 @@
                 </tr>
                 <tr *ngIf="lignes.length === 0">
                     <td colspan="3" class="text-center">Aucune section trouvée</td>
+                </tr>
+            </tbody>
+
+            <!-- Cas ou aucune donnée n'existe -->
+            <tbody *ngIf="!isLoading && lignes.length === 0">
+                <tr>
+                    <td colspan="4" class="text-center">
+                        <h5>Aucune donnée trouvée</h5>
+                    </td>
+                </tr>
+            </tbody>
+
+            <!-- Loader -->
+            <tbody *ngIf="isLoading">
+                <tr>
+                    <td colspan="4" class="text-center">
+                        <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -85,6 +117,7 @@
 
     </div>
 </div>
+}
 
 <!-- Modal Modif-AJout -->
 <ng-template #modalContent>
@@ -120,6 +153,7 @@
             </div>
         </form>
     </div>
+
 
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>

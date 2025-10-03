@@ -1,6 +1,13 @@
 <app-page-title [breadcrumbItems]="pageTitle" title="Plan Analytique"></app-page-title>
 
-<div class="card mt-2">
+@if (!result) {
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
+}
+
+@if (result){
+<div class="card">
   <div class="card-body">
 
     <!-- Boutons principaux -->
@@ -37,11 +44,11 @@
         </tr>
       </tbody>
 
-      <!-- Cas ou 0 donnée -->
+      <!-- Cas ou aucune donnée n'existe -->
       <tbody *ngIf="!isLoading && lignes.length === 0">
         <tr>
-          <td colspan="3" class="text-center">
-            <h5>Aucun plan analytique trouvé</h5>
+          <td colspan="4" class="text-center">
+            <h5>Aucune donnée trouvée</h5>
           </td>
         </tr>
       </tbody>
@@ -49,8 +56,8 @@
       <!-- Loader -->
       <tbody *ngIf="isLoading">
         <tr>
-          <td colspan="3" class="text-center">
-            <div class="spinner-border text-s econdary" role="status">
+          <td colspan="4" class="text-center">
+            <div class="spinner-border text-secondary" role="status">
               <span class="visually-hidden">Chargement...</span>
             </div>
           </td>
@@ -90,7 +97,7 @@
   </div>
 </div>
 
-
+}
 <!-- Modal Création / Modification Plan Analytique -->
 <ng-template #modalContent>
 
