@@ -138,12 +138,16 @@ export class PlanComptableComponent implements OnInit {
   }
 
   enregistrer(): void {
+    this.closeModal();
+    this.isLoading = true;
+    this.result = false;
+
     if (this.planComptableForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
+      this.isLoading = false;  // désactive le loader si le formulaire est invalide
+      this.result = true;
       return;
     }
-
-    this.isLoading = true;
 
     const formValue = this.planComptableForm.value;
     const planComptable: any = {
@@ -153,30 +157,24 @@ export class PlanComptableComponent implements OnInit {
       societeId: this.societeBi.id
     };
 
-    // Choisir create ou update selon présence d'un ID
     const action$ = planComptable.id
       ? this.planComptableService.update(planComptable.id, planComptable)
       : this.planComptableService.create(planComptable);
 
     action$.subscribe({
       next: () => {
+        this.chargerPlanComptables();
         const msg = planComptable.id ? 'Modifié' : 'Enregistré';
         this.notification.showSuccess(`${msg} avec succès`);
-        // reset form et recharger
-        this.formVisible = false;
-        this.planComptableForm.reset();
+        this.result = true;
         this.isLoading = false;
-        this.selectedIndex = null;
-        this.selected = false;
-        this.lignes = [];
-        this.chargerPlanComptables();
       },
       error: (error: any) => {
-        this.isLoading = false;
         this.notification.showError(error);
+        this.result = true;
+        this.isLoading = false;
       }
-    })
-    this.closeModal();
+    });
   }
 
   onExcelFileSelected(event: Event): void {
@@ -256,7 +254,6 @@ export class PlanComptableComponent implements OnInit {
   }
 
   openScrollableModal(content: TemplateRef<NgbModal>): void {
-    //this.codeBudgetaireForm.reset();
     this.modalService.open(content,
       {
         size: 'lg', // set modal size
@@ -284,14 +281,12 @@ export class PlanComptableComponent implements OnInit {
 
   closeModal(): void {
     this.modalService.dismissAll();
-    this.planComptableForm.reset();
     this.selectedIndex = null;
     this.formVisible = false;
   }
 
   openModal(): void {
     this.formVisible = true;
-    this.planComptableForm.reset();
     this.selectedIndex = null;
     this.modalService.open(this.modalContent, { centered: true });
   }

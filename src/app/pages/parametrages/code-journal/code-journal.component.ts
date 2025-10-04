@@ -28,6 +28,7 @@ export class CodeJournalComponent implements OnInit {
   pageSize = 5;
   currentPage = 0;
   isLoading = false;
+  result = false;
 
   private search$ = new Subject<{ libelle: string; typeJournalId?: number }>();
   selectedIndex: number | null = null;
@@ -129,14 +130,11 @@ export class CodeJournalComponent implements OnInit {
   }
 
   openModal(): void {
-    this.journalForm.reset();
-    this.selectedIndex = null;
     this.modalService.open(this.journalModal, { size: 'lg', centered: true });
   }
 
   closeModal(): void {
     this.modalService.dismissAll();
-    this.journalForm.reset();
     this.selectedIndex = null;
   }
 
@@ -164,8 +162,14 @@ export class CodeJournalComponent implements OnInit {
   }
 
   save(): void {
+    this.closeModal();
+    this.isLoading = true;
+    this.result = false;
+
     if (this.journalForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
+      this.isLoading = false;
+      this.result = true;
       return;
     }
 
@@ -177,13 +181,18 @@ export class CodeJournalComponent implements OnInit {
       next: () => {
         const msg = this.journalForm.value.id ? 'Modifié' : 'Enregistré';
         this.notification.showSuccess(`${msg} avec succès`);
-        this.journalForm.reset();
         this.selectedIndex = null;
         this.loadCodeJournaux(this.currentPage);
+        this.isLoading = false;
+        this.result = true;
+        this.modalService.dismissAll();
       },
-      error: err => this.notification.showError(err),
-      complete: () => this.modalService.dismissAll()
+      error: err => {
+        this.notification.showError(err);
+        this.isLoading = false;
+        this.result = true;
+      }
     });
-    this.loadCodeJournaux();
   }
+
 }

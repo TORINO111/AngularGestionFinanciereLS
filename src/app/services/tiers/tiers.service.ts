@@ -37,8 +37,8 @@ export class TiersService {
   getAllPageable(
     page: number = 0,
     size: number = 20,
-    telTiers?: string,
     intituleTiers?: string,
+    telTiers?: string,
     typeTiers?: string
   ): Observable<any> {
     let params = new HttpParams()

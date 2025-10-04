@@ -96,7 +96,7 @@ export class PlanAnalytiqueComponent implements OnInit {
     this.chargerSectionsAnalytiques();
     this.chargerSocietes();
     this.initSearchListener();
-    
+
     const societeActiveStr = localStorage.getItem("societeActive");
     if (societeActiveStr) {
       this.societeBi = JSON.parse(societeActiveStr);
@@ -154,7 +154,6 @@ export class PlanAnalytiqueComponent implements OnInit {
   }
 
   ajouter(): void {
-    this.planAnalytiqueForm.reset();
     this.formVisible = true;
     this.selectedIndex = null;
   }
@@ -196,7 +195,6 @@ export class PlanAnalytiqueComponent implements OnInit {
               next: () => {
                 this.lignes.splice(this.selectedIndex!, 1);
                 this.selectedIndex = null;
-                this.planAnalytiqueForm.reset();
                 Swal.fire('Succès', `Section supprimée du plan avec succès`, 'success');
               },
               error: () => {
@@ -211,7 +209,6 @@ export class PlanAnalytiqueComponent implements OnInit {
   fermer(): void {
     this.formVisible = false;
     this.selectedIndex = null;
-    this.planAnalytiqueForm.reset();
   }
 
   selectLigne(index: number): void {
@@ -227,13 +224,14 @@ export class PlanAnalytiqueComponent implements OnInit {
   }
 
   enregistrer(): void {
-    console.log(this.planAnalytiqueForm.value);
+    this.closeModal();
+    this.isLoading = true;
+    this.result = false;
+      
     if (this.planAnalytiqueForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
       return;
     }
-
-    this.isLoading = true;
 
     const planAnalytique = this.planAnalytiqueForm.value as PlanAnalytique;
 
@@ -243,33 +241,23 @@ export class PlanAnalytiqueComponent implements OnInit {
 
     action$.subscribe({
       next: () => {
-        this.loading = false;
         const msg = this.selected ? 'Modifié' : 'Enregistré';
         this.notification.showSuccess(`${msg} avec succès`);
-        this.formVisible = false;
-        this.planAnalytiqueForm.reset();
-        this.selectedIndex = null;
-        this.selected = undefined;
         this.chargerPlanAnalytiques();
-        this.closeModal();
         this.isLoading = false;
+        this.result = true;
       },
       error: (error: any) => {
         this.notification.showError(error);
         this.isLoading = false;
-        this.planAnalytiqueForm.reset();
-        this.selectedIndex = null;
-        this.selected = false;
-        this.chargerPlanAnalytiques();
-        this.closeModal()
-
+        this.result = true;
       }
     });
   }
 
   chargerPlanAnalytiques(page: number = 0) {
     this.result = false;
-    this.isLoading = true; 
+    this.isLoading = true;
 
     this.currentPage = page;
 
@@ -374,12 +362,10 @@ export class PlanAnalytiqueComponent implements OnInit {
 
   closeModal(): void {
     this.modalService.dismissAll();
-    this.planAnalytiqueForm.reset();
     this.selectedIndex = null;
   }
 
   openModal(): void {
-    this.planAnalytiqueForm.reset();
     this.selectedIndex = null;
     this.modalService.open(this.modalContent, { centered: true });
   }

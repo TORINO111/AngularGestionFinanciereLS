@@ -77,11 +77,11 @@ export class NatureOperationService {
     );
   }
 
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${environment.apiUrl}/api/nature/${id}`).pipe(
-      catchError(this.handleError)
-    );
-  }
+    delete(id: number): Observable<void> {
+      return this.http.delete<void>(`${environment.apiUrl}/api/nature/${id}`).pipe(
+        catchError(this.handleError)
+      );
+    }
 
   getByFilters(
     societeId?: number,

@@ -1,9 +1,17 @@
 <app-page-title [breadcrumbItems]="pageTitle" title="Comptes Comptables"></app-page-title>
 
-<!-- Tableau des comptes -->
+
+@if (!result) {
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
+}
+
+@if (result){
 <div class="card">
   <div class="card-body">
 
+    <!-- Boutons et filtres -->
     <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
       <div class="d-flex">
         <div>
@@ -34,7 +42,8 @@
 
     </div>
 
-    <table class="table table-bordered table-striped">
+    <!-- Tableau des comptes -->
+    <table class="table table-bordered table-striped">  
       <thead class="table-custom">
         <tr>
           <th>
@@ -55,7 +64,8 @@
         </tr>
       </thead>
 
-      <tbody>
+      <!-- Cas ou les données existent -->
+      <tbody class="tbody-custom" *ngIf="!isLoading && lignes.length > 0">
         <tr *ngFor="let compte of lignes; let i = index" [class.table-active]="i === selectedIndex">
           <td>{{ compte.code }}</td>
           <td>{{ compte.intitule }}</td>
@@ -70,6 +80,27 @@
           <td colspan="6" class="text-center">Aucun compte comptable</td>
         </tr>
       </tbody>
+
+      <!-- Cas ou aucune donnée n'existe -->
+      <tbody *ngIf="!isLoading && lignes.length === 0">
+        <tr>
+          <td colspan="4" class="text-center">
+            <h5>Aucune donnée trouvée</h5>
+          </td>
+        </tr>
+      </tbody>
+
+      <!-- Loader -->
+      <tbody *ngIf="isLoading">
+        <tr>
+          <td colspan="4" class="text-center">
+            <div class="spinner-border text-secondary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+
     </table>
 
     <!-- Pagination -->
@@ -103,6 +134,8 @@
 
   </div>
 </div>
+
+}
 
 <!-- Modal Création / Modification -->
 <ng-template #modalContent>

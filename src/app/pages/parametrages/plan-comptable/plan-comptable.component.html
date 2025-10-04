@@ -1,10 +1,17 @@
 <app-page-title [breadcrumbItems]="pageTitle" title="Plan Comptable"></app-page-title>
 
+@if (!result) {
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
+}
+
+@if (result){
 <div class="card">
   <div class="card-body">
 
     <!-- Boutons -->
-    <div class="mb-3 d-flex gap-2">
+    <div class="mb-3 d-flex gap-2 align-items-center justify-content-between"> 
       <button class="btn btn-success" (click)="openModal()" style="background-color: #37a6de; border: #37a6de;">Nouveau
         Plan Comptable</button>
 
@@ -19,13 +26,13 @@
       <thead>
         <tr>
           <th style="background-color: #37a6de; color: white;">
-            <h4 style="color: white;"><strong>Code</strong> </h4>
+            <h5 style="color: white;"> Code</h5>
           </th>
           <th style="background-color: #37a6de; color: white;">
-            <h4 style="color: white;"><strong>Intitulé</strong> </h4>
+            <h5 style="color: white;"> Intitulé</h5>
           </th>
           <th style="width:120px; background-color: #37a6de; color: white;">
-            <h4 style="color: white;"> <strong>Actions</strong> </h4>
+            <h5 style="color: white;"> Actions</h5>
           </th>
         </tr>
       </thead>
@@ -88,6 +95,8 @@
 
   </div>
 </div>
+
+}
 
 <!-- Modal Création / Modification -->
 <ng-template #modalContent>

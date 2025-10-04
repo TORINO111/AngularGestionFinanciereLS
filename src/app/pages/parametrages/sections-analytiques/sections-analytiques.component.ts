@@ -282,8 +282,6 @@ export class SectionsAnalytiquesComponent implements OnInit {
         },
         error: err => {
           console.error('Erreur lors de la recherche', err);
-          this.result = true;
-
           this.isLoading = false;
         }
       });

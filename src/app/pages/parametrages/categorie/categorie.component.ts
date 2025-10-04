@@ -87,8 +87,6 @@ export class CategorieComponent implements OnInit {
     const societeActiveStr = localStorage.getItem("societeActive");
     if (societeActiveStr) {
       this.societeBi = JSON.parse(societeActiveStr);
-      console.log(this.societeBi);
-      // Patch des valeurs dans les formulaires
       this.categorieForm.patchValue({ societeId: this.societeBi.id });
     };
   }
@@ -211,12 +209,13 @@ export class CategorieComponent implements OnInit {
 
   onSaveCategorie(categorieFormValue: UntypedFormGroup) {
     // categorieFormValue.patchValue({ type: this.selectedTypeId });
+    this.result = false;
+    this.loading = true
 
     if (categorieFormValue.valid) {
       this.categorieService.creerCategorie(categorieFormValue.value).subscribe({
         next: (response: any) => {
           this.notification.showSuccess('Enregistré avec succès');
-          this.loading = false;
           this.chargerCategories();
         },
         error: (error) => {
@@ -227,46 +226,22 @@ export class CategorieComponent implements OnInit {
     } else {
       this.notification.showWarning('Formulaire invalide');
     }
-  }
-
-  onUpdateCategorie(categorieFormValue: FormGroup) {
-
-    if (categorieFormValue.valid) {
-      const formValue = categorieFormValue.value;
-
-      this.categorieService.modifierCategorie(formValue.id, formValue).subscribe(
-        {
-          next: resp => {
-            const body: any = resp;
-
-            this.notification.showSuccess('Modifié avec succès');
-            this.loading = false;
-            this.chargerCategories();
-            this.result = true;
-          },
-          error: (error) => {
-            this.notification.showError(error);
-            this.loading = false;
-          }
-        });
-    } else {
-      this.notification.showWarning('Formulaire invalide');
-    }
+    this.loading = false;
+    this.result = true;
   }
 
   closeModal(): void {
     this.modalService.dismissAll();
-    this.categorieForm.reset();
     this.selectedIndex = null;
   }
 
   openModal(): void {
-    this.categorieForm.reset();
     this.selectedIndex = null;
     this.modalService.open(this.categorieModal, { size: 'lg', centered: true });
   }
 
   editCategorie(index: number): void {
+    this.closeModal();
     this.selectedIndex = index;
     const c = this.categories[index];
     console.log(c);
@@ -295,15 +270,18 @@ export class CategorieComponent implements OnInit {
   }
 
   enregistrer(): void {
+    this.closeModal();
+    this.isLoading = true;
+    this.result = false;
+
     if (this.categorieForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
+      this.isLoading = false;
+      this.result = true;
       return;
     }
 
-    this.isLoading = true;
-
-    const categorie = this.categorieForm.value;
-    console.log(categorie);
+    const categorie = this.categorieForm.value as Categorie;
 
     const action$ = categorie.id!
       ? this.categorieService.modifierCategorie(categorie.id, categorie)
@@ -311,24 +289,19 @@ export class CategorieComponent implements OnInit {
 
     action$.subscribe({
       next: () => {
-        this.loading = false;
+        this.chargerCategories();
         const msg = this.selected ? 'Modifié' : 'Enregistré';
         this.notification.showSuccess(`${msg} avec succès`);
-        this.categorieForm.reset();
-        this.selectedIndex = null;
-        this.selected = undefined;
-        this.chargerCategories();
+        this.result = true;
+        this.isLoading = false;
       },
       error: (error: any) => {
         this.notification.showError(error);
-        this.categorieForm.reset();
-        this.selectedIndex = null;
-        this.selected = false;
-        this.chargerCategories();
+        this.result = true;
+        this.isLoading = false;
       }
     });
-    this.isLoading = false;
-    this.closeModal();
   }
+
 
 }

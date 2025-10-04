@@ -34,7 +34,7 @@
           </th>
         </tr>
       </thead>
-      <tbody *ngIf="!isLoading && plansAnalytiques.length > 0">
+      <tbody *ngIf="!isLoading && lignes.length > 0">
         <tr *ngFor="let plan of lignes; let i = index">
           <td>{{ plan.intitule }}</td>
           <td>

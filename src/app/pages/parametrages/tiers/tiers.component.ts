@@ -8,7 +8,7 @@ import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import Swal from 'sweetalert2';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
-import { debounceTime, Subject, switchMap } from 'rxjs';
+import { debounceTime, Subject, switchMap, tap } from 'rxjs';
 import { CompteComptableService } from 'src/app/services/comptes-comptables/comptes-comptables.service';
 import { CompteComptableDTO } from 'src/app/models/compte-comptable';
 
@@ -35,7 +35,9 @@ export interface ImportTiersResultDTO {
 export class TiersComponent implements OnInit {
   @ViewChild('modalContent', { static: true }) modalContent!: TemplateRef<any>;
   @ViewChild('importExcelModal', { static: true }) importExcelModal!: TemplateRef<any>;
+
   @ViewChild('searchInputLibelle', { static: true }) searchInputLibelle!: ElementRef<HTMLInputElement>;
+  @ViewChild('searchInputTel', { static: true }) searchInputTel!: ElementRef<HTMLInputElement>;
 
   closeResult: string = '';
   tiers: Tiers[] = [];
@@ -48,8 +50,10 @@ export class TiersComponent implements OnInit {
   totalElements = 0;
   pageSize = 5;
   currentPage = 0;
-  private search$ = new Subject<{ libelle: string }>();
-  searchLibelle = '';
+  private search$ = new Subject<{ intitule: string, tel: string, type: string }>();
+  searchIntitule: string;
+  searchTelTiers: string;
+  selectedType: string;
 
   selectedIndex: number | null = null;
   tiersForm!: UntypedFormGroup;
@@ -63,7 +67,6 @@ export class TiersComponent implements OnInit {
   isLoading = false;
   formVisible = false;
   result = false;
-  searchTelTiers: undefined;
   currentUser: any;
   currentSociete: Societe;
   isFormReady = false;
@@ -109,6 +112,34 @@ export class TiersComponent implements OnInit {
     this.initSearchListener();
   }
 
+  chargerTiers(page: number = 0): void {
+    this.result = false;
+    this.isLoading = true;
+
+    this.currentPage = page;
+
+    this.tiersService.getAllPageable(
+      page,
+      this.pageSize,
+      this.searchIntitule || undefined,
+      this.searchTelTiers || undefined,
+      this.selectedType || undefined
+    ).subscribe({
+      next: (data: any) => {
+        this.tiers = data.content;
+        this.lignes = [...this.tiers];
+        this.totalElements = data.totalElements;
+        this.result = true;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.result = true;
+        this.isLoading = false;
+        this.notification.showError('Erreur de chargement');
+      }
+    });
+  }
+
   chargerComptesComptables() {
     this.compteComptableService.getAll().subscribe({
       next: (data: CompteComptableDTO[]) => {
@@ -137,7 +168,6 @@ export class TiersComponent implements OnInit {
   }
 
   ajouter(): void {
-    this.tiersForm.reset();
     this.formVisible = true;
     this.selectedIndex = null;
   }
@@ -180,7 +210,6 @@ export class TiersComponent implements OnInit {
         const msg = tierData.id ? 'Modifié' : 'Enregistré';
         this.notification.showSuccess(`${msg} avec succès`);
         this.formVisible = false;
-        this.tiersForm.reset();
         this.selectedIndex = null;
         this.lignes = [];
         this.isLoading = false;
@@ -246,45 +275,6 @@ export class TiersComponent implements OnInit {
       }
     });
   }
-
-  // chargerTiers(page: number = 0): void {
-  //   this.currentPage = page;
-  //   this.tiersService.getAllPageable(page, this.pageSize, this.searchLibelle || undefined).subscribe({
-  //     next: (data: any) => {
-  //       this.lignes = data.content.map((d: Tiers) => this.fb.group(d));
-  //       this.totalElements = data.totalElements;
-  //       this.result = true;
-  //     },
-  //     error: () => {
-  //       this.result = true;
-  //       this.notification.showError('Erreur de chargement');
-  //     }
-  //   });
-  // }
-
-  chargerTiers(page: number = 0): void {
-    this.currentPage = page;
-
-    this.tiersService.getAllPageable(
-      page,
-      this.pageSize,
-      this.searchTelTiers || undefined,
-      this.searchTelTiers || undefined,
-      this.searchTelTiers || undefined
-    ).subscribe({
-      next: (data: any) => {
-        this.tiers = data.content;
-        this.lignes = [...this.tiers];
-        this.totalElements = data.totalElements;
-        this.result = true;
-      },
-      error: () => {
-        this.result = true;
-        this.notification.showError('Erreur de chargement');
-      }
-    });
-  }
-
 
   pages(): number[] {
     return Array(this.totalPages()).fill(0).map((_, i) => i);
@@ -362,21 +352,18 @@ export class TiersComponent implements OnInit {
 
   openModal() {
     this.formVisible = true;
-    this.tiersForm.reset();
     this.selectedIndex = null;
     this.modalService.open(this.modalContent, { size: 'lg', centered: true });
   }
 
   closeModal(): void {
     this.modalService.dismissAll();
-    this.tiersForm.reset();
     this.selectedIndex = null;
   }
 
   editTiers(index: number) {
     this.selectedIndex = index;
     const tierBi = this.lignes[index] as Tiers;
-    console.log(tierBi);
     this.tiersForm.patchValue(tierBi);
     this.modalService.open(this.modalContent, { size: 'lg', centered: true });
   }
@@ -384,18 +371,31 @@ export class TiersComponent implements OnInit {
   private initSearchListener() {
     this.search$.pipe(
       debounceTime(300),
-      switchMap(({ libelle }) => this.tiersService.getAllPageable(0, this.pageSize, libelle || undefined))
+      tap(() => {
+        this.isLoading = true;
+      }),
+      switchMap(({ intitule, tel, type }) => this.tiersService.getAllPageable(
+        0,
+        this.pageSize,
+        intitule || undefined,
+        tel || undefined,
+        type || undefined
+      ))
     ).subscribe({
       next: data => {
-        this.lignes = data.content.map((d: Tiers) => this.fb.group(d));
+        this.lignes = data.content;
         this.totalElements = data.totalElements;
         this.currentPage = 0;
+        this.isLoading = false;
       },
-      error: err => console.error('Erreur lors de la recherche', err)
+      error: err => {
+        this.isLoading = false;
+        console.error('Erreur lors de la recherche', err)
+      }
     });
   }
 
   onFilterChange(): void {
-    this.search$.next({ libelle: this.searchLibelle });
+    this.search$.next({ intitule: this.searchIntitule, tel: this.searchTelTiers, type: this.selectedType });
   }
 }

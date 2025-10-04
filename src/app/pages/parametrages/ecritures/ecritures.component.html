@@ -1,10 +1,17 @@
 <app-page-title [breadcrumbItems]="pageTitle" title="Écritures"></app-page-title>
 
+@if (!result) {
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
+}
+
+@if (result){
 <div class="card ">
   <div class="card-body">
     <!-- Boutons et filtres -->
     <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
-      
+
       <!-- Bouton Nouvelle Écriture -->
       <button class="btn btn-success" (click)="openModal()" style="background-color: #37a6de">Nouvelle Écriture
       </button>
@@ -26,26 +33,42 @@
     <table class="table table-bordered table-striped">
       <!-- Entêtes du tableau -->
       <thead class="table-custom">
-        <th><h5>Date</h5></th>
-      <th><h5>Code</h5></th>
-      <th><h5>Libellé</h5></th>
-      <th><h5>Compte comptable</h5></th>
-      <th><h5>Tiers</h5></th>
-      <th><h5>Montant TTC</h5></th>
-      <th><h5>Actions</h5></th>
+        <tr>
+          <th>
+            <h5>Date</h5>
+          </th>
+          <th>
+            <h5>Code</h5>
+          </th>
+          <th>
+            <h5>Libellé</h5>
+          </th>
+          <th>
+            <h5>Compte comptable</h5>
+          </th>
+          <th>
+            <h5>Tiers</h5>
+          </th>
+          <th>
+            <h5>Montant TTC</h5>
+          </th>
+          <th>
+            <h5>Actions</h5>
+          </th>
+        </tr>
       </thead>
 
       <tbody *ngIf="!isLoading && lignes.length > 0">
         <tr *ngFor="let e of lignes; let i = index" [class.table-active]="i === selectedIndex">
           <td>{{ e.date | date:'dd/MM/yyyy' }}</td>
-      <td>{{ e.code }}</td>
-      <td>{{ e.libelle }}</td>
-      <td>{{ e.compteComptableCode }} - {{ e.compteComptableIntitule }}</td>
-      <td>{{ e.tiersLibelle || '-' }}</td>
-      <td>{{ e.montantTtc | number:'1.0-0' }} FCFA</td>
+          <td>{{ e.code }}</td>
+          <td>{{ e.libelle }}</td>
+          <td>{{ e.compteComptableCode }} - {{ e.compteComptableIntitule }}</td>
+          <td>{{ e.tiersLibelle || '-' }}</td>
+          <td>{{ e.montantTtc | number:'1.0-0' }} FCFA</td>
           <td>
             <span class="fa fa-edit fa-2x text-primary me-2" style="cursor:pointer" (click)="editNature(i)"></span>
-            <span class="fa fa-trash fa-2x text-danger" style="cursor:pointer" (click)="deleteNature(i)"></span>
+            <span class="fa fa-trash fa-2x text-danger" style="cursor:pointer" (click)="deleteNatureOperationDto(i)"></span>
           </td>
         </tr>
       </tbody>
@@ -100,6 +123,7 @@
 
   </div>
 </div>
+}
 
 <!-- Modal Création / Modification -->
 <ng-template #modalContent>

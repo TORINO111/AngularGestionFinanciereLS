@@ -7,7 +7,7 @@ import { CompteComptableService } from 'src/app/services/comptes-comptables/comp
 import { ImportComptesComptablesResultDTO, PlanComptableService } from 'src/app/services/plan-comptable/plan-comptable.service';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
-import { debounceTime, Subject, switchMap } from 'rxjs';
+import { debounceTime, Subject, switchMap, tap } from 'rxjs';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -52,6 +52,7 @@ export class ComptesComptablesComponent implements OnInit {
   selectedFile: File | null = null;
   http: any;
   societeBi: any;
+  result = false;
 
   constructor(
     private fb: FormBuilder,
@@ -199,22 +200,6 @@ export class ComptesComptablesComponent implements OnInit {
    * Valide le formulaire, envoie le fichier et le plan au service,
    * affiche une notification et recharge la liste après réussite.
    */
-  // onSubmit(): void {
-  //   if (this.modelImportForm.invalid) return;
-
-  //   const formData = new FormData();
-  //   formData.append('file', this.modelImportForm.get('fichierExcel')?.value
-  //   );
-  //   formData.append('planId', this.modelImportForm.get('planId')?.value
-  //   );
-  //   formData.append('societeId', this.modelImportForm.get('societeId')?.value
-  //   );
-
-  //   this.compteService.importExcel(formData).subscribe({
-  //     next: () => this.notification.showSuccess('Import réussi'),
-  //     error: (err: any) => this.notification.showError('Échec import: ' + err)
-  //   });
-  // }
   onSubmit(modal: any): void {
     console.log('--- Début import Excel ---');
 
@@ -245,19 +230,16 @@ export class ComptesComptablesComponent implements OnInit {
         if (res.doublons.length > 0) {
           this.notification.showError(`Lignes ignorées (doublons) : ${res.doublons.join(', ')}`);
         }
-      modal.close('Close click');
-      this.chargerComptesComptables();
-    },
+        modal.close('Close click');
+        this.chargerComptesComptables();
+      },
       error: (err: any) => {
         console.error('Erreur lors de l\'import:', err);
         this.notification.showError('Échec import: ' + err);
       }
     });
 
-}
-
-
-
+  }
 
   /**
    * Détermine la raison de fermeture d’un modal.
@@ -265,187 +247,206 @@ export class ComptesComptablesComponent implements OnInit {
    * @returns description de la fermeture
    */
   private getDismissReason(reason: any): string {
-  if (reason === ModalDismissReasons.ESC) {
-    return 'by pressing ESC';
-  } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
-    return 'by clicking on a backdrop';
-  } else {
-    return `with: ${reason}`;
-  }
-}
-
-/**
- * Ouvre le modal de création de compte et initialise le formulaire.
- */
-openModal(): void {
-  this.formVisible = true;
-  this.compteForm.reset();
-  this.selectedIndex = null;
-  this.modalService.open(this.modalContent, { size: 'lg', centered: true });
-}
-
-/**
- * Prépare l’édition d’un compte existant dans le modal.
- * @param index index du compte à éditer
- */
-editCompte(index: number): void {
-  this.selectedIndex = index;
-  const compte = this.lignes[index];
-  this.compteForm.patchValue(compte);
-
-  this.modalService.open(this.modalContent, { centered: true, size: 'lg' });
-}
-
-/**
- * Supprime un compte avec confirmation.
- * @param index index du compte à supprimer
- */
-deleteCompte(index: number): void {
-  const compte = this.lignes[index];
-  Swal.fire({
-    title: 'Supprimer la section',
-    text: `Voulez-vous vraiment supprimer le compte : "${compte.code}" ?`,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Supprimer',
-    cancelButtonText: 'Annuler',
-    customClass: {
-      confirmButton: 'btn btn-danger',
-      cancelButton: 'btn btn-secondary'
-    },
-    buttonsStyling: false
-  }).then((result) => {
-    if (result.isConfirmed) {
-      this.compteService.delete(compte.id).subscribe({
-        next: () => {
-          this.lignes.splice(index, 1);
-          this.selectedIndex = null;
-          this.notification.showSuccess('Compte supprimé avec succès !');
-        },
-        error: (error) => this.notification.showError(error)
-      });
+    if (reason === ModalDismissReasons.ESC) {
+      return 'by pressing ESC';
+    } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
+      return 'by clicking on a backdrop';
+    } else {
+      return `with: ${reason}`;
     }
-  });
-}
+  }
 
-/**
- * Enregistre un compte (création ou mise à jour) via le formulaire.
- */
-saveCompte(): void {
-  if(this.compteForm.invalid) {
-  this.toastr.warning('Formulaire invalide');
-  return;
-}
-const formValue = this.compteForm.value as CompteComptableDTO;
-const action$ = formValue.id
-  ? this.compteService.update(formValue.id, formValue)
-  : this.compteService.create(formValue);
-
-action$.subscribe({
-  next: () => {
-    this.toastr.success(`Compte ${formValue.id ? 'modifié' : 'créé'} avec succès`);
-    this.compteForm.reset();
-    this.formVisible = false;
+  /**
+   * Ouvre le modal de création de compte et initialise le formulaire.
+   */
+  openModal(): void {
+    this.formVisible = true;
     this.selectedIndex = null;
-    this.loadComptes();
-    this.modalService.dismissAll();
-  },
-  error: () => this.toastr.error('Erreur lors de l\'enregistrement')
-});
+    this.modalService.open(this.modalContent, { size: 'lg', centered: true });
   }
 
-/**
- * Ferme le modal et réinitialise le formulaire.
- */
-closeModal(): void {
-  this.modalService.dismissAll();
-  this.compteForm.reset();
-  this.selectedIndex = null;
-  this.formVisible = false;
-}
+  /**
+   * Prépare l’édition d’un compte existant dans le modal.
+   * @param index index du compte à éditer
+   */
+  editCompte(index: number): void {
+    this.selectedIndex = index;
+    const compte = this.lignes[index];
+    this.compteForm.patchValue(compte);
 
-/**
- * Charge la liste des comptes comptables avec pagination et filtres.
- * @param page numéro de la page (optionnel)
- */
-chargerComptesComptables(page: number = 0): void {
-  this.currentPage = page;
+    this.modalService.open(this.modalContent, { centered: true, size: 'lg' });
+  }
 
-  this.compteService.getAllCompteComptablePageable(
-    page,
-    this.pageSize,
-    this.searchCode || undefined,
-    this.searchIntitule || undefined,
-    this.selectedPlan || undefined
-  ).subscribe({
-    next: (data: any) => {
-      this.lignes = data.content;
-      this.totalElements = data.totalElements;
-    },
-    error: (error) => {
-      console.error('Erreur lors du chargement des plans comptables', error);
-      this.notification.showError('Erreur de chargement');
+  /**
+   * Supprime un compte avec confirmation.
+   * @param index index du compte à supprimer
+   */
+  deleteCompte(index: number): void {
+    const compte = this.lignes[index];
+    Swal.fire({
+      title: 'Supprimer la section',
+      text: `Voulez-vous vraiment supprimer le compte : "${compte.code}" ?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Supprimer',
+      cancelButtonText: 'Annuler',
+      customClass: {
+        confirmButton: 'btn btn-danger',
+        cancelButton: 'btn btn-secondary'
+      },
+      buttonsStyling: false
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.compteService.delete(compte.id).subscribe({
+          next: () => {
+            this.lignes.splice(index, 1);
+            this.selectedIndex = null;
+            this.notification.showSuccess('Compte supprimé avec succès !');
+          },
+          error: (error) => this.notification.showError(error)
+        });
+      }
+    });
+  }
+
+  /**
+   * Enregistre un compte (création ou mise à jour) via le formulaire.
+   */
+  saveCompte(): void {
+    this.closeModal();
+    this.isLoading = true;
+    this.result = false;
+
+    if (this.compteForm.invalid) {
+      this.toastr.warning('Formulaire invalide');
+      this.isLoading = false;
+      this.result = true;
+      return;
     }
-  });
-}
 
-/**
- * Retourne un tableau de pages pour la pagination.
- * @returns tableau d’index de pages
- */
-pages(): number[] {
-  return Array(this.totalPages()).fill(0).map((_, i) => i);
-}
+    const formValue = this.compteForm.value as CompteComptableDTO;
+    const action$ = formValue.id
+      ? this.compteService.update(formValue.id, formValue)
+      : this.compteService.create(formValue);
 
-/**
- * Navigue vers une page spécifique.
- * @param page numéro de la page
- */
-goToPage(page: number = 0) {
-  this.chargerComptesComptables(page);
-}
+    action$.subscribe({
+      next: () => {
+        this.loadComptes();
+        this.toastr.success(`Compte ${formValue.id ? 'modifié' : 'créé'} avec succès`);
+        this.isLoading = false;
+        this.result = true;
+      },
+      error: () => {
+        this.toastr.error('Erreur lors de l\'enregistrement');
+        this.isLoading = false;
+        this.result = true;
+      }
+    });
+  }
 
-/**
- * Calcule le nombre total de pages pour la pagination.
- * @returns nombre total de pages
- */
-totalPages(): number {
-  return Math.ceil(this.totalElements / this.pageSize);
-}
 
-/**
- * Déclenche la recherche dès que les filtres changent.
- */
-onFilterChange(): void {
-  this.search$.next({ code: this.searchCode, intitule: this.searchIntitule, plan: this.selectedPlan });
-}
+  /**
+   * Ferme le modal
+   */
+  closeModal(): void {
+    this.modalService.dismissAll();
+  }
+
+  /**
+   * Charge la liste des comptes comptables avec pagination et filtres.
+   * @param page numéro de la page (optionnel)
+   */
+  chargerComptesComptables(page: number = 0): void {
+    this.result = false;
+    this.isLoading = true;
+
+    this.compteService.getAllCompteComptablePageable(
+      page,
+      this.pageSize,
+      this.searchCode || undefined,
+      this.searchIntitule || undefined,
+      this.selectedPlan || undefined
+    ).subscribe({
+      next: (data: any) => {
+        this.lignes = data.content;
+        this.totalElements = data.totalElements;
+        this.result = true;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.result = true;
+        this.isLoading = false;
+        console.error('Erreur lors du chargement des plans comptables', error);
+        this.notification.showError('Erreur de chargement');
+      }
+    });
+  }
+
+  /**
+   * Retourne un tableau de pages pour la pagination.
+   * @returns tableau d’index de pages
+   */
+  pages(): number[] {
+    return Array(this.totalPages()).fill(0).map((_, i) => i);
+  }
+
+  /**
+   * Navigue vers une page spécifique.
+   * @param page numéro de la page
+   */
+  goToPage(page: number = 0) {
+    this.chargerComptesComptables(page);
+  }
+
+  /**
+   * Calcule le nombre total de pages pour la pagination.
+   * @returns nombre total de pages
+   */
+  totalPages(): number {
+    return Math.ceil(this.totalElements / this.pageSize);
+  }
+
+  /**
+   * Déclenche la recherche dès que les filtres changent.
+   */
+  onFilterChange(): void {
+    this.search$.next({ code: this.searchCode, intitule: this.searchIntitule, plan: this.selectedPlan });
+  }
 
   /**
    * Initialise l’écoute des changements sur les filtres avec debounce.
    */
   private initSearchListener(): void {
-  this.search$
-    .pipe(
-      debounceTime(300),
-      switchMap(({ code, intitule, plan }) => {
-        this.currentPage = 0;
-        return this.compteService.getAllCompteComptablePageable(
-          0,
-          this.pageSize,
-          code || undefined,
-          intitule || undefined,
-          plan || undefined
-        );
-      })
-    )
-    .subscribe({
-      next: data => {
-        this.lignes = data.content;
-        this.totalElements = data.totalElements;
-        this.currentPage = 0;
-      },
-      error: err => console.error('Erreur lors de la recherche', err)
-    });
-}
+    this.search$
+      .pipe(
+        debounceTime(300),
+        tap(() => {
+          this.isLoading = true;
+        }),
+        switchMap(({ code, intitule, plan }) => {
+          this.currentPage = 0;
+          return this.compteService.getAllCompteComptablePageable(
+            0,
+            this.pageSize,
+            code || undefined,
+            intitule || undefined,
+            plan || undefined
+          );
+        })
+      )
+      .subscribe({
+        next: data => {
+          this.lignes = data.content;
+          this.totalElements = data.totalElements;
+          this.currentPage = 0;
+          this.isLoading = false;
+
+        },
+        error: err => {
+          this.isLoading = false;
+          console.error('Erreur lors de la recherche', err)
+        }
+      });
+  }
 
 }

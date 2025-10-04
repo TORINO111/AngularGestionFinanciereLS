@@ -127,14 +127,12 @@ export class CabinetsComponent implements OnInit {
   }
 
   ajouter(): void {
-    this.cabinetForm.reset();
     this.selectedIndex = null;
     this.selected = undefined;
   }
 
   fermer(): void {
     this.selectedIndex = null;
-    this.cabinetForm.reset();
   }
 
   enregistrer(): void {
@@ -161,7 +159,6 @@ export class CabinetsComponent implements OnInit {
       next: () => {
         const msg = isUpdate ? 'Modifié' : 'Enregistré';
         this.notification.showSuccess(`${msg} avec succès`);
-        this.cabinetForm.reset();
         this.isLoading = false;
         this.selectedIndex = null;
         this.selected = undefined;
@@ -319,16 +316,13 @@ export class CabinetsComponent implements OnInit {
     this.selected = this.lignes[index].value;
   }
 
-
   openModal(): void {
-    this.cabinetForm.reset();
     this.selectedIndex = null;
     this.modalService.open(this.modalContent, { centered: true });
   }
 
   closeModal(): void {
     this.modalService.dismissAll();
-    this.cabinetForm.reset();
     this.selectedIndex = null;
   }
 
@@ -337,7 +331,7 @@ export class CabinetsComponent implements OnInit {
     if (!this.currentSociete) {
       console.warn('Société non encore chargée, impossible d’éditer');
       return;
-    }
+    } 
     const cabinet = this.lignes[index];
     this.cabinetForm.patchValue({ cabinet });
     this.modalService.open(this.modalContent, { centered: true });

@@ -1,15 +1,38 @@
 <app-page-title [breadcrumbItems]="pageTitle" title="Tiers"></app-page-title>
 
+@if (!result) {
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
+}
+
+@if (result){
 <div class="card">
   <div class="card-body">
 
     <!-- Boutons -->
-    <div class="mb-3 d-flex gap-2">
-      <button class="btn btn-success" (click)="openModal()" style="background-color: #37a6de; border: #37a6de;">Nouveau Tiers</button>
+    <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
 
-      <div class="d-flex gap-2 ms-auto">
-        <input #searchInput class="p-2" placeholder="Rechercher par intitule" [(ngModel)]="searchLibelle"
-          (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+      <div class="d-flex">
+        <button class="btn btn-success" (click)="openModal()"
+          style="background-color: #37a6de; border: #37a6de;">Nouveau
+          Tiers</button>
+      </div>
+
+      <div class= "d-flex gap-2 ms-auto" >
+        <input #searchInputLibelle class="p-2" placeholder="Rechercher par intitule" [(ngModel)]="searchIntitule"
+          (ngModelChange)="onFilterChange()" />
+
+        <input #searchInputTel class="p-2 " placeholder="Rechercher par téléphone" [(ngModel)]="searchTelTiers"
+          (ngModelChange)="onFilterChange()" />
+
+        <ng-select class="mt-1" [items]="types" bindLabel="libelle" bindValue="id" placeholder="Filtrer par type"
+          [(ngModel)]="selectedType" (ngModelChange)="onFilterChange()">
+          <ng-template ng-notfound-tmp>
+            Aucun type disponible
+          </ng-template>
+        </ng-select>
+
       </div>
     </div>
 
@@ -29,14 +52,14 @@
         </tr>
       </thead>
       <tbody *ngIf="!isLoading && tiers.length > 0">
-        <tr *ngFor="let tier of lignes; let i = index" [class.table-active]="i === selectedIndex">
-          <td>{{ tier.code }}</td>
-          <td>{{ tier.intitule }}</td>
-          <td>{{ tier.interlocuteur }}</td>
-          <td>{{ tier.compteCollectif }}</td>
-          <td>{{ tier.telephoneInterlocuteur }}</td>
-          <td>{{ tier.telephoneTiers }}</td>
-          <td>{{ tier.type }}</td>
+        <tr *ngFor="let tiers of lignes; let i = index" [class.table-active]="i === selectedIndex">
+          <td>{{ tiers.code }}</td>
+          <td>{{ tiers.intitule }}</td>
+          <td>{{ tiers.interlocuteur }}</td>
+          <td>{{ tiers.compteCollectif }}</td>
+          <td>{{ tiers.telephoneInterlocuteur }}</td>
+          <td>{{ tiers.telephoneTiers }}</td>
+          <td>{{ tiers.type }}</td>
           <td>
             <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="editTiers(i)"></span>
             <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x" (click)="deleteTiersConfirm(i)"></span>
@@ -84,6 +107,7 @@
 
   </div>
 </div>
+}
 
 <!-- Modal Création / Modification -->
 <ng-template #modalContent>
@@ -98,7 +122,8 @@
       <div class="row g-3">
         <div class="col-md-4">
           <label>Type</label>
-          <ng-select [items]="types" bindLabel="libelle" bindValue="id" formControlName="type" placeholder="Sélection type">
+          <ng-select [items]="types" bindLabel="libelle" bindValue="id" formControlName="type"
+            placeholder="Sélection type">
             [searchable]="true">
             <ng-template ng-notfound-tmp>
               Aucun type disponible
@@ -124,8 +149,8 @@
         <!-- Compte Collectif -->
         <div class="col-md-6">
           <label>Compte Collectif</label>
-          <ng-select [items]="comptes" bindValue="id" placeholder="Sélection Compte"
-            formControlName="compteCollectifId" [searchable]="true" [searchFn]="searchFn"  [disabled]="!tiersForm.value.categorieId">
+          <ng-select [items]="comptes" bindValue="id" placeholder="Sélection Compte" formControlName="compteCollectifId"
+            [searchable]="true" [searchFn]="searchFn" [disabled]="!tiersForm.value.categorieId">
 
             <!-- Label affiché dans le select -->
             <ng-template ng-label-tmp let-item="item">
@@ -147,6 +172,7 @@
 
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
-    <button type="button" class="btn btn-success" (click)="enregistrer()" style="background-color: #37a6de; border: #37a6de">Enregistrer</button>
+    <button type="button" class="btn btn-success" (click)="enregistrer()"
+      style="background-color: #37a6de; border: #37a6de">Enregistrer</button>
   </div>
 </ng-template>

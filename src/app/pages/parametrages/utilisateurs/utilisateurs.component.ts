@@ -118,7 +118,6 @@ export class UtilisateursComponent implements OnInit {
       this.tresorerieService.addUser(utilisateurFormValue.value).subscribe(
         {
           next: (response:any) => {
-            this.utilisateurForm.reset();
             this.showSuccess('Enregistré  avec succès');
             this.loading=false;
             //console.log(response);
@@ -308,7 +307,6 @@ export class UtilisateursComponent implements OnInit {
   }
 
   openScrollableModal(content: TemplateRef<NgbModal>): void {
-    //this.utilisateurForm.reset();
     this.modalService.open(content,
        {size: 'lg', // set modal size
         centered: true ,scrollable: true ,

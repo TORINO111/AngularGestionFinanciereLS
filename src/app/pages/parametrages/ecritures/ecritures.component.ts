@@ -294,7 +294,6 @@ export class EcrituresComponent implements OnInit {
   }
 
   ajouter(): void {
-    this.ecritureForm.reset();
     this.ecritureForm.patchValue({
       societeId: 1
     });
@@ -309,15 +308,17 @@ export class EcrituresComponent implements OnInit {
     }
   }
 
-  supprimer(): void {
-    if (this.selectedIndex !== null) {
-      const currentData = this.lignes[this.selectedIndex].value as NatureOperationDto;
-      this.ecritureForm.setValue(currentData);
-      this.lignes.splice(this.selectedIndex, 1);
-      this.selectedIndex = null;
-      this.deleteNatureOperationDto(currentData);
-    }
-  }
+  // supprimer(): void {
+  //   if (this.selectedIndex !== null) {
+  //     const currentData = this.lignes[this.selectedIndex] as NatureOperationDto;
+  //     this.ecritureForm.setValue(currentData);
+  //     this.lignes.splice(this.selectedIndex, 1);
+  //     this.selectedIndex = null;
+  //     this.deleteNatureOperationDto(currentData);
+  //   }
+  //   const cabinet = this.lignes[this.selectedIndex].value;
+  //   this.deleteCabinet(cabinet);
+  // }
 
   edit(nature: NatureOperationDto): void {
     this.selected = { ...nature };
@@ -328,55 +329,37 @@ export class EcrituresComponent implements OnInit {
   fermer(): void {
     this.formVisible = false;
     this.selectedIndex = null;
-    this.ecritureForm.reset();
-  }
-
-  selectLigne(index: number): void {
-    this.selectedIndex = index;
-    const currentData = this.lignes[this.selectedIndex].value as NatureOperationDto;
-    this.selected = currentData;
-
-    this.ecritureForm.patchValue({
-      ...currentData,
-      categorieId: currentData.categorieId
-    });
-
-    // Chargement des comptes selon typeNature
-    // console.log(currentData.typeNature);
-    // this.chargerComptables(currentData.typeNature);
   }
 
   enregistrer(): void {
-
-    console.log(this.ecritureForm.value)
+    this.closeModal();
+    this.isLoading = true;
+    this.result = false;
 
     if (this.ecritureForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
       return;
     }
 
-    this.isLoading = true;
-
     const natureOperation = this.ecritureForm.value as NatureOperationDto;
-
-    const action$ = this.selected?.id
-      ? this.natureOperationService.update(this.selected.id, natureOperation)
+    console.log(natureOperation);
+    const action$ = natureOperation?.id
+      ? this.natureOperationService.update(natureOperation.id, natureOperation)
       : this.natureOperationService.create(natureOperation);
 
     action$.subscribe({
       next: () => {
+        this.chargerNatureOperationDtos();
         const msg = this.selected?.id ? 'Modifié' : 'Enregistré';
         this.notification.showSuccess(`${msg} avec succès`);
-        this.formVisible = false;
-        this.ecritureForm.reset();
         this.loading = false;
+        this.result = true;
         this.selectedIndex = null;
         this.selected = undefined;
-        this.chargerNatureOperationDtos();
-        this.closeModal();
       },
       error: () => {
         this.loading = false;
+        this.result = true;
         this.notification.showError('Erreur serveur !!!');
       }
     });
@@ -454,24 +437,6 @@ export class EcrituresComponent implements OnInit {
     });
   }
 
-  // chargerNatureOperations() {
-  //   this.natureOperationService.getAll().subscribe({
-  //     next: (data: CompteComptableDTO[]) => {
-  //       this.comptes = data.map(d => ({
-  //         id: d.id,
-  //         code: d.code,
-  //         intitule: d.intitule
-  //       }));
-  //       this.result = true;
-  //     },
-  //     error: (error: any) => {
-  //       this.result = true;
-  //       console.log('Erreur lors du chargement des categories', error);
-  //       this.notification.showError("Erreur lors du chargement des catégories");
-  //     }
-  //   });
-  // }
-
   chargerSectionsAnalytiques() {
     this.sectionAnalytiqueService.getAllSectionAnalytiques().subscribe(
       {
@@ -528,9 +493,11 @@ export class EcrituresComponent implements OnInit {
     });
   }
 
-  deleteNatureOperationDto(nature: NatureOperationDto): void {
+  deleteNatureOperationDto(index: number): void {
+    const nature = this.lignes[index];
+
     Swal.fire({
-      title: 'Supprimer la Nature Opération',
+      title: "Supprimer l'écriture",
       html: `
         <p><strong>Nature : </strong><span style="color: #009879; font-size: 1.2em;">${nature.libelle}</span></p>
       `,
@@ -564,21 +531,20 @@ export class EcrituresComponent implements OnInit {
   openModal(): void {
     this.formVisible = true;
     this.selectedIndex = null;
-    this.ecritureForm.reset();
     this.ecritureForm.patchValue({ societeId: 1 });
     this.modalService.open(this.modalContent, { size: 'lg', centered: true });
   }
 
   closeModal(): void {
     this.modalService.dismissAll();
-    this.ecritureForm.reset();
     this.selectedIndex = null;
     this.formVisible = false;
   }
 
   editNature(index: number): void {
     this.selectedIndex = index;
-    const nature = this.natureOperations[index].value;
+    const nature = this.lignes[index];
+    this.selected = nature;
     this.ecritureForm.patchValue(nature);
     this.formVisible = true;
     this.modalService.open(this.modalContent, { size: 'lg', centered: true });

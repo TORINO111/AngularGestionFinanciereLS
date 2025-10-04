@@ -13,11 +13,6 @@
   vertical-align: middle;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
 nav[aria-label="Pagination"] {
   width: 100%;
   display: flex;
@@ -25,7 +20,7 @@ nav[aria-label="Pagination"] {
   margin-top: 0;
 }
 
-.pagination .page-item + .page-item {
+.pagination .page-item+.page-item {
   margin-left: 5px;
 }
 
