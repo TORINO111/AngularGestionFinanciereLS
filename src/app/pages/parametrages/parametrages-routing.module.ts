@@ -22,11 +22,17 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: ['SUPERVISEUR'] }
   },
+  // {
+  //   path: 'cabinets',
+  //   loadChildren: () => import('./cabinets/cabinets.module').then(m => m.CabinetsModule),
+  //   canActivate: [AuthGuard],
+  //   data: { roles: ['ADMIN'] }
+  // },
   {
     path: 'cabinets',
     loadChildren: () => import('./cabinets/cabinets.module').then(m => m.CabinetsModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['SUPERVISEUR'] }
   },
   {
     path: 'informations-cabinet',
@@ -76,7 +82,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }
   },
-  { 
+  {
     path: 'journaux',
     loadChildren: () => import('./code-journal/code-journal.module').then(m => m.CodeJournalModule),
     canActivate: [AuthGuard],

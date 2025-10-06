@@ -334,7 +334,7 @@ export class PlanComptableComponent implements OnInit {
 
     this.planComptableService.getAllPageable(page,
       this.pageSize,
-      this.searchLibelle ? this.searchLibelle : undefined,
+      this.searchLibelle ? this.searchLibelle : "",
     ).subscribe({
       next: (data: any) => {
         this.plansComptables = data.content;

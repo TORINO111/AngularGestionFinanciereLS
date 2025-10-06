@@ -212,7 +212,7 @@ export class CabinetsComponent implements OnInit {
   totalPages(): number {
     return Math.ceil(this.totalElements / this.pageSize);
   }
-
+  
   chargerPays() {
     this.societeService.getAllPays().subscribe(
       {

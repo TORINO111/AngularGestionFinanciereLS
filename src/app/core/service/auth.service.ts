@@ -355,37 +355,36 @@ export class AuthenticationService {
   }
 
   saveToken(authHeader: string) {
-  if (!authHeader) {
-    console.error("Token manquant !");
-    return;
+    if (!authHeader) {
+      console.error("Token manquant !");
+      return;
+    }
+
+    const jwt = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+    this.jwtToken = jwt;
+    localStorage.setItem('token', jwt);
+
+    let decoded: any;
+    try {
+      decoded = this.helper.decodeToken(jwt);
+    } catch (err) {
+      console.error("Impossible de décoder le token :", err);
+      this.current_user_roles = [];
+      sessionStorage.removeItem('role');
+      sessionStorage.removeItem('roles');
+      return;
+    }
+
+    // Extraire les rôles
+    this.current_user_roles = decoded.roles?.map((r: any) => typeof r === 'string' ? r : r.libelle) || [];
+
+    // Déterminer le rôle principal
+    const rolePriority: { [key: string]: string } = { 'ADMIN': 'a', 'SUPERVISEUR': 'b', 'COMPTABLE': 'c' };
+    const mainRole = ['ADMIN', 'SUPERVISEUR', 'COMPTABLE'].find(r => this.current_user_roles.includes(r)) || '';
+
+    sessionStorage.setItem('role', rolePriority[mainRole] || '');
+    sessionStorage.setItem('roles', JSON.stringify(this.current_user_roles));
   }
-
-  // Retirer le préfixe "Bearer " si présent
-  const jwt = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
-  this.jwtToken = jwt;
-  localStorage.setItem('token', jwt);
-
-  let decoded: any;
-  try {
-    decoded = this.helper.decodeToken(jwt);
-  } catch (err) {
-    console.error("Impossible de décoder le token :", err);
-    this.current_user_roles = [];
-    sessionStorage.removeItem('role');
-    sessionStorage.removeItem('roles');
-    return;
-  }
-
-  // Extraire les rôles
-  this.current_user_roles = decoded.roles?.map((r: any) => typeof r === 'string' ? r : r.libelle) || [];
-
-  // Déterminer le rôle principal
-  const rolePriority: { [key: string]: string } = { 'ADMIN': 'a', 'SUPERVISEUR': 'b', 'COMPTABLE': 'c' };
-  const mainRole = ['ADMIN', 'SUPERVISEUR', 'COMPTABLE'].find(r => this.current_user_roles.includes(r)) || '';
-
-  sessionStorage.setItem('role', rolePriority[mainRole] || '');
-  sessionStorage.setItem('roles', JSON.stringify(this.current_user_roles));
-}
 
 
   logout(): void {
@@ -428,9 +427,9 @@ export class AuthenticationService {
   getUserByUsername(username: string) {
     const token = this.getToken();
     console.log("Token utilisé pour la requête :", this.getToken());
-console.log("Headers envoyés :", {
-  Authorization: `Bearer ${token}`
-});
+    console.log("Headers envoyés :", {
+      Authorization: `Bearer ${token}`
+    });
     if (!token) throw new Error('Token manquant');
 
     return this._http.get(`${this.host}/utilisateur-username?username=${username}`, {

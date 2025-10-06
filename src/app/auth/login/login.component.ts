@@ -57,136 +57,132 @@ export class LoginComponent implements OnInit {
   */
   get formValues() { return this.loginForm.controls; }
 
-//   onSubmit(): void {
-//   this.formSubmitted = true;
-//   this.error = '';
-//   console.log('Form submitted with values:', this.loginForm.value);
+  //   onSubmit(): void {
+  //   this.formSubmitted = true;
+  //   this.error = '';
+  //   console.log('Form submitted with values:', this.loginForm.value);
 
-//   if (!this.loginForm.valid) {
-//     this.error = 'Formulaire invalide';
-//     console.log('Formulaire invalide');
-//     return;
-//   }
+  //   if (!this.loginForm.valid) {
+  //     this.error = 'Formulaire invalide';
+  //     console.log('Formulaire invalide');
+  //     return;
+  //   }
 
-//   this.loading = true;
+  //   this.loading = true;
 
-//   this.authenticationService.login(this.loginForm.value)
-//     .subscribe({
-//       next: (response: any) => {
-//         console.log('Réponse complète du login:', response);
+  //   this.authenticationService.login(this.loginForm.value)
+  //     .subscribe({
+  //       next: (response: any) => {
+  //         console.log('Réponse complète du login:', response);
 
-//         let jwt = response.headers.get('Authorization');
-//         console.log('Token dans le header Authorization:', jwt);
+  //         let jwt = response.headers.get('Authorization');
+  //         console.log('Token dans le header Authorization:', jwt);
 
-//         if (!jwt) {
-//           this.error = 'Impossible de récupérer le token';
-//           this.loading = false;
-//           return;
-//         }
+  //         if (!jwt) {
+  //           this.error = 'Impossible de récupérer le token';
+  //           this.loading = false;
+  //           return;
+  //         }
 
-//         // Retirer le préfixe "Bearer " si présent
-//         jwt = jwt.startsWith('Bearer ') ? jwt.slice(7) : jwt;
-//         console.log('Token après nettoyage du préfixe Bearer:', jwt);
+  //         // Retirer le préfixe "Bearer " si présent
+  //         jwt = jwt.startsWith('Bearer ') ? jwt.slice(7) : jwt;
+  //         console.log('Token après nettoyage du préfixe Bearer:', jwt);
 
-//         // Sauvegarde le token et décode les rôles
-//         this.authenticationService.saveToken(jwt);
+  //         // Sauvegarde le token et décode les rôles
+  //         this.authenticationService.saveToken(jwt);
 
-//         console.log('Token sauvegardé dans localStorage:', localStorage.getItem('token'));
-//         console.log('Roles sauvegardés:', sessionStorage.getItem('roles'));
+  //         console.log('Token sauvegardé dans localStorage:', localStorage.getItem('token'));
+  //         console.log('Roles sauvegardés:', sessionStorage.getItem('roles'));
 
-//         // Récupérer les infos utilisateur
-//         this.authenticationService.getUserByUsername(this.loginForm.value.username)
-//           .subscribe({
-//             next: (userData: any) => {
-//               console.log('Données utilisateur récupérées:', userData);
+  //         // Récupérer les infos utilisateur
+  //         this.authenticationService.getUserByUsername(this.loginForm.value.username)
+  //           .subscribe({
+  //             next: (userData: any) => {
+  //               console.log('Données utilisateur récupérées:', userData);
 
-//               if (!userData.enabled) {
-//                 this.error = 'Compte inactif, merci de contacter l\'administrateur';
-//                 this.loading = false;
-//                 this.router.navigate(['/auth/signin']);
-//                 return;
-//               }
+  //               if (!userData.enabled) {
+  //                 this.error = 'Compte inactif, merci de contacter l\'administrateur';
+  //                 this.loading = false;
+  //                 this.router.navigate(['/auth/signin']);
+  //                 return;
+  //               }
 
-//               localStorage.setItem('user', JSON.stringify(userData));
-//               sessionStorage.setItem('currentUser', JSON.stringify(userData));
+  //               localStorage.setItem('user', JSON.stringify(userData));
+  //               sessionStorage.setItem('currentUser', JSON.stringify(userData));
 
-//               if (this.authenticationService.isAdmin()) {
-//                 this.returnUrl = '/parametrages/cabinets';
-//               } else if (this.authenticationService.isSuperviseur()) {
-//                 this.returnUrl = '/superviseur/dashboard';
-//               } else if (this.authenticationService.isComptable()) {
-//                 this.returnUrl = '/comptable/dashboard';
-//               } else {
-//                 this.returnUrl = '/';
-//               }
+  //               if (this.authenticationService.isAdmin()) {
+  //                 this.returnUrl = '/parametrages/cabinets';
+  //               } else if (this.authenticationService.isSuperviseur()) {
+  //                 this.returnUrl = '/superviseur/dashboard';
+  //               } else if (this.authenticationService.isComptable()) {
+  //                 this.returnUrl = '/comptable/dashboard';
+  //               } else {
+  //                 this.returnUrl = '/';
+  //               }
 
-//               console.log('Redirection vers :', this.returnUrl);
-//               this.router.navigate([this.returnUrl]);
-//               this.loading = false;
-//             },
-//             error: (err) => {
-//               console.error('Erreur lors de la récupération des infos utilisateur:', err);
-//               this.error = 'Impossible de récupérer les informations utilisateur';
-//               this.loading = false;
-//             }
-//           });
-//       },
-//       error: (err) => {
-//         console.error('Erreur login:', err);
-//         if (err.status === 401) {
-//           this.error = 'Username ou mot de passe incorrect';
-//         } else {
-//           this.error = 'Erreur serveur';
-//         }
-//         this.loading = false;
-//       }
-//     });
-// }
+  //               console.log('Redirection vers :', this.returnUrl);
+  //               this.router.navigate([this.returnUrl]);
+  //               this.loading = false;
+  //             },
+  //             error: (err) => {
+  //               console.error('Erreur lors de la récupération des infos utilisateur:', err);
+  //               this.error = 'Impossible de récupérer les informations utilisateur';
+  //               this.loading = false;
+  //             }
+  //           });
+  //       },
+  //       error: (err) => {
+  //         console.error('Erreur login:', err);
+  //         if (err.status === 401) {
+  //           this.error = 'Username ou mot de passe incorrect';
+  //         } else {
+  //           this.error = 'Erreur serveur';
+  //         }
+  //         this.loading = false;
+  //       }
+  //     });
+  // }
 
+  onSubmit(): void {
+    this.formSubmitted = true;
+    //console.log(this.loginForm.value)
+    if (this.loginForm.valid) {
+      this.loading = true;
+      this.authenticationService.login(this.loginForm.value)
+        .pipe(first())
+        .subscribe(
+          {
+            next: (data: any) => {
 
-
-
-
-      onSubmit(): void {
-        this.formSubmitted = true;
-        //console.log(this.loginForm.value)
-        if (this.loginForm.valid) {
-          this.loading = true;
-          this.authenticationService.login(this.loginForm.value)
-            .pipe(first())
-            .subscribe(
-              {
-              next:(data: any) => {
-
-                let jwt=data.headers.get('Authorization');
-                this.authenticationService.saveToken(jwt);
-                this.authenticationService.getUserByUsername(this.loginForm.value.username).subscribe((data:any)=>{
-                  if(!data.enabled){
-                    this.error='Compte inactif,Merci de contacter l\'administrateur';
-                    this.loading=false;
-                    this.router.navigate(['/auth/signin']);
-                  }else{
-                    if(this.authenticationService.isAdmin()){
-                      this.returnUrl='/parametrages/cabinets';
-                    }
-                    localStorage.setItem("user", JSON.stringify(data));
-                    sessionStorage.setItem("currentUser", JSON.stringify(data));
-                    console.log('Redirection vers :', this.returnUrl);
-                    this.router.navigate([this.returnUrl]); 
+              let jwt = data.headers.get('Authorization');
+              this.authenticationService.saveToken(jwt);
+              this.authenticationService.getUserByUsername(this.loginForm.value.username).subscribe((data: any) => {
+                if (!data.enabled) {
+                  this.error = 'Compte inactif,Merci de contacter l\'administrateur';
+                  this.loading = false;
+                  this.router.navigate(['/auth/signin']);
+                } else {
+                  if (this.authenticationService.isAdmin()) {
+                    this.returnUrl = '/parametrages/ecritures';
                   }
+                  localStorage.setItem("user", JSON.stringify(data));
+                  sessionStorage.setItem("currentUser", JSON.stringify(data));
+                  this.router.navigate([this.returnUrl]);
+                }
 
-                });
+              });
 
-              },
-              error:(error: any) => {
-                //this.error = error;
-                this.error='Username ou mot de passe incorrect';
-                this.loading = false;
-              }
-            });
-        }else{
-          this.loading=false;
-          this.error='Formulaire invalide';
-        }
-      }
+            },
+            error: (error: any) => {
+              //this.error = error;
+              this.error = 'Username ou mot de passe incorrect';
+              this.loading = false;
+            }
+          });
+    } else {
+      this.loading = false;
+      this.error = 'Formulaire invalide';
+    }
+  }
+
 }

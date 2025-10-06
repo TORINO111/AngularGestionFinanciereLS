@@ -34,8 +34,8 @@ export class PlansAnalytiquesService {
     return this.http.get<any>(`${environment.apiUrl}/api/plans-analytiques/pageable`, { params });
   }
 
-  delete(planComptableId: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrlPlanAnalytique}/delete/${planComptableId}`);
+  delete(plaAnalytiqueId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrlPlanAnalytique}/delete/${plaAnalytiqueId}`);
   }
 
   updatePlanAnalytique(plananalytiqueId: number, planAnalytique: PlanAnalytique): Observable<PlanAnalytique> {

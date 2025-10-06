@@ -91,9 +91,9 @@ export class PlanAnalytiqueComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.pageTitle = [{ label: 'Vos sections analytiques', path: '/', active: true }];
+    this.pageTitle = [{ label: 'Vos plans analytiques', path: '/', active: true }];
     this.chargerPlanAnalytiques();
-    this.chargerSectionsAnalytiques();
+    // this.chargerSectionsAnalytiques();
     this.chargerSocietes();
     this.initSearchListener();
 
@@ -227,7 +227,7 @@ export class PlanAnalytiqueComponent implements OnInit {
     this.closeModal();
     this.isLoading = true;
     this.result = false;
-      
+
     if (this.planAnalytiqueForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
       return;
@@ -381,13 +381,13 @@ export class PlanAnalytiqueComponent implements OnInit {
   }
 
   deletePlan(index: number): void {
-    const plan = this.plansAnalytiques[index].value;
-    console.log(plan);
-    if (!plan?.planId || !plan?.sectionId) return;
+    const plan = this.lignes[index];
+    console.log(plan);  
+    if (!plan?.id || !plan?.intitule) return;
 
     Swal.fire({
       title: 'Supprimer le plan analytique',
-      text: `Voulez-vous vraiment supprimer le plan : "${plan.sectionAnalytique}" ?`,
+      text: `Voulez-vous vraiment supprimer le plan : "${plan.intitule}" ?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Supprimer',
@@ -399,7 +399,7 @@ export class PlanAnalytiqueComponent implements OnInit {
       buttonsStyling: false
     }).then((result) => {
       if (result.isConfirmed) {
-        this.plansAnalytiquesService.deleteSection(plan.planId, plan.sectionId)
+        this.plansAnalytiquesService.delete(plan.id)
           .subscribe({
             next: () => {
               this.lignes.splice(index, 1);

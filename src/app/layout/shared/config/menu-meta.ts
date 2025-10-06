@@ -164,7 +164,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/cabinets',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN']
+        roles: ['SUPERVISEUR']
     },
     {
         key: 'categories',
