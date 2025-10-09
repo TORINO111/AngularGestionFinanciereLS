@@ -15,14 +15,12 @@
     <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
       <div class="d-flex">
         <div>
-          <button class="btn btn-success" (click)="openModal()"
-            style="background-color: #37a6de; color: white; border: #37a6de">Nouveau
+          <button class="btn btn-success" (click)="openModal()" >Nouveau
             Compte</button>
         </div>
 
         <div style="margin-left: 10px;">
-          <button class="btn btn-success" style="margin-left: 40px;" (click)="openScrollableModal(importExcelModal)"
-            style="background-color: #37a6de; border: #37a6de;">Importer</button>
+          <button class="btn btn-success" style="margin-left: 40px;" (click)="openScrollableModal(importExcelModal)" >Importer</button>
         </div>
       </div>
 
@@ -175,7 +173,7 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
-    <button type="button" class="btn btn-success" style="background-color: #37a6de; border: #37a6de"
+    <button type="button" class="btn btn-success"
       (click)="saveCompte()">Enregistrer</button>
   </div>
 </ng-template>

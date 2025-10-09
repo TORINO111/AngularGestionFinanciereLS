@@ -220,7 +220,7 @@ export class RecettesComponent implements OnInit {
           this.exerciceEnCours = exercice;
           this.exerciceId = exercice.id;
           this.message = '';
-          this.chargerToutesLesDonnees();
+          //this.chargerToutesLesDonnees();
         } else {
           this.exerciceEnCours = undefined;
           this.exerciceId = undefined;
@@ -236,63 +236,63 @@ export class RecettesComponent implements OnInit {
 }
 
   
-  private chargerToutesLesDonnees(): void {
-    this.result = false;
-    this.isLoading = true;
+  // private chargerToutesLesDonnees(): void {
+  //   this.result = false;
+  //   this.isLoading = true;
 
-    // Vérification si societeActive existe et a un id
-    const societeId = this.societeActive?.id;
-    if (societeId === undefined) {
-      this.message = "Aucune société active sélectionnée.";
-      this.isLoading = false;
-      return;
-    }
+  //   // Vérification si societeActive existe et a un id
+  //   const societeId = this.societeActive?.id;
+  //   if (societeId === undefined) {
+  //     this.message = "Aucune société active sélectionnée.";
+  //     this.isLoading = false;
+  //     return;
+  //   }
 
-    forkJoin({
-      operations: this.operationService.getByFilters(societeId, 'RECETTE', 'RECETTE'),
-      tiers: this.tiersService.getBySocieteAndType(societeId, 'CLIENT'),
-      natureOperations: this.natureOperationService.getByFilters(societeId, 'RECETTE', 'RECETTE')
-    }).pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: ({ operations, tiers, natureOperations }) => {
-          this.operations = operations.map(op =>
-            this.fb.group({
-              id: [op.id],
-              montant: [op.montant, Validators.required],
-              details: [op.details],
-              dateOperation: [op.dateOperation],
-              natureOperationId: [op.natureOperationId, Validators.required],
-              natureOperationLibelle: [op.natureOperationLibelle, Validators.required],
-              tiersId: [op.tiersId, Validators.required],
-              tiers: [op.tiers, Validators.required],
-              societeId: [op.societeId],
-              societeNom: [op.societeNom],
-              comptableId: [op.comptableId],
-              comptableNom: [op.comptableNom]
-            })
-          );
+  //   forkJoin({
+  //     operations: this.operationService.getByFilters(societeId, 'RECETTE', 'RECETTE'),
+  //     tiers: this.tiersService.getBySocieteAndType(societeId, 'CLIENT'),
+  //     natureOperations: this.natureOperationService.getByFilters(societeId, 'RECETTE', 'RECETTE')
+  //   }).pipe(takeUntil(this.destroy$))
+  //     .subscribe({
+  //       next: ({ operations, tiers, natureOperations }) => {
+  //         this.operations = operations.map(op =>
+  //           this.fb.group({
+  //             id: [op.id],
+  //             montant: [op.montant, Validators.required],
+  //             details: [op.details],
+  //             dateOperation: [op.dateOperation],
+  //             natureOperationId: [op.natureOperationId, Validators.required],
+  //             natureOperationLibelle: [op.natureOperationLibelle, Validators.required],
+  //             tiersId: [op.tiersId, Validators.required],
+  //             tiers: [op.tiers, Validators.required],
+  //             societeId: [op.societeId],
+  //             societeNom: [op.societeNom],
+  //             comptableId: [op.comptableId],
+  //             comptableNom: [op.comptableNom]
+  //           })
+  //         );
 
-          this.tiers = (tiers as Tiers[])
-            .filter(t => t.id !== undefined)
-            .map(t => ({ value: t.id as number, label: t.intitule }));
+  //         this.tiers = (tiers as Tiers[])
+  //           .filter(t => t.id !== undefined)
+  //           .map(t => ({ value: t.id as number, label: t.intitule }));
 
 
-          this.natureOperations = (natureOperations as NatureOperationDto[])
-          .filter(n => n.id !== undefined)
-          .map(n => ({ value: n.id as number, label: n.libelle }));
+  //         this.natureOperations = (natureOperations as NatureOperationDto[])
+  //         .filter(n => n.id !== undefined)
+  //         .map(n => ({ value: n.id as number, label: n.libelle }));
 
-          this.lignes = this.operations;
-          this.result = true;
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error('Erreur de chargement des données', err);
-          this.showError('Erreur lors du chargement des données');
-          this.result = true;
-          this.isLoading = false;
-        }
-      });
-  }
+  //         this.lignes = this.operations;
+  //         this.result = true;
+  //         this.isLoading = false;
+  //       },
+  //       error: (err) => {
+  //         console.error('Erreur de chargement des données', err);
+  //         this.showError('Erreur lors du chargement des données');
+  //         this.result = true;
+  //         this.isLoading = false;
+  //       }
+  //     });
+  // }
 
   
   ngOnDestroy(): void {
@@ -362,30 +362,30 @@ export class RecettesComponent implements OnInit {
   }
 
 
-  chargerNatureOperations() {
-    const societeId = this.societeActive?.id;
-    if (societeId === undefined) {
-      this.message = "Aucune société active sélectionnée.";
-      this.isLoading = false;
-      return;
-    }
+  // chargerNatureOperations() {
+  //   const societeId = this.societeActive?.id;
+  //   if (societeId === undefined) {
+  //     this.message = "Aucune société active sélectionnée.";
+  //     this.isLoading = false;
+  //     return;
+  //   }
 
-    this.natureOperationService.getByFilters(societeId, 'RECETTE', 'RECETTE')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data: NatureOperationDto[]) => {
-          this.natureOperations = data
-            .filter(n => n.id !== undefined)
-            .map(n => ({ value: n.id as number, label: n.libelle }));
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Erreur lors du chargement des natures opérations', error);
-          this.showError("Erreur lors du chargement des natures opérations.");
-          this.isLoading = false;
-        }
-      });
-  }
+  //   this.natureOperationService.getByFilters(societeId, 'RECETTE', 'RECETTE')
+  //     .pipe(takeUntil(this.destroy$))
+  //     .subscribe({
+  //       next: (data: NatureOperationDto[]) => {
+  //         this.natureOperations = data
+  //           .filter(n => n.id !== undefined)
+  //           .map(n => ({ value: n.id as number, label: n.libelle }));
+  //         this.isLoading = false;
+  //       },
+  //       error: (error) => {
+  //         console.error('Erreur lors du chargement des natures opérations', error);
+  //         this.showError("Erreur lors du chargement des natures opérations.");
+  //         this.isLoading = false;
+  //       }
+  //     });
+  // }
 
 
   deleteOperation(operation: Operation): void {

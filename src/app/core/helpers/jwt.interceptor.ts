@@ -24,7 +24,7 @@
 // }
 import { Injectable } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { catchError, Observable, switchMap, throwError } from 'rxjs';
 import { AuthenticationService } from '../service/auth.service';
 
 @Injectable()
@@ -43,6 +43,28 @@ export class JwtInterceptor implements HttpInterceptor {
             });
         }
 
-        return next.handle(request);
+        return next.handle(request).pipe(
+            catchError(err => {
+                if (err.status === 401) {
+                    // Tentative de refresh
+                    return this.authenticationService.refreshTokenRequest().pipe(
+                        switchMap((res: any) => {
+                            this.authenticationService.saveTokens(res.token, res.refreshToken);
+                            request = request.clone({
+                                setHeaders: { Authorization: `Bearer ${res.token}` }
+                            });
+                            return next.handle(request);
+                        }),
+                        catchError(innerErr => {
+                            // Si refresh échoue -> logout
+                            localStorage.removeItem('token');
+                            localStorage.removeItem('refreshToken');
+                            return throwError(() => innerErr);
+                        })
+                    );
+                }
+                return throwError(() => err);
+            })
+        );
     }
 }

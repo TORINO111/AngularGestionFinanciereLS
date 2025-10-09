@@ -200,7 +200,7 @@ export class DecaissementsComponent implements OnInit {
             this.exerciceEnCours = exercice;
             this.exerciceId = exercice.id;
             this.message = '';
-            this.chargerToutesLesDonnees();
+            //this.chargerToutesLesDonnees();
           } else {
             this.exerciceEnCours = undefined;
             this.message = "Aucun exercice en cours pour la société sélectionnée.";
@@ -213,62 +213,62 @@ export class DecaissementsComponent implements OnInit {
       });
   }
 
-  chargerToutesLesDonnees(): void {
-    this.result = false;
-    this.isLoading = true;
+  // chargerToutesLesDonnees(): void {
+  //   this.result = false;
+  //   this.isLoading = true;
 
-    const societeId = this.societeActive!.id;
+  //   const societeId = this.societeActive!.id;
   
-    forkJoin({
-      operations: this.operationService.getByFilters(societeId, 'DECAISSEMENT', 'TRESORERIE'),
-      tiers: this.tiersService.getBySocieteAndType(societeId!, 'FOURNISSEUR'),
-      natureOperations: this.natureOperationService.getByFilters(societeId, 'DECAISSEMENT', 'TRESORERIE')
-    }).pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: ({ operations, tiers, natureOperations }) => {
-        console.log(operations)
-        // 👉 1. Préparer les lignes (formulaires dynamiques)
-        this.operations = operations.map(d =>
-          this.fb.group({
-            id: [d.id],
-            montant: [d.montant, Validators.required],
-            details: [d.details],
-            dateOperation: [d.dateOperation],
-            natureOperationId: [d.natureOperationId, Validators.required],
-            natureOperationLibelle: [d.natureOperationLibelle, Validators.required],
-            tiersId: [d.tiersId],
-            tiers: [d.tiers],
-            societeId:[d.societeId],
-            societeNom:[d.societeNom],
-            comptableId:[d.comptableId],
-            comptableNom:[d.comptableNom]
-          })
-        );
-        this.lignes = this.operations;
+  //   forkJoin({
+  //     operations: this.operationService.getByFilters(societeId, 'DECAISSEMENT', 'TRESORERIE'),
+  //     tiers: this.tiersService.getBySocieteAndType(societeId!, 'FOURNISSEUR'),
+  //     natureOperations: this.natureOperationService.getByFilters(societeId, 'DECAISSEMENT', 'TRESORERIE')
+  //   }).pipe(takeUntil(this.destroy$))
+  //   .subscribe({
+  //     next: ({ operations, tiers, natureOperations }) => {
+  //       console.log(operations)
+  //       // 👉 1. Préparer les lignes (formulaires dynamiques)
+  //       this.operations = operations.map(d =>
+  //         this.fb.group({
+  //           id: [d.id],
+  //           montant: [d.montant, Validators.required],
+  //           details: [d.details],
+  //           dateOperation: [d.dateOperation],
+  //           natureOperationId: [d.natureOperationId, Validators.required],
+  //           natureOperationLibelle: [d.natureOperationLibelle, Validators.required],
+  //           tiersId: [d.tiersId],
+  //           tiers: [d.tiers],
+  //           societeId:[d.societeId],
+  //           societeNom:[d.societeNom],
+  //           comptableId:[d.comptableId],
+  //           comptableNom:[d.comptableNom]
+  //         })
+  //       );
+  //       this.lignes = this.operations;
   
-        // 👉 2. Charger les tiers dans dropdown
-        this.tiers = (tiers as Tiers[]).map(t => ({
-          value: t.id!,
-          label: t.intitule
-        }));
+  //       // 👉 2. Charger les tiers dans dropdown
+  //       this.tiers = (tiers as Tiers[]).map(t => ({
+  //         value: t.id!,
+  //         label: t.intitule
+  //       }));
   
-        // 👉 3. Charger les natureOperations dans dropdown
-        this.natureOperations = (natureOperations as NatureOperationDto[]).map(n => ({
-          value: n.id!,
-          label: n.libelle
-        }));
+  //       // 👉 3. Charger les natureOperations dans dropdown
+  //       this.natureOperations = (natureOperations as NatureOperationDto[]).map(n => ({
+  //         value: n.id!,
+  //         label: n.libelle
+  //       }));
   
-        this.result = true;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Erreur de chargement des données', error);
-        this.showError('Erreur lors du chargement des données');
-        this.result = true;
-        this.isLoading = false;
-      }
-    });
-  }
+  //       this.result = true;
+  //       this.isLoading = false;
+  //     },
+  //     error: (error) => {
+  //       console.error('Erreur de chargement des données', error);
+  //       this.showError('Erreur lors du chargement des données');
+  //       this.result = true;
+  //       this.isLoading = false;
+  //     }
+  //   });
+  // }
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -335,32 +335,32 @@ export class DecaissementsComponent implements OnInit {
     );
   }
 
-  chargerNatureOperationDtos() {
-    const societeId = this.societeActive?.id;
-    if (!societeId) {
-      this.message = "Aucune société active sélectionnée.";
-      this.isLoading = false;
-      return;
-    }
+  // chargerNatureOperationDtos() {
+  //   const societeId = this.societeActive?.id;
+  //   if (!societeId) {
+  //     this.message = "Aucune société active sélectionnée.";
+  //     this.isLoading = false;
+  //     return;
+  //   }
 
-    this.natureOperationService
-      .getByFilters(societeId, 'DECAISSEMENT', 'TRESORERIE')
-      .subscribe(
-        (data: NatureOperationDto[]) => {
-          // On filtre les éléments sans id et on crée un tableau plat
-          this.natureOperations = data
-            .filter(n => n.id !== undefined)
-            .map(n => ({ value: n.id!, label: n.libelle }));
+  //   this.natureOperationService
+  //     .getByFilters(societeId, 'DECAISSEMENT', 'TRESORERIE')
+  //     .subscribe(
+  //       (data: NatureOperationDto[]) => {
+  //         // On filtre les éléments sans id et on crée un tableau plat
+  //         this.natureOperations = data
+  //           .filter(n => n.id !== undefined)
+  //           .map(n => ({ value: n.id!, label: n.libelle }));
 
-          this.isLoading = true;
-        },
-        (error) => {
-          this.isLoading = true;
-          console.error('Erreur lors du chargement des natures opérations', error);
-          this.showError("Erreur lors du chargement des natures opérations.");
-        }
-      );
-  }
+  //         this.isLoading = true;
+  //       },
+  //       (error) => {
+  //         this.isLoading = true;
+  //         console.error('Erreur lors du chargement des natures opérations', error);
+  //         this.showError("Erreur lors du chargement des natures opérations.");
+  //       }
+  //     );
+  // }
 
 
   deleteOperation(operation: Operation): void {

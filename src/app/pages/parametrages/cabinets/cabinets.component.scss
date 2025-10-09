@@ -62,6 +62,11 @@ nav[aria-label="Pagination"] {
   /* S'assure que le conteneur prend toute la hauteur de la fenêtre */
 }
 
+.btn-success {
+  background-color: #37a6de; 
+  border: #37a6de
+}
+
 .lds-dual-ring,
 .lds-dual-ring:after {
   box-sizing: border-box;

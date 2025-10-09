@@ -12,7 +12,7 @@
 
     <!-- Boutons -->
     <div class="mb-3 d-flex gap-2 align-items-center justify-content-between"> 
-      <button class="btn btn-success" (click)="openModal()" style="background-color: #37a6de; border: #37a6de;">Nouveau
+      <button class="btn btn-success" (click)="openModal()">Nouveau
         Plan Comptable</button>
 
       <div class="d-flex gap-2 ms-auto">
@@ -139,7 +139,6 @@
 
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
-    <button type="button" class="btn btn-success" (click)="enregistrer()"
-      style="background-color: #37a6de; border: #37a6de">Enregistrer</button>
+    <button type="button" class="btn btn-success" (click)="enregistrer()">Enregistrer</button>
   </div>
 </ng-template>

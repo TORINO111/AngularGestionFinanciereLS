@@ -144,7 +144,7 @@ export class PlanComptableComponent implements OnInit {
 
     if (this.planComptableForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
-      this.isLoading = false;  // désactive le loader si le formulaire est invalide
+      this.isLoading = false;
       this.result = true;
       return;
     }

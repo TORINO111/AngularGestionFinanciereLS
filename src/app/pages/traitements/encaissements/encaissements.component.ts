@@ -195,7 +195,7 @@ export class EncaissementsComponent implements OnInit {
             this.exerciceEnCours = exercice;
             this.exerciceId = exercice.id;
             this.message = '';
-            this.chargerToutesLesDonnees();
+            //this.chargerToutesLesDonnees();
           } else {
             this.exerciceEnCours = undefined;
             this.message = "Aucun exercice en cours pour la société sélectionnée.";
@@ -208,64 +208,64 @@ export class EncaissementsComponent implements OnInit {
       });
   }
 
- chargerToutesLesDonnees(): void {
-  this.result = false;
-  this.isLoading = true;
+//  chargerToutesLesDonnees(): void {
+//   this.result = false;
+//   this.isLoading = true;
 
-  const societeId = this.societeActive?.id;
-  if (societeId === undefined) {
-    this.message = "Aucune société active sélectionnée.";
-    this.isLoading = false;
-    return;
-  }
+//   const societeId = this.societeActive?.id;
+//   if (societeId === undefined) {
+//     this.message = "Aucune société active sélectionnée.";
+//     this.isLoading = false;
+//     return;
+//   }
 
-  forkJoin({
-    operations: this.operationService.getByFilters(societeId, 'ENCAISSEMENT', 'TRESORERIE'),
-    tiers: this.tiersService.getBySocieteAndType(societeId, 'CLIENT'),
-    natureOperations: this.natureOperationService.getByFilters(societeId, 'ENCAISSEMENT', 'TRESORERIE')
-  }).pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: ({ operations, tiers, natureOperations }) => {
-        // 1. Préparer les lignes (formulaires dynamiques)
-        this.operations = operations.map(d =>
-          this.fb.group({
-            id: [d.id],
-            montant: [d.montant, Validators.required],
-            details: [d.details],
-            dateOperation: [d.dateOperation],
-            natureOperationId: [d.natureOperationId, Validators.required],
-            natureOperationLibelle: [d.natureOperationLibelle, Validators.required],
-            tiersId: [d.tiersId],
-            tiers: [d.tiers],
-            societeId: [d.societeId],
-            societeNom: [d.societeNom],
-            comptableId: [d.comptableId],
-            comptableNom: [d.comptableNom]
-          })
-        );
-        this.lignes = this.operations;
+//   forkJoin({
+//     operations: this.operationService.getByFilters(societeId, 'ENCAISSEMENT', 'TRESORERIE'),
+//     tiers: this.tiersService.getBySocieteAndType(societeId, 'CLIENT'),
+//     natureOperations: this.natureOperationService.getByFilters(societeId, 'ENCAISSEMENT', 'TRESORERIE')
+//   }).pipe(takeUntil(this.destroy$))
+//     .subscribe({
+//       next: ({ operations, tiers, natureOperations }) => {
+//         // 1. Préparer les lignes (formulaires dynamiques)
+//         this.operations = operations.map(d =>
+//           this.fb.group({
+//             id: [d.id],
+//             montant: [d.montant, Validators.required],
+//             details: [d.details],
+//             dateOperation: [d.dateOperation],
+//             natureOperationId: [d.natureOperationId, Validators.required],
+//             natureOperationLibelle: [d.natureOperationLibelle, Validators.required],
+//             tiersId: [d.tiersId],
+//             tiers: [d.tiers],
+//             societeId: [d.societeId],
+//             societeNom: [d.societeNom],
+//             comptableId: [d.comptableId],
+//             comptableNom: [d.comptableNom]
+//           })
+//         );
+//         this.lignes = this.operations;
 
-        // 2. Charger les tiers dans dropdown
-        this.tiers = (tiers as Tiers[])
-          .filter(t => t.id !== undefined)
-          .map(t => ({ value: t.id as number, label: t.intitule }));
+//         // 2. Charger les tiers dans dropdown
+//         this.tiers = (tiers as Tiers[])
+//           .filter(t => t.id !== undefined)
+//           .map(t => ({ value: t.id as number, label: t.intitule }));
 
-        // 3. Charger les natureOperations dans dropdown
-        this.natureOperations = (natureOperations as NatureOperationDto[])
-          .filter(n => n.id !== undefined)
-          .map(n => ({ value: n.id as number, label: n.libelle }));
+//         // 3. Charger les natureOperations dans dropdown
+//         this.natureOperations = (natureOperations as NatureOperationDto[])
+//           .filter(n => n.id !== undefined)
+//           .map(n => ({ value: n.id as number, label: n.libelle }));
 
-        this.result = true;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Erreur de chargement des données', error);
-        this.showError('Erreur lors du chargement des données');
-        this.result = true;
-        this.isLoading = false;
-      }
-    });
-  }
+//         this.result = true;
+//         this.isLoading = false;
+//       },
+//       error: (error) => {
+//         console.error('Erreur de chargement des données', error);
+//         this.showError('Erreur lors du chargement des données');
+//         this.result = true;
+//         this.isLoading = false;
+//       }
+//     });
+//   }
 
 
   ngOnDestroy(): void {
@@ -336,32 +336,32 @@ export class EncaissementsComponent implements OnInit {
 }
 
 
-  chargerNatureOperations() {
-    const societeId = this.societeActive?.id;
-    if (societeId === undefined) {
-      this.message = "Aucune société active sélectionnée.";
-      this.isLoading = false;
-      return;
-    }
+  // chargerNatureOperations() {
+  //   const societeId = this.societeActive?.id;
+  //   if (societeId === undefined) {
+  //     this.message = "Aucune société active sélectionnée.";
+  //     this.isLoading = false;
+  //     return;
+  //   }
 
-    this.natureOperationService.getByFilters(societeId, 'ENCAISSEMENT', 'TRESORERIE')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data: NatureOperationDto[]) => {
-          // Filtrer pour éviter les ids undefined
-          this.natureOperations = data
-            .filter(n => n.id !== undefined)
-            .map(n => ({ value: n.id as number, label: n.libelle }));
+  //   this.natureOperationService.getByFilters(societeId, 'ENCAISSEMENT', 'TRESORERIE')
+  //     .pipe(takeUntil(this.destroy$))
+  //     .subscribe({
+  //       next: (data: NatureOperationDto[]) => {
+  //         // Filtrer pour éviter les ids undefined
+  //         this.natureOperations = data
+  //           .filter(n => n.id !== undefined)
+  //           .map(n => ({ value: n.id as number, label: n.libelle }));
 
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Erreur lors du chargement des natures opérations', error);
-          this.showError("Erreur lors du chargement des natures opérations.");
-          this.isLoading = false;
-        }
-      });
-  }
+  //         this.isLoading = false;
+  //       },
+  //       error: (error) => {
+  //         console.error('Erreur lors du chargement des natures opérations', error);
+  //         this.showError("Erreur lors du chargement des natures opérations.");
+  //         this.isLoading = false;
+  //       }
+  //     });
+  // }
 
 
   deleteOperation(operation: Operation): void {

@@ -19,7 +19,7 @@ import { CompteComptableDTO } from 'src/app/models/compte-comptable';
 import { PlanComptable } from 'src/app/models/plan-comptable.model';
 import { NatureOperationDto } from 'src/app/models/nature-operation.model';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { debounceTime, Subject, switchMap } from 'rxjs';
+import { debounceTime, Subject, switchMap, tap } from 'rxjs';
 import { TiersService } from 'src/app/services/tiers/tiers.service';
 
 @Component({
@@ -46,12 +46,23 @@ export class EcrituresComponent implements OnInit {
   totalElements: number = 0;
   pageSize: number = 40;
   currentPage: number = 0;
-  private search$ = new Subject<{ code: string, categorie: number, journal: number }>();
+
+  private search$ = new Subject<{
+    libelle?: string;
+    journalId?: number;
+    categorieId?: number;
+    tiersId?: number;
+  }>();
+  journaux: any[] = [];
+
+  searchTerm: string = '';
+  selectedJournalId?: number;
+  selectedCategorieId?: number;
+  selectedTiersId?: number;
+
   searchCate: number;
   searchCode: string = '';
   selectedJournal: number;
-  selectedJournalId?: number;
-  selectedCategorieId?: number;
 
   plansAnalytiques: any[] = [];
   analytiques: Select2Data = [];
@@ -365,26 +376,31 @@ export class EcrituresComponent implements OnInit {
     });
   }
 
-  chargerNatureOperationDtos(): void {
+  chargerNatureOperationDtos(page: number = 0): void {
     this.isLoading = true;
     this.result = false;
-    this.natureOperations = [];
 
-    this.natureOperationService.getAll().subscribe({
-      next: (data: NatureOperationDto[]) => {
-        // On suppose que le backend renvoie déjà un tableau plat prêt à l'affichage
-        this.natureOperations = data;
-        console.log(this.natureOperations);
+    this.currentPage = page;
 
-        this.lignes = this.natureOperations;
+    this.natureOperationService.getByFilters(
+      page,
+      this.pageSize,
+      this.selectedJournalId,
+      this.selectedCategorieId,
+      this.selectedTiersId,
+      this.searchTerm
+    ).subscribe({
+      next: data => {
+        this.natureOperations = data.content;
+        this.lignes = [...this.natureOperations];
+        this.totalElements = data.totalElements;
         this.result = true;
         this.isLoading = false;
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des natures opérations', error);
+      error: err => {
+        console.error('Erreur lors du chargement des écritures', err);
         this.result = true;
         this.isLoading = false;
-        this.notification.showError('Erreur de chargement');
       }
     });
   }
@@ -555,32 +571,13 @@ export class EcrituresComponent implements OnInit {
     this.deleteNatureOperationDto(nature);
   }
 
-  chargerNaturesOperations(page: number = 0): void {
-    this.currentPage = page;
-
-    this.natureOperationService.getAllPageable(page,
-      this.pageSize,
-      this.searchCode ? this.searchCode : undefined,
-      this.searchCate ? this.searchCate : undefined,
-      this.selectedJournal ? this.selectedJournal : undefined,
-    ).subscribe({
-      next: (data: any) => {
-        this.lignes = data.content;
-        this.totalElements = data.totalElements;
-      },
-      error: (error) => {
-        console.error('Erreur lors du chargement des plans comptables', error);
-        this.notification.showError('Erreur de chargement');
-      }
-    });
-  }
 
   pages(): number[] {
     return Array(this.totalPages()).fill(0).map((_, i) => i);
   }
 
   goToPage(page: number = 0) {
-    this.chargerNaturesOperations(page);
+    this.chargerNatureOperationDtos(page);
   }
 
   totalPages(): number {
@@ -588,30 +585,50 @@ export class EcrituresComponent implements OnInit {
   }
 
   onFilterChange(): void {
-    this.search$.next({ code: this.searchCode, categorie: this.searchCate, journal: this.selectedJournal });
+    this.search$.next({
+      libelle: this.searchTerm,
+      journalId: this.selectedJournalId,
+      categorieId: this.selectedCategorieId,
+      tiersId: this.selectedTiersId
+    });
   }
 
   private initSearchListener(): void {
     this.search$
       .pipe(
         debounceTime(300),
-        switchMap(({ code, categorie, journal }) => {
+        tap(() => { this.isLoading = true; }),
+        switchMap(filters => {
           this.currentPage = 0;
-          return this.natureOperationService.getAllPageable(
-            0,
+
+          const journalId = filters.journalId || undefined;
+          const categorieId = filters.categorieId || undefined;
+          const tiersId = filters.tiersId || undefined;
+          const libelle = filters.libelle?.trim() || undefined;
+
+          return this.natureOperationService.getByFilters(
+            this.currentPage,
             this.pageSize,
-            code || undefined,
-            categorie || undefined,
-            journal || undefined,
+            journalId,
+            categorieId,
+            tiersId,
+            libelle
           );
         })
       )
       .subscribe({
         next: data => {
-          this.lignes = data.content;
-          this.currentPage = 0;
+          this.natureOperations = data.content;
+          this.lignes = [...this.natureOperations];
+          this.totalElements = data.totalElements;
+          this.isLoading = false;
+          this.result = true;
         },
-        error: err => console.error('Erreur lors de la recherche', err)
+        error: err => {
+          console.error('Erreur lors de la recherche des écritures', err);
+          this.isLoading = false;
+          this.result = true;
+        }
       });
   }
 

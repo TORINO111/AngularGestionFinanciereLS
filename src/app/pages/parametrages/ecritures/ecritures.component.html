@@ -13,20 +13,34 @@
     <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
 
       <!-- Bouton Nouvelle Écriture -->
-      <button class="btn btn-success" (click)="openModal()" style="background-color: #37a6de">Nouvelle Écriture
-      </button>
+      <button class="btn btn-success" (click)="openModal()">Nouvelle Écriture</button>
 
-      <!-- Barre de recherche + filtre -->
-      <!-- <div class="d-flex gap-2 ms-auto">
+      <!-- Barre de recherche + filtres -->
+      <div class="d-flex gap-2 ms-auto">
+
+        <!-- Recherche par libellé -->
         <input #searchInput class="p-2" placeholder="Rechercher par libellé" [(ngModel)]="searchTerm"
           (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
 
-        <ng-select class="mt-1" [items]="types" placeholder="Filtrer par type" bindLabel="libelle" bindValue="id"
-          [(ngModel)]="selectedType" (ngModelChange)="onFilterChange()">
-          <ng-template ng-notfound-tmp>Aucun type disponible</ng-template>
+        <!-- Filtre par journal -->
+        <ng-select class="mt-1" [items]="filteredJournaux" placeholder="Filtrer par journal" bindLabel="libelle" bindValue="id"
+          [(ngModel)]="selectedJournalId" (ngModelChange)="onFilterChange()">
+          <ng-template ng-notfound-tmp>Aucun journal disponible</ng-template>
         </ng-select>
-      </div> -->
 
+        <!-- Filtre par catégorie -->
+        <ng-select class="mt-1" [items]="categories" placeholder="Filtrer par catégorie" bindLabel="libelle"
+          bindValue="id" [(ngModel)]="selectedCategorieId" (ngModelChange)="onFilterChange()">
+          <ng-template ng-notfound-tmp>Aucune catégorie disponible</ng-template>
+        </ng-select>
+
+        <!-- Filtre par tiers -->
+        <ng-select class="mt-1" [items]="tiersList" placeholder="Filtrer par tiers" bindLabel="intitule" bindValue="id"
+          [(ngModel)]="selectedTiersId" (ngModelChange)="onFilterChange()">
+          <ng-template ng-notfound-tmp>Aucun tiers disponible</ng-template>
+        </ng-select>
+
+      </div>
     </div>
 
     <!-- Tableau des Natures d'Opérations -->
@@ -68,7 +82,8 @@
           <td>{{ e.montantTtc | number:'1.0-0' }} FCFA</td>
           <td>
             <span class="fa fa-edit fa-2x text-primary me-2" style="cursor:pointer" (click)="editNature(i)"></span>
-            <span class="fa fa-trash fa-2x text-danger" style="cursor:pointer" (click)="deleteNatureOperationDto(i)"></span>
+            <span class="fa fa-trash fa-2x text-danger" style="cursor:pointer"
+              (click)="deleteNatureOperationDto(i)"></span>
           </td>
         </tr>
       </tbody>
@@ -246,7 +261,6 @@
 
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
-    <button type="button" class="btn btn-success" (click)="enregistrer()"
-      style="background-color: #37a6de;">Enregistrer</button>
+    <button type="button" class="btn btn-success" (click)="enregistrer()">Enregistrer</button>
   </div>
 </ng-template>

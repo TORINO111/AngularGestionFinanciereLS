@@ -4,6 +4,7 @@ import { NatureOperationDto } from '../../models/nature-operation.model';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { Page } from 'ngx-pagination';
 @Injectable({
   providedIn: 'root'
 })
@@ -14,7 +15,7 @@ export class NatureOperationService {
 
   private baseUrl = `${environment.apiUrl}/api/nature-mapping`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getPrefixe(typeNature: string): Observable<string> {
     const params = new HttpParams().set('typeNature', typeNature);
@@ -26,31 +27,31 @@ export class NatureOperationService {
     const params = new HttpParams().set('typeNature', typeNature);
     return this.http.get<string>(`${this.baseUrl}/classe`, { params });
   }
-  
+
   getAll(): Observable<NatureOperationDto[]> {
-    return this.http.get<NatureOperationDto[]>(`${environment.apiUrl}/api/natures`).pipe(
+    return this.http.get<NatureOperationDto[]>(`${environment.apiUrl}/api/natures/by-filters`).pipe(
       catchError(this.handleError)
     );
   }
 
-  getAllPageable(
-    page: number = 0,
-    size: number = 20,
-    searchCodeChamp?: string,
-    searchCategorie?: number,
-    searchJournal?: number,
+  getByFilters(
+    page: number,
+    size: number,
+    codeJournalId?: number,
+    categorieId?: number,
+    tiersId?: number,
+    libelle?: string
   ): Observable<any> {
     let params = new HttpParams()
       .set('page', page)
       .set('size', size);
 
-    if (searchCodeChamp) params = params.set('searchCodeChamp', searchCodeChamp);
-    if (searchCategorie) params = params.set('searchCategorie', searchCategorie);
-    if (searchJournal) params = params.set('searchJournal', searchJournal);
+    if (codeJournalId) params = params.set('codeJournalId', codeJournalId.toString());
+    if (categorieId) params = params.set('categorieId', categorieId.toString());
+    if (tiersId) params = params.set('tiersId', tiersId.toString());
+    if (libelle) params = params.set('libelle', libelle);
 
-    return this.http.get<any>(`${environment.apiUrl}/api/natures/pageable`).pipe(
-      catchError(this.handleError)
-    );
+    return this.http.get<any>(`${environment.apiUrl}/api/nature/by-filters`, { params });
   }
 
   getAllCodeJournal(): Observable<any[]> {
@@ -77,26 +78,12 @@ export class NatureOperationService {
     );
   }
 
-    delete(id: number): Observable<void> {
-      return this.http.delete<void>(`${environment.apiUrl}/api/nature/${id}`).pipe(
-        catchError(this.handleError)
-      );
-    }
-
-  getByFilters(
-    societeId?: number,
-    typeDepense?: string,
-    typeCategorie?: string
-  ): Observable<NatureOperationDto[]> {
-    let params: any = {};
-  
-    if (societeId !== undefined) params.societeId = societeId.toString();
-    if (typeDepense) params.typeDepense = typeDepense;
-    if (typeCategorie) params.typeCategorie = typeCategorie;
-  
-    return this.http.get<NatureOperationDto[]>(`${environment.apiUrl}/api/nature/by-filters`, { params });
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/api/nature/delete/${id}`).pipe(
+      catchError(this.handleError)
+    );
   }
-  
+
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     const msg = error.error?.message || 'Erreur serveur';
@@ -104,5 +91,5 @@ export class NatureOperationService {
     return throwError(() => new Error(msg));
   }
 
-  
+
 }

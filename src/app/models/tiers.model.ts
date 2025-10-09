@@ -1,14 +1,19 @@
+export interface TiersCategorieCompte {
+  typeCategorie: string;
+  compteId: number;
+}
+
 export interface Tiers {
   id?: number;
-  code: string;
   intitule: string;
-  compteCollectif?: string;
   interlocuteur?: string;
   telephoneInterlocuteur?: string;
   telephoneTiers?: string;
-  type: TiersNature; // enum: 'CLIENT', 'FOURNISSEUR', etc.
+  type: TiersNature;
   societeId?: number;
+  comptesParCategorie?: TiersCategorieCompte[];
 }
+
 
 export enum TiersNature {
   CLIENT = 'CLIENT',

@@ -53,12 +53,9 @@ export class CategorieService {
     return this._http.get<any>(`${environment.apiUrl}/api/categories/pageable`, { params });
   }
 
-
-
   getAllCategories(): Observable<Categorie[]> {
     return this._http.get<Categorie[]>(`${environment.apiUrl}/api/categories/all`);
   }
-
 
   getCategorieParId(id: number) {
     return this._http.get(`${this.baseUrlCategorie}/${id}`, {

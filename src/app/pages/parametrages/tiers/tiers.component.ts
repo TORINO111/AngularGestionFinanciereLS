@@ -1,14 +1,15 @@
+import { TypeCategorieService } from './../../../services/type-categorie/type-categorie.service';
 import { SocieteService } from 'src/app/services/societe/societe.service';
 import { Societe } from 'src/app/models/societe.model';
 import { Component, OnInit, ViewChild, TemplateRef, ElementRef } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { FormArray, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { TiersService } from 'src/app/services/tiers/tiers.service';
 import { Tiers } from 'src/app/models/tiers.model';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import Swal from 'sweetalert2';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
-import { debounceTime, Subject, switchMap, tap } from 'rxjs';
+import { debounceTime, finalize, Subject, switchMap, tap } from 'rxjs';
 import { CompteComptableService } from 'src/app/services/comptes-comptables/comptes-comptables.service';
 import { CompteComptableDTO } from 'src/app/models/compte-comptable';
 
@@ -72,6 +73,8 @@ export class TiersComponent implements OnInit {
   isFormReady = false;
   societeBi: Societe;
   comptes: CompteComptableDTO[];
+  lastTypeId: any;
+  typesCategorie: { id: any; libelle: any; }[];
 
   constructor(
     private tiersService: TiersService,
@@ -79,17 +82,18 @@ export class TiersComponent implements OnInit {
     private notification: NotificationService,
     private fb: UntypedFormBuilder,
     private compteComptableService: CompteComptableService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private typeCategorieService: TypeCategorieService
   ) {
     this.tiersForm = this.fb.group({
       id: [''],
       intitule: ['', Validators.required],
-      compteCollectifId: ['', Validators.required],
       interlocuteur: [''],
       telephoneInterlocuteur: [''],
       telephoneTiers: [''],
       type: ['', Validators.required],
-      societeId: [null]
+      societeId: [null],
+      comptesParCategorie: this.fb.array([])
     });
 
     this.modelImportForm = this.fb.group({
@@ -106,10 +110,58 @@ export class TiersComponent implements OnInit {
       this.tiersForm.patchValue({ societeId: this.societeBi.id });
       this.modelImportForm.patchValue({ societeId: this.societeBi.id });
     }
-    this.chargerSocietes();
     this.chargerTiers();
+    this.chargerSocietes();
     this.chargerComptesComptables();
     this.initSearchListener();
+    this.chargerTypesCategories();
+  }
+
+  chargerTypesCategories() {
+    this.typeCategorieService.getAll().subscribe({
+      next: (data: any[]) => {
+        this.typesCategorie = data.map(t => ({ id: t, libelle: t }));
+        this.lastTypeId = data[data.length - 1].id;
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des types', err);
+        this.notification.showError("Erreur lors du chargement des types");
+      }
+    });
+  }
+
+  // Getter pratique
+  get comptesParCategorie(): FormArray {
+    return this.tiersForm.get('comptesParCategorie') as FormArray;
+  }
+
+  addPair(typeCategorie?: string, compteId?: number): void {
+    const group = this.fb.group({
+      typeCategorie: [typeCategorie || '', Validators.required],
+      compteId: [compteId || '', Validators.required],
+    });
+    this.comptesParCategorie.push(group);
+  }
+
+  removePair(index: number): void {
+    this.comptesParCategorie.removeAt(index);
+  }
+
+  loadTiers(tiers: any) {
+    this.tiersForm.patchValue({
+      id: tiers.id,
+      intitule: tiers.intitule,
+      interlocuteur: tiers.interlocuteur,
+      telephoneInterlocuteur: tiers.telephoneInterlocuteur,
+      telephoneTiers: tiers.telephoneTiers,
+      type: tiers.type,
+      societeId: tiers.societeId
+    });
+
+    // Charger les paires existantes
+    if (tiers.comptesParCategorie) {
+      tiers.comptesParCategorie.forEach((c: any) => this.addPair(c.typeCategorie, c.compte.id));
+    }
   }
 
   chargerTiers(page: number = 0): void {
@@ -121,8 +173,8 @@ export class TiersComponent implements OnInit {
     this.tiersService.getAllPageable(
       page,
       this.pageSize,
-      this.searchIntitule || undefined,
-      this.searchTelTiers || undefined,
+      this.searchIntitule || "",
+      this.searchTelTiers || "",
       this.selectedType || undefined
     ).subscribe({
       next: (data: any) => {
@@ -169,7 +221,6 @@ export class TiersComponent implements OnInit {
 
   ajouter(): void {
     this.formVisible = true;
-    this.selectedIndex = null;
   }
 
   modifier(): void {
@@ -190,12 +241,16 @@ export class TiersComponent implements OnInit {
   }
 
   enregistrer(): void {
-    console.log(this.tiersForm.value);
+    this.closeModal();
+
     if (this.tiersForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
       return;
     }
+
     this.isLoading = true;
+    this.result = false;
+
     const tierData = {
       ...this.tiersForm.value,
       societeId: this.societeBi.id
@@ -205,21 +260,20 @@ export class TiersComponent implements OnInit {
       ? this.tiersService.update(tierData.id, tierData)
       : this.tiersService.create(tierData);
 
-    action$.subscribe({
-      next: () => {
-        const msg = tierData.id ? 'Modifié' : 'Enregistré';
-        this.notification.showSuccess(`${msg} avec succès`);
-        this.formVisible = false;
-        this.selectedIndex = null;
-        this.lignes = [];
+    action$
+      .pipe(finalize(() => {
         this.isLoading = false;
-        this.chargerTiers();
-      },
-      error: (err) => {
-        this.isLoading = false;
-        this.notification.showError(err);
-      }
-    });
+        this.result = true;
+      }))
+      .subscribe({
+        next: () => {
+          const msg = tierData.id ? 'Modifié' : 'Enregistré';
+          this.notification.showSuccess(`${msg} avec succès`);
+          this.chargerTiers();
+          this.formVisible = false;
+        },
+        error: (err) => this.notification.showError(err)
+      });
   }
 
   deleteTiers(tiers: Tiers): void {
@@ -307,6 +361,9 @@ export class TiersComponent implements OnInit {
   }
 
   onSubmit(): void {
+    this.closeModal();
+    this.isLoading = true;
+    this.result = false;
     if (this.modelImportForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
       return;
@@ -352,20 +409,46 @@ export class TiersComponent implements OnInit {
 
   openModal() {
     this.formVisible = true;
-    this.selectedIndex = null;
     this.modalService.open(this.modalContent, { size: 'lg', centered: true });
   }
 
   closeModal(): void {
     this.modalService.dismissAll();
-    this.selectedIndex = null;
   }
 
   editTiers(index: number) {
     this.selectedIndex = index;
-    const tierBi = this.lignes[index] as Tiers;
-    this.tiersForm.patchValue(tierBi);
-    this.modalService.open(this.modalContent, { size: 'lg', centered: true });
+    const tierBi = this.lignes[index];
+
+    this.tiersService.getTiersById(tierBi.id).subscribe({
+      next: (detail: any) => {
+
+        const comptesArray = this.tiersForm.get('comptesParCategorie') as FormArray;
+        comptesArray.clear();
+
+        // Ajout des paires du backend
+        if (detail.comptesParCategorie?.length) {
+          detail.comptesParCategorie.forEach((c: any) => {
+            comptesArray.push(this.fb.group({
+              typeCategorie: [c.typeCategorie],
+              compteId: [c.compteId]
+            }));
+          });
+        }
+
+        const patch = {
+          ...detail,
+          type: this.types.find(t => t.libelle.toUpperCase() === detail.type?.toUpperCase())?.id || null
+        };
+
+        this.tiersForm.patchValue(patch);
+
+
+        this.modalService.open(this.modalContent, { size: 'lg', centered: true });
+      },
+      error: err => console.error('Impossible de charger le tiers', err)
+    });
+
   }
 
   private initSearchListener() {

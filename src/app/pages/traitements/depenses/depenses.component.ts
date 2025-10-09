@@ -202,7 +202,7 @@ export class DepensesComponent implements OnInit {
             this.exerciceEnCours = exercice;
             this.exerciceId = exercice.id;
             this.message = '';
-            this.chargerToutesLesDonnees();
+            //this.chargerToutesLesDonnees();
           } else {
             this.exerciceEnCours = undefined;
             this.message = "Aucun exercice en cours pour la société sélectionnée.";
@@ -215,67 +215,67 @@ export class DepensesComponent implements OnInit {
       });
   }
 
-  chargerToutesLesDonnees(): void {
-    this.result = false;
-    this.isLoading = true;
+  // chargerToutesLesDonnees(): void {
+  //   this.result = false;
+  //   this.isLoading = true;
 
-    const societeId = this.societeActive?.id;
-    if (societeId === undefined) {
-      this.message = "Aucune société active sélectionnée.";
-      this.isLoading = false;
-      return;
-    }
+  //   const societeId = this.societeActive?.id;
+  //   if (societeId === undefined) {
+  //     this.message = "Aucune société active sélectionnée.";
+  //     this.isLoading = false;
+  //     return;
+  //   }
 
-    forkJoin({
-      operations: this.operationService.getByFilters(societeId, 'IMMOBILISATION', 'DEPENSE'),
-      tiers: this.tiersService.getBySocieteAndType(societeId, 'FOURNISSEUR'),
-      natureOperations: this.natureOperationService.getByFilters(societeId, 'IMMOBILISATION', 'DEPENSE')
-    }).pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: ({ operations, tiers, natureOperations }) => {
-        //console.log(operations)
-        // 👉 1. Préparer les lignes (formulaires dynamiques)
-        this.operations = operations.map(d =>
-          this.fb.group({
-            id: [d.id],
-            montant: [d.montant, Validators.required],
-            details: [d.details],
-            dateOperation: [d.dateOperation],
-            natureOperationId: [d.natureOperationId, Validators.required],
-            natureOperationLibelle: [d.natureOperationLibelle, Validators.required],
-            tiersId: [d.tiersId, Validators.required],
-            tiers: [d.tiers, Validators.required],
-            societeId:[d.societeId],
-            societeNom:[d.societeNom],
-            comptableId:[d.comptableId],
-            comptableNom:[d.comptableNom]
-          })
-        );
-        this.lignes = this.operations;
+  //   forkJoin({
+  //     operations: this.operationService.getByFilters(societeId, 'IMMOBILISATION', 'DEPENSE'),
+  //     tiers: this.tiersService.getBySocieteAndType(societeId, 'FOURNISSEUR'),
+  //     natureOperations: this.natureOperationService.getByFilters(societeId, 'IMMOBILISATION', 'DEPENSE')
+  //   }).pipe(takeUntil(this.destroy$))
+  //   .subscribe({
+  //     next: ({ operations, tiers, natureOperations }) => {
+  //       //console.log(operations)
+  //       // 👉 1. Préparer les lignes (formulaires dynamiques)
+  //       this.operations = operations.map(d =>
+  //         this.fb.group({
+  //           id: [d.id],
+  //           montant: [d.montant, Validators.required],
+  //           details: [d.details],
+  //           dateOperation: [d.dateOperation],
+  //           natureOperationId: [d.natureOperationId, Validators.required],
+  //           natureOperationLibelle: [d.natureOperationLibelle, Validators.required],
+  //           tiersId: [d.tiersId, Validators.required],
+  //           tiers: [d.tiers, Validators.required],
+  //           societeId:[d.societeId],
+  //           societeNom:[d.societeNom],
+  //           comptableId:[d.comptableId],
+  //           comptableNom:[d.comptableNom]
+  //         })
+  //       );
+  //       this.lignes = this.operations;
         
-        // 👉 2. Charger les tiers dans dropdown
-        this.tiers = (tiers as Tiers[]).map(t => ({
-        value: t.id!,
-        label: t.intitule
-      }));
+  //       // 👉 2. Charger les tiers dans dropdown
+  //       this.tiers = (tiers as Tiers[]).map(t => ({
+  //       value: t.id!,
+  //       label: t.intitule
+  //     }));
 
-      // 👉 3. Charger les natureOperations dans dropdown
-      this.natureOperations = (natureOperations as NatureOperationDto[]).map(n => ({
-        value: n.id!,
-        label: n.libelle
-      }));
+  //     // 👉 3. Charger les natureOperations dans dropdown
+  //     this.natureOperations = (natureOperations as NatureOperationDto[]).map(n => ({
+  //       value: n.id!,
+  //       label: n.libelle
+  //     }));
   
-        this.result = true;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Erreur de chargement des données', error);
-        this.showError('Erreur lors du chargement des données');
-        this.result = true;
-        this.isLoading = false;
-      }
-    });
-  }
+  //       this.result = true;
+  //       this.isLoading = false;
+  //     },
+  //     error: (error) => {
+  //       console.error('Erreur de chargement des données', error);
+  //       this.showError('Erreur lors du chargement des données');
+  //       this.result = true;
+  //       this.isLoading = false;
+  //     }
+  //   });
+  // }
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -344,32 +344,32 @@ export class DepensesComponent implements OnInit {
 }
 
 
-  chargerNatureOperations() {
-    const societeId = this.societeActive?.id;
-    if (societeId === undefined) {
-      this.message = "Aucune société active sélectionnée.";
-      this.isLoading = false;
-      return;
-    }
+  // chargerNatureOperations() {
+  //   const societeId = this.societeActive?.id;
+  //   if (societeId === undefined) {
+  //     this.message = "Aucune société active sélectionnée.";
+  //     this.isLoading = false;
+  //     return;
+  //   }
 
-    this.natureOperationService.getByFilters(societeId,'IMMOBILISATION','DEPENSE').subscribe(
-      (data:any) => {
-        for(let d of data){
-          //console.log(data)
-          this.natureOperations = (data as NatureOperationDto[]).map(n => ({
-            value: n.id ?? 0,
-            label: n.libelle
-          }));
-        }
-        this.isLoading=true;
-      },
-      (error) => {
-        this.isLoading=true;
-        console.error('Erreur lors du chargement des natures operations', error);
-        this.showError("erreur..");
-      }
-    );
-  }
+  //   this.natureOperationService.getByFilters(societeId,'IMMOBILISATION','DEPENSE').subscribe(
+  //     (data:any) => {
+  //       for(let d of data){
+  //         //console.log(data)
+  //         this.natureOperations = (data as NatureOperationDto[]).map(n => ({
+  //           value: n.id ?? 0,
+  //           label: n.libelle
+  //         }));
+  //       }
+  //       this.isLoading=true;
+  //     },
+  //     (error) => {
+  //       this.isLoading=true;
+  //       console.error('Erreur lors du chargement des natures operations', error);
+  //       this.showError("erreur..");
+  //     }
+  //   );
+  // }
 
   deleteOperation(operation: Operation): void {
     Swal.fire({

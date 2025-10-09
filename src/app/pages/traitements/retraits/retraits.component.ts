@@ -74,7 +74,7 @@ export class RetraitsComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageTitle = [{ label: 'Vos opérations', path: '/', active: true }];
-    this.chargerToutesLesDonnees();
+    //this.chargerToutesLesDonnees();
     this.societeSelectionService.selectedSociete$.subscribe(societe => {
       this.societeActive = societe;
     });
@@ -164,65 +164,65 @@ export class RetraitsComponent implements OnInit {
     });
   }
 
-  chargerToutesLesDonnees(): void {
-    this.result = false;
-    this.isLoading = true;
+  // chargerToutesLesDonnees(): void {
+  //   this.result = false;
+  //   this.isLoading = true;
   
-    forkJoin({
-      operations: this.operationService.getByFilters(1, 'RETRAIT', 'TRESORERIE'),
-      tiers: this.tiersService.getBySocieteAndType(1, 'CLIENT'),
-      natureOperations: this.natureOperationService.getByFilters(1, 'RETRAIT', 'TRESORERIE')
-    }).subscribe({
-      next: ({ operations, tiers, natureOperations }) => {
-        console.log(operations)
-        // 👉 1. Préparer les lignes (formulaires dynamiques)
-        this.operations = operations.map(d =>
-          this.fb.group({
-            id: [d.id],
-            montant: [d.montant, Validators.required],
-            details: [d.details],
-            dateOperation: [d.dateOperation],
-            natureOperationId: [d.natureOperationId, Validators.required],
-            natureOperationLibelle: [d.natureOperationLibelle, Validators.required],
-            tiersId: [d.tiersId, Validators.required],
-            tiers: [d.tiers, Validators.required],
-            societeId:[d.societeId],
-            societeNom:[d.societeNom],
-            comptableId:[d.comptableId],
-            comptableNom:[d.comptableNom]
-          })
-        );
-        this.lignes = this.operations;
+  //   forkJoin({
+  //     operations: this.operationService.getByFilters(1, 'RETRAIT', 'TRESORERIE'),
+  //     tiers: this.tiersService.getBySocieteAndType(1, 'CLIENT'),
+  //     natureOperations: this.natureOperationService.getByFilters(1, 'RETRAIT', 'TRESORERIE')
+  //   }).subscribe({
+  //     next: ({ operations, tiers, natureOperations }) => {
+  //       console.log(operations)
+  //       // 👉 1. Préparer les lignes (formulaires dynamiques)
+  //       this.operations = operations.map(d =>
+  //         this.fb.group({
+  //           id: [d.id],
+  //           montant: [d.montant, Validators.required],
+  //           details: [d.details],
+  //           dateOperation: [d.dateOperation],
+  //           natureOperationId: [d.natureOperationId, Validators.required],
+  //           natureOperationLibelle: [d.natureOperationLibelle, Validators.required],
+  //           tiersId: [d.tiersId, Validators.required],
+  //           tiers: [d.tiers, Validators.required],
+  //           societeId:[d.societeId],
+  //           societeNom:[d.societeNom],
+  //           comptableId:[d.comptableId],
+  //           comptableNom:[d.comptableNom]
+  //         })
+  //       );
+  //       this.lignes = this.operations;
   
-        // 👉 2. Charger les tiers dans dropdown
-        this.tiers = [{
-          label: '',
-          options: (tiers as Tiers[]).map(t => ({
-            value: t.id,
-            label: t.intitule
-          }))
-        }];
+  //       // 👉 2. Charger les tiers dans dropdown
+  //       this.tiers = [{
+  //         label: '',
+  //         options: (tiers as Tiers[]).map(t => ({
+  //           value: t.id,
+  //           label: t.intitule
+  //         }))
+  //       }];
   
-        // 👉 3. Charger les natureOperations dans dropdown
-        this.natureOperations = [{
-          label: '',
-          options: (natureOperations as NatureOperationDto[]).map(n => ({
-            value: n.id,
-            label: n.libelle
-          }))
-        }];
+  //       // 👉 3. Charger les natureOperations dans dropdown
+  //       this.natureOperations = [{
+  //         label: '',
+  //         options: (natureOperations as NatureOperationDto[]).map(n => ({
+  //           value: n.id,
+  //           label: n.libelle
+  //         }))
+  //       }];
   
-        this.result = true;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Erreur de chargement des données', error);
-        this.showError('Erreur lors du chargement des données');
-        this.result = true;
-        this.isLoading = false;
-      }
-    });
-  }
+  //       this.result = true;
+  //       this.isLoading = false;
+  //     },
+  //     error: (error) => {
+  //       console.error('Erreur de chargement des données', error);
+  //       this.showError('Erreur lors du chargement des données');
+  //       this.result = true;
+  //       this.isLoading = false;
+  //     }
+  //   });
+  // }
 
   chargerOperations(): void {
     this.operations = [];
@@ -276,22 +276,22 @@ export class RetraitsComponent implements OnInit {
     );
   }
 
-  chargerNatureOperations() {
-    this.natureOperationService.getByFilters(1,'RETRAIT','TRESORERIE').subscribe(
-      (data:any) => {
-        for(let d of data){
-          //console.log(data)
-          this.natureOperations = [{ label: '', options: (data as NatureOperationDto[]).map(d => ({ value: d.id, label: d.libelle })) }];
-        }
-        this.isLoading=true;
-      },
-      (error) => {
-        this.isLoading=true;
-        console.error('Erreur lors du chargement des natures operations', error);
-        this.showError("erreur..");
-      }
-    );
-  }
+  // chargerNatureOperations() {
+  //   this.natureOperationService.getByFilters(1,'RETRAIT','TRESORERIE').subscribe(
+  //     (data:any) => {
+  //       for(let d of data){
+  //         //console.log(data)
+  //         this.natureOperations = [{ label: '', options: (data as NatureOperationDto[]).map(d => ({ value: d.id, label: d.libelle })) }];
+  //       }
+  //       this.isLoading=true;
+  //     },
+  //     (error) => {
+  //       this.isLoading=true;
+  //       console.error('Erreur lors du chargement des natures operations', error);
+  //       this.showError("erreur..");
+  //     }
+  //   );
+  // }
 
   deleteOperation(operation: Operation): void {
     Swal.fire({

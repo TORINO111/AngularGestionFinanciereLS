@@ -153,12 +153,15 @@ export class LoginComponent implements OnInit {
         .subscribe(
           {
             next: (data: any) => {
+              const body = data.body;
+              const token = body.token;
+              const refreshToken = body.refreshToken;
 
               let jwt = data.headers.get('Authorization');
-              this.authenticationService.saveToken(jwt);
+              this.authenticationService.saveTokens(token, refreshToken);
               this.authenticationService.getUserByUsername(this.loginForm.value.username).subscribe((data: any) => {
                 if (!data.enabled) {
-                  this.error = 'Compte inactif,Merci de contacter l\'administrateur';
+                  this.error = 'Compte inactif, Merci de contacter l\'administrateur';
                   this.loading = false;
                   this.router.navigate(['/auth/signin']);
                 } else {

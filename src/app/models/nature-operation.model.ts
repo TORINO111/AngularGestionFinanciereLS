@@ -19,7 +19,7 @@ export class NatureOperationDto {
   libelle: string;
 
   compteComptableId: number;
-  compteComptableCode: string;
+  compteComptableCode: string;  
   compteComptableIntitule: string;
 
   categorieId: number;

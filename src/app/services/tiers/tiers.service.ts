@@ -23,15 +23,16 @@ export interface ImportTiersResultDTO {
 })
 export class TiersService {
 
-  //private host:string='//4.222.22.46:8082/gest-fin';
-  //private host:string='http://localhost:8082';
-
   private baseUrl = `${environment.apiUrl}/api/tiers`;
 
   constructor(private http: HttpClient) { }
 
   getAll(): Observable<Tiers[]> {
     return this.http.get<Tiers[]>(this.baseUrl);
+  }
+
+  getTiersById(id: number) {
+    return this.http.get<void>(`${this.baseUrl}/${id}`);
   }
 
   getAllPageable(
