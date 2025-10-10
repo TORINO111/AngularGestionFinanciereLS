@@ -113,7 +113,6 @@ export class AuthenticationService {
     sessionStorage.setItem('roles', JSON.stringify(this.current_user_roles));
   }
 
-
   logout(): void {
     sessionStorage.clear();
     localStorage.clear();
