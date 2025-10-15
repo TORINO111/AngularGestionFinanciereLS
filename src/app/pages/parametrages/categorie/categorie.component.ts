@@ -59,6 +59,7 @@ export class CategorieComponent implements OnInit {
   selected?: boolean = false;
   comptes: CompteComptableDTO[];
   societeBi: any;
+  userBi: any;
 
   constructor(
     private categorieService: CategorieService,
@@ -73,7 +74,8 @@ export class CategorieComponent implements OnInit {
       libelle: ['', [Validators.required, Validators.minLength(5)]],
       type: ['null', [Validators.required]],
       comptesComptablesIds: [[], [Validators.required]],
-      societeId: [null]
+      societeId: [null],
+      userId: [null]
     });
   }
 
@@ -85,10 +87,13 @@ export class CategorieComponent implements OnInit {
     this.chargerComptesComptables();
 
     const societeActiveStr = localStorage.getItem("societeActive");
-    if (societeActiveStr) {
+    const userActive = localStorage.getItem("user");
+
+    if (societeActiveStr && userActive) {
       this.societeBi = JSON.parse(societeActiveStr);
-      this.categorieForm.patchValue({ societeId: this.societeBi.id });
-    };
+      this.userBi = JSON.parse(userActive);
+    }
+
   }
 
   chargerComptesComptables() {
@@ -237,14 +242,14 @@ export class CategorieComponent implements OnInit {
 
   openModal(): void {
     this.selectedIndex = null;
+    this.resetForm();
     this.modalService.open(this.categorieModal, { size: 'lg', centered: true });
+
   }
 
   editCategorie(index: number): void {
-    this.closeModal();
     this.selectedIndex = index;
     const c = this.categories[index];
-    console.log(c);
 
     this.categorieForm.patchValue({
       id: c.id,
@@ -253,8 +258,21 @@ export class CategorieComponent implements OnInit {
       comptesComptablesIds: c.compteComptableIds || []
     });
 
-    this.modalService.open(this.categorieModal, { size: 'lg', centered: true });
+    const modalRef = this.modalService.open(this.categorieModal, { size: 'lg', centered: true });
+    modalRef.result.finally(() => {
+      this.resetForm();
+    });
   }
+
+  resetForm() {
+    this.categorieForm.reset();
+    this.patchForm();
+  }
+
+  patchForm() {
+    this.categorieForm.patchValue({ societeId: this.societeBi.id, userId: this.userBi.id });
+  }
+
 
   deleteCategorie(index: number): void {
     const c = this.categories[index];
@@ -271,6 +289,7 @@ export class CategorieComponent implements OnInit {
 
   enregistrer(): void {
     this.closeModal();
+    this.patchForm();
     this.isLoading = true;
     this.result = false;
 

@@ -116,6 +116,7 @@ export class EcrituresComponent implements OnInit {
   lastTypeId: any;
   tiersObligatoire: boolean;
   societeBi: any;
+  userBi: any;
 
   constructor(
     private natureOperationService: NatureOperationService,
@@ -135,7 +136,8 @@ export class EcrituresComponent implements OnInit {
       compteComptableId: ['', Validators.required],
       codeJournalId: [null, Validators.required],
       categorieId: [null, Validators.required],
-      societeId: [null, Validators.required],
+      societeId: [null],
+      userId: [null],
       typeNature: [null],
       sectionAnalytiqueId: [null],
       tiersId: [null],
@@ -155,12 +157,15 @@ export class EcrituresComponent implements OnInit {
     this.chargerComptesComptables();
     this.chargerTiers();
     this.initSearchListener();
+    
     const societeActiveStr = localStorage.getItem("societeActive");
-    if (societeActiveStr) {
+    const userActive = localStorage.getItem("user");
+
+    if (societeActiveStr && userActive) {
       this.societeBi = JSON.parse(societeActiveStr);
-      // Patch des valeurs dans les formulaires
-      this.ecritureForm.patchValue({ societeId: this.societeBi.id });
+      this.userBi = JSON.parse(userActive);
     }
+
     this.ecritureForm.get('montantHt')?.valueChanges.subscribe(() => this.calculerMontantTtc());
     this.ecritureForm.get('tva')?.valueChanges.subscribe(() => this.calculerMontantTtc());
   }
@@ -352,7 +357,7 @@ export class EcrituresComponent implements OnInit {
       return;
     }
 
-    const natureOperation = this.ecritureForm.value as NatureOperationDto;
+    const natureOperation = this.ecritureForm.value;
     console.log(natureOperation);
     const action$ = natureOperation?.id
       ? this.natureOperationService.update(natureOperation.id, natureOperation)
@@ -547,8 +552,14 @@ export class EcrituresComponent implements OnInit {
   openModal(): void {
     this.formVisible = true;
     this.selectedIndex = null;
-    this.ecritureForm.patchValue({ societeId: 1 });
+    this.ecritureForm.reset();
+    this.patchForm();
+    console.log(this.ecritureForm.value);
     this.modalService.open(this.modalContent, { size: 'lg', centered: true });
+  }
+
+  patchForm() {
+    this.ecritureForm.patchValue({ societeId: this.societeBi.id, userId: this.userBi.id });
   }
 
   closeModal(): void {

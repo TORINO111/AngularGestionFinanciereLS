@@ -71,6 +71,7 @@ export class PlanAnalytiqueComponent implements OnInit {
   errorMessage: string | null = null;
   importResult: ImportPlanComptableResultDTO | null = null;
   societeBi: any;
+  userBi: any;
 
   constructor(
     private fb: UntypedFormBuilder,
@@ -83,6 +84,8 @@ export class PlanAnalytiqueComponent implements OnInit {
     this.planAnalytiqueForm = this.fb.group({
       id: [null],
       intitule: ['', Validators.required],
+      societeId: [null],
+      userId: [null],
     });
     this.modelImportForm = this.fb.group({
       societeId: [1],
@@ -98,12 +101,13 @@ export class PlanAnalytiqueComponent implements OnInit {
     this.initSearchListener();
 
     const societeActiveStr = localStorage.getItem("societeActive");
-    if (societeActiveStr) {
+    const userActive = localStorage.getItem("user");
+
+    if (societeActiveStr && userActive) {
       this.societeBi = JSON.parse(societeActiveStr);
-      console.log(this.societeBi);
-      this.planAnalytiqueForm.patchValue({ societeId: this.societeBi.id });
-      this.modelImportForm.patchValue({ societeId: this.societeBi.id });
+      this.userBi = JSON.parse(userActive);
     };
+    
   }
 
   allowAlphaNumeric(event: KeyboardEvent) {
@@ -225,6 +229,7 @@ export class PlanAnalytiqueComponent implements OnInit {
 
   enregistrer(): void {
     this.closeModal();
+    this.patchForm();
     this.isLoading = true;
     this.result = false;
 
@@ -367,7 +372,13 @@ export class PlanAnalytiqueComponent implements OnInit {
 
   openModal(): void {
     this.selectedIndex = null;
+    this.planAnalytiqueForm.reset();
+    this.patchForm();
     this.modalService.open(this.modalContent, { centered: true });
+  }
+
+  patchForm() {
+    this.planAnalytiqueForm.patchValue({ societeId: this.societeBi.id, userId: this.userBi.id });
   }
 
   editPlan(index: number): void {
@@ -375,7 +386,6 @@ export class PlanAnalytiqueComponent implements OnInit {
     const plan = this.lignes[index];
     // this.planAnalytiqueForm.patchValue(plan);
     this.planAnalytiqueForm.patchValue(plan);
-    console.log(this.planAnalytiqueForm);
 
     this.modalService.open(this.modalContent, { centered: true });
   }

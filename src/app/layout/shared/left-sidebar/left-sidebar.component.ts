@@ -37,8 +37,6 @@ export class LeftSidebarComponent implements OnInit, AfterViewInit {
         this.hideMenu(); //hides leftbar on change of route
       }
     });
-
-
   }
 
   ngOnInit(): void {

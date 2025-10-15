@@ -2,12 +2,12 @@
     title="Journaux"></app-page-title>
 
 <!-- Loader global -->
-<div *ngIf="isLoading" class="loader-container">
+<div *ngIf="!result" class="loader-container">
     <div class="lds-dual-ring"></div>
 </div>
 
 <!-- Contenu principal -->
-<div *ngIf="!isLoading" class="card">
+<div *ngIf="result" class="card">
     <div class="card-body">
 
         <!-- Bouton + filtres -->
@@ -100,9 +100,8 @@
 
 <!-- MODAL CREATION / MODIFICATION -->
 <ng-template #journalModal>
-    <div class="modal-header text-white" style="background-color: #37a6de; padding: 6px 10px;">
+    <div class="modal-header text-white" style="background-color: #37a6de;  ">
         <h4 class="modal-title">{{ selectedIndex !== null ? 'Modifier Journal' : 'Nouveau Journal' }}</h4>
-        <button type="button" class="btn" style="color:white; font-size:1.4rem;" (click)="closeModal()">&times;</button>
     </div>
 
     <div class="modal-body">

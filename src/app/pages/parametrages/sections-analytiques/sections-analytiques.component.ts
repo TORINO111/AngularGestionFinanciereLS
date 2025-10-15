@@ -41,6 +41,7 @@ export class SectionsAnalytiquesComponent implements OnInit {
 
   isLoading = false;
   result = false;
+  userBi: any;
 
 
   constructor(
@@ -53,7 +54,8 @@ export class SectionsAnalytiquesComponent implements OnInit {
     this.sectionForm = this.fb.group({
       planAnalytiqueId: [null, Validators.required],
       libelle: ['', [Validators.required, Validators.pattern(/^[\p{L}\p{M}\d\s\-']+$/u)]],
-      societeId: [null]
+      societeId: [null],
+      userId: [null],
     });
   }
 
@@ -64,10 +66,11 @@ export class SectionsAnalytiquesComponent implements OnInit {
     this.initSearchListener();
 
     const societeActiveStr = localStorage.getItem("societeActive");
-    if (societeActiveStr) {
+    const userActive = localStorage.getItem("user");
+
+    if (societeActiveStr && userActive) {
       this.societeBi = JSON.parse(societeActiveStr);
-      console.log(this.societeBi);
-      this.sectionForm.patchValue({ societeId: this.societeBi.id });
+      this.userBi = JSON.parse(userActive);
     };
   }
 
@@ -96,6 +99,7 @@ export class SectionsAnalytiquesComponent implements OnInit {
   }
 
   openModal(): void {
+    this.sectionForm.reset();
     this.formVisible = true;
     this.selectedIndex = null;
     this.modalService.open(this.modalContent, { centered: true });
@@ -104,12 +108,21 @@ export class SectionsAnalytiquesComponent implements OnInit {
   editSection(index: number): void {
     this.selectedIndex = index;
     const section = this.sections[index];
+    this.patchForm();
+    console.log(section);
     this.sectionForm.patchValue({
+      id: section.id,
       libelle: section.libelle,
-      planAnalytiqueId: this.plans.find(p => p.nom === section.planAnalytique)?.id || null,
+      planAnalytiqueId: this.plans.find(p => p.intitule === section.planAnalytique)?.id || null,
     });
+    console.log(this.sectionForm.value);
+
     this.formVisible = true;
     this.modalService.open(this.modalContent, { centered: true });
+  }
+
+  patchForm() {
+    this.sectionForm.patchValue({ societeId: this.societeBi.id, userId: this.userBi.id });
   }
 
   deleteSection(index: number): void {

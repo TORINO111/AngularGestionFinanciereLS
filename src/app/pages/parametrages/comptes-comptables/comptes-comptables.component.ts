@@ -53,6 +53,7 @@ export class ComptesComptablesComponent implements OnInit {
   http: any;
   societeBi: any;
   result = false;
+  userBi: any;
 
   constructor(
     private fb: FormBuilder,
@@ -67,7 +68,8 @@ export class ComptesComptablesComponent implements OnInit {
       code: ['', [Validators.required, Validators.pattern(/^\d{1,8}$/)]],
       intitule: ['', [Validators.required, Validators.minLength(3)]],
       planComptableId: ['', Validators.required],
-      societeId: [null]
+      societeId: [null],
+      userId: [null]
     });
     this.modelImportForm = this.fb.group({
       fichierExcel: [null, Validators.required],
@@ -88,12 +90,11 @@ export class ComptesComptablesComponent implements OnInit {
     this.initSearchListener();
 
     const societeActiveStr = localStorage.getItem("societeActive");
-    if (societeActiveStr) {
-      this.societeBi = JSON.parse(societeActiveStr);
-      console.log(this.societeBi);
+    const userActive = localStorage.getItem("user");  
 
-      this.compteForm.patchValue({ societeId: this.societeBi.id });
-      this.modelImportForm.patchValue({ societeId: this.societeBi.id });
+    if (societeActiveStr && userActive) {
+      this.societeBi = JSON.parse(societeActiveStr);
+      this.userBi = JSON.parse(userActive);
     };
   }
 
@@ -113,6 +114,7 @@ export class ComptesComptablesComponent implements OnInit {
    */
   loadComptes(): void {
     this.isLoading = true;
+    this.lignes = [];
     this.compteService.getAll().subscribe({
       next: (data) => {
         this.comptes = data.map(d => this.fb.group({
@@ -262,12 +264,21 @@ export class ComptesComptablesComponent implements OnInit {
   openModal(): void {
     this.formVisible = true;
     this.selectedIndex = null;
+    this.compteForm.reset();
+    this.patchForm();
     this.modalService.open(this.modalContent, { size: 'lg', centered: true });
   }
 
   /**
+   * Patcher le formulaire avec les id du user connecté ainsi que sa société création de compte et initialise le formulaire.
+   */
+  patchForm() {
+      this.compteForm.patchValue({ societeId: this.societeBi.id, userId: this.userBi.id });
+  }
+
+  /**
    * Prépare l’édition d’un compte existant dans le modal.
-   * @param index index du compte à éditer
+   * @param index index du compte à édite
    */
   editCompte(index: number): void {
     this.selectedIndex = index;
@@ -314,6 +325,7 @@ export class ComptesComptablesComponent implements OnInit {
    */
   saveCompte(): void {
     this.closeModal();
+    this.patchForm();
     this.isLoading = true;
     this.result = false;
 
@@ -331,7 +343,7 @@ export class ComptesComptablesComponent implements OnInit {
 
     action$.subscribe({
       next: () => {
-        this.loadComptes();
+        this.chargerComptesComptables();
         this.toastr.success(`Compte ${formValue.id ? 'modifié' : 'créé'} avec succès`);
         this.isLoading = false;
         this.result = true;

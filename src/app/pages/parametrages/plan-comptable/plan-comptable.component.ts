@@ -66,6 +66,7 @@ export class PlanComptableComponent implements OnInit {
   errorMessage: string | null = null;
   importResult: ImportPlanComptableResultDTO | null = null;
   societeBi: any;
+  userBi: any;
 
   constructor(
     private planComptableService: PlanComptableService,
@@ -83,7 +84,8 @@ export class PlanComptableComponent implements OnInit {
       code: ['', [Validators.required,
       Validators.pattern('^[a-zA-Z0-9]+$'),
       Validators.maxLength(5)]],
-      societeId: [null]
+      societeId: [null],
+      userId: [null]
     });
     this.modelImportForm = this.fb.group({
       fichierExcel: [null, Validators.required]
@@ -94,12 +96,15 @@ export class PlanComptableComponent implements OnInit {
     this.pageTitle = [{ label: 'vos plans comptables', path: '/', active: true }];
     this.chargerPlanComptables();
     this.chargerSocietes();
+
     const societeActiveStr = localStorage.getItem("societeActive");
-    if (societeActiveStr) {
+    const userActive = localStorage.getItem("user");
+
+    if (societeActiveStr && userActive) {
       this.societeBi = JSON.parse(societeActiveStr);
-      console.log(this.societeBi);
-      this.planComptableForm.patchValue({ societeId: this.societeBi.id });
+      this.userBi = JSON.parse(userActive);
     };
+
     this.initSearchListener()
   }
 
@@ -141,6 +146,7 @@ export class PlanComptableComponent implements OnInit {
     this.closeModal();
     this.isLoading = true;
     this.result = false;
+    this.patchForm();
 
     if (this.planComptableForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
@@ -149,13 +155,7 @@ export class PlanComptableComponent implements OnInit {
       return;
     }
 
-    const formValue = this.planComptableForm.value;
-    const planComptable: any = {
-      id: formValue.id ?? null,
-      intitule: formValue.intitule,
-      code: formValue.code,
-      societeId: this.societeBi.id
-    };
+    const planComptable = this.planComptableForm.value;
 
     const action$ = planComptable.id
       ? this.planComptableService.update(planComptable.id, planComptable)
@@ -288,6 +288,8 @@ export class PlanComptableComponent implements OnInit {
   openModal(): void {
     this.formVisible = true;
     this.selectedIndex = null;
+    this.planComptableForm.reset();
+    this.patchForm();
     this.modalService.open(this.modalContent, { centered: true });
   }
 
@@ -296,7 +298,19 @@ export class PlanComptableComponent implements OnInit {
     const plan = this.plansComptables[index];
     this.planComptableForm.patchValue(plan);
 
-    this.modalService.open(this.modalContent, { size: 'lg', centered: true });
+    const modalRef = this.modalService.open(this.modalContent, { size: 'lg', centered: true });
+    modalRef.result.finally(() => {
+      this.resetForm();
+    });
+  }
+
+  resetForm() {
+    this.planComptableForm.reset();
+    this.patchForm()
+  }
+
+  patchForm() {
+    this.planComptableForm.patchValue({ societeId: this.societeBi.id, userId: this.userBi.id });
   }
 
   deletePlan(index: number): void {

@@ -3,7 +3,7 @@ import { CodeJournalService } from 'src/app/services/code-journal/code-journal.s
 import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
-import { debounceTime, switchMap, Subject } from 'rxjs';
+import { debounceTime, switchMap, Subject, tap } from 'rxjs';
 import { TypeCategorieService } from 'src/app/services/type-categorie/type-categorie.service';
 
 @Component({
@@ -33,6 +33,8 @@ export class CodeJournalComponent implements OnInit {
   private search$ = new Subject<{ libelle: string; typeJournalId?: number }>();
   selectedIndex: number | null = null;
   types: { id: any; libelle: any; }[];
+  userBi: any;
+  societeBi: any;
 
   constructor(
     private codeJournalService: CodeJournalService,
@@ -45,7 +47,9 @@ export class CodeJournalComponent implements OnInit {
       id: [null],
       libelle: ['', [Validators.required, Validators.minLength(3)]],
       typeJournalId: [null, Validators.required],
-      allowedCategoryTypes: [[]]
+      allowedCategoryTypes: [[]],
+      societeId: [null],
+      userId: [null],
     });
   }
 
@@ -53,7 +57,15 @@ export class CodeJournalComponent implements OnInit {
     this.loadTypesJournaux();
     this.loadCodeJournaux();
     this.initSearchListener();
-    this.chargerTypesCategorie()
+    this.chargerTypesCategorie();
+
+    const societeActiveStr = localStorage.getItem("societeActive");
+    const userActive = localStorage.getItem("user");
+
+    if (societeActiveStr && userActive) {
+      this.societeBi = JSON.parse(societeActiveStr);
+      this.userBi = JSON.parse(userActive);
+    }
   }
 
   chargerTypesCategorie() {
@@ -85,9 +97,11 @@ export class CodeJournalComponent implements OnInit {
           this.lignes = [...this.codeJournaux];
           this.totalElements = data.totalElements;
           this.isLoading = false;
+          this.result = true;
         },
         error: err => {
           this.isLoading = false;
+          this.result = true;
           this.notification.showError('Erreur lors du chargement des codes journaux');
         }
       });
@@ -97,6 +111,9 @@ export class CodeJournalComponent implements OnInit {
     this.search$
       .pipe(
         debounceTime(300),
+        tap(() => {
+          this.isLoading = true;
+        }),
         switchMap(({ libelle, typeJournalId }) => {
           this.currentPage = 0;
           return this.codeJournalService.getAll(0, this.pageSize, libelle, typeJournalId);
@@ -107,9 +124,14 @@ export class CodeJournalComponent implements OnInit {
           this.codeJournaux = data.content;
           this.lignes = [...this.codeJournaux];
           this.totalElements = data.totalElements;
+          this.isLoading = false;
         },
-        error: err => console.error('Erreur recherche', err)
-      });
+        error: err => {
+          this.isLoading = false;
+          console.error('Erreur recherche', err)
+        }
+      })
+      ;
   }
 
   onFilterChange(): void {
@@ -130,25 +152,42 @@ export class CodeJournalComponent implements OnInit {
   }
 
   openModal(): void {
-    this.modalService.open(this.journalModal, { size: 'lg', centered: true });
+    this.patchForm();
+    this.resetFormClicVide();
   }
 
   closeModal(): void {
     this.modalService.dismissAll();
     this.selectedIndex = null;
+    this.resetForm();
   }
 
   editJournal(index: number): void {
+    this.patchForm();
     this.selectedIndex = index;
     const j = this.codeJournaux[index];
     console.log(j);
-    this.journalForm.patchValue({
-      id: j.id,
-      libelle: j.libelle,
-      typeJournalId: j.typeJournal?.id,
-      allowedCategoryTypes: j.allowedCategoryTypes
+
+    this.journalForm.patchValue(j);
+
+
+    this.resetFormClicVide();
+  }
+
+  resetFormClicVide() {
+    const modalRef = this.modalService.open(this.journalModal, { size: 'lg', centered: true });
+    modalRef.result.finally(() => {
+      this.resetForm();
     });
-    this.modalService.open(this.journalModal, { size: 'lg', centered: true });
+  }
+
+  resetForm() {
+    this.journalForm.reset();
+    this.patchForm();
+  }
+
+  patchForm() {
+    this.journalForm.patchValue({ societeId: this.societeBi.id, userId: this.userBi.id });
   }
 
   deleteJournal(index: number): void {
@@ -162,7 +201,7 @@ export class CodeJournalComponent implements OnInit {
   }
 
   save(): void {
-    this.closeModal();
+    this.modalService.dismissAll();
     this.isLoading = true;
     this.result = false;
 

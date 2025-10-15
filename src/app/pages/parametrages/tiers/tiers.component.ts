@@ -75,6 +75,7 @@ export class TiersComponent implements OnInit {
   comptes: CompteComptableDTO[];
   lastTypeId: any;
   typesCategorie: { id: any; libelle: any; }[];
+  userBi: any;
 
   constructor(
     private tiersService: TiersService,
@@ -93,6 +94,7 @@ export class TiersComponent implements OnInit {
       telephoneTiers: [''],
       type: ['', Validators.required],
       societeId: [null],
+      userId: [null],
       comptesParCategorie: this.fb.array([])
     });
 
@@ -104,12 +106,15 @@ export class TiersComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageTitle = [{ label: 'Vos tiers', path: '/', active: true }];
+
     const societeActiveStr = localStorage.getItem("societeActive");
-    if (societeActiveStr) {
+    const userActive = localStorage.getItem("user");
+
+    if (societeActiveStr && userActive) {
       this.societeBi = JSON.parse(societeActiveStr);
-      this.tiersForm.patchValue({ societeId: this.societeBi.id });
-      this.modelImportForm.patchValue({ societeId: this.societeBi.id });
+      this.userBi = JSON.parse(userActive);
     }
+
     this.chargerTiers();
     this.chargerSocietes();
     this.chargerComptesComptables();
@@ -241,8 +246,9 @@ export class TiersComponent implements OnInit {
   }
 
   enregistrer(): void {
-    this.closeModal();
+    this.modalService.dismissAll();
 
+    this.patchForm();
     if (this.tiersForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
       return;
@@ -254,7 +260,7 @@ export class TiersComponent implements OnInit {
     const tierData = {
       ...this.tiersForm.value,
       societeId: this.societeBi.id
-    } as Tiers;
+    };
 
     const action$ = tierData.id
       ? this.tiersService.update(tierData.id, tierData)
@@ -404,19 +410,42 @@ export class TiersComponent implements OnInit {
   }
 
   openScrollableModal(content: TemplateRef<NgbModal>) {
+    this.modelImportForm.patchValue({ societeId: this.societeBi.id });
     this.modalService.open(content, { size: 'lg', centered: true, scrollable: true, backdrop: 'static', keyboard: false });
   }
 
   openModal() {
+
+    this.clearComptes();
+    this.resetForm();
+
     this.formVisible = true;
-    this.modalService.open(this.modalContent, { size: 'lg', centered: true });
+
+    const modalRef = this.modalService.open(this.modalContent, { size: 'lg', centered: true });
+    modalRef.result.finally(() => {
+      this.resetForm();
+    });
+
+  }
+
+  patchForm() {
+    this.tiersForm.patchValue({ societeId: this.societeBi.id, userId: this.userBi.id });
+  }
+
+  resetForm() {
+    this.tiersForm.reset();
+    this.tiersForm.patchValue({ societeId: this.societeBi.id, userId: this.userBi.id });
   }
 
   closeModal(): void {
     this.modalService.dismissAll();
+    this.resetForm();
   }
 
   editTiers(index: number) {
+    this.isLoading = true;
+
+    this.patchForm();
     this.selectedIndex = index;
     const tierBi = this.lignes[index];
 
@@ -443,12 +472,22 @@ export class TiersComponent implements OnInit {
 
         this.tiersForm.patchValue(patch);
 
+        const modalRef = this.modalService.open(this.modalContent, { size: 'lg', centered: true });
+        modalRef.result.finally(() => {
+          this.resetForm();
+        });
+        this.isLoading = false;
 
-        this.modalService.open(this.modalContent, { size: 'lg', centered: true });
+
       },
       error: err => console.error('Impossible de charger le tiers', err)
     });
 
+  }
+
+  clearComptes(){
+    const comptesArray = this.tiersForm.get('comptesParCategorie') as FormArray;
+    comptesArray.clear();
   }
 
   private initSearchListener() {
