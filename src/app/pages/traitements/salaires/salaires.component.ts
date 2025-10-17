@@ -3,10 +3,10 @@ import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
-import { NatureOperationDto } from 'src/app/models/nature-operation.model';
-import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
-import { Operation } from 'src/app/models/operation.model';
-import { OperationService } from 'src/app/services/operations/operation.service';
+import { OperationDto } from 'src/app/models/operation.model';
+import { NatureOperationService } from 'src/app/services/operations/operations.service';
+import { Operation } from 'src/app/models/operationRevoke.model';
+import { OperationService } from 'src/app/services/operationsRevolu/operation.service';
 import { Tiers } from 'src/app/models/tiers.model';
 import { TiersService } from 'src/app/services/tiers/tiers.service';
 import { Select2Data } from 'ng-select2-component';
@@ -264,7 +264,7 @@ export class SalairesComponent implements OnInit {
 //       // 3️⃣ Charger les natureOperations dans dropdown
 //       this.natureOperations = [{
 //         label: '',
-//         options: (natureOperations as NatureOperationDto[]).map(n => ({
+//         options: (natureOperations as OperationDto[]).map(n => ({
 //           value: n.id,
 //           label: n.libelle
 //         }))
@@ -363,7 +363,7 @@ export class SalairesComponent implements OnInit {
 //     }
 
 //     this.natureOperationService.getByFilters(societeId, 'SALAIRE', 'SALAIRE').subscribe(
-//       (data: NatureOperationDto[]) => {
+//       (data: OperationDto[]) => {
 //         this.natureOperations = [{
 //           label: '',
 //           options: data.map(d => ({ value: d.id, label: d.libelle }))

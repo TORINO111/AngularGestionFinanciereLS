@@ -219,7 +219,7 @@ export class AuthenticationService {
   isAdmin() { return sessionStorage.getItem('role') === 'a'; }
   isSuperviseur() { return sessionStorage.getItem('role') === 'b'; }
   isComptable() { return sessionStorage.getItem('role') === 'c'; }
-
+  
   get isLoggedIn(): boolean {
     return !!this.getToken();
   }

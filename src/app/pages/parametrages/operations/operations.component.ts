@@ -1,7 +1,7 @@
 import { PlanAnalytiqueDTO } from '../../../models/plan-analytique.model';
 import { PlansAnalytiquesService } from '../../../services/plans-analytiques/plans-analytiques.service';
 import { Component, ElementRef, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
-import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
+import { NatureOperationService } from 'src/app/services/operations/operations.service';
 import { CategorieService } from 'src/app/services/categories/categorie.service';
 import { PlanComptableService } from 'src/app/services/plan-comptable/plan-comptable.service';
 import { UntypedFormGroup, Validators, UntypedFormBuilder, FormGroup } from '@angular/forms';
@@ -17,28 +17,29 @@ import { Categorie } from 'src/app/models/categorie.model';
 import { CompteComptableService } from 'src/app/services/comptes-comptables/comptes-comptables.service';
 import { CompteComptableDTO } from 'src/app/models/compte-comptable';
 import { PlanComptable } from 'src/app/models/plan-comptable.model';
-import { NatureOperationDto } from 'src/app/models/nature-operation.model';
+import { OperationDto } from 'src/app/models/operation.model';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { debounceTime, Subject, switchMap, tap } from 'rxjs';
 import { TiersService } from 'src/app/services/tiers/tiers.service';
 
 @Component({
   selector: 'app-nature-operations',
-  templateUrl: './ecritures.component.html',
-  styleUrls: ['./ecritures.component.scss'],
+  templateUrl: './operations.component.html',
+  styleUrls: ['./operations.component.scss'],
   encapsulation: ViewEncapsulation.None,
   standalone: false
 })
-export class EcrituresComponent implements OnInit {
+export class OperationsComponent implements OnInit {
 
   @ViewChild('modalContent') modalContent!: TemplateRef<any>;
+  @ViewChild('DetailModalContent') detailModalContent!: TemplateRef<any>;
 
   @ViewChild('searchCodeChamp', { static: true }) searchCodeChamp!: ElementRef<HTMLInputElement>;
   @ViewChild('searchCategorie', { static: true }) searchCategorie!: ElementRef<HTMLInputElement>;
   @ViewChild('searchJournal', { static: true }) searchJournal!: ElementRef<HTMLInputElement>;
 
 
-  selected?: NatureOperationDto | null;
+  selected?: OperationDto | null;
 
   natureOperations: any[] = [];
   lignes: any[] = [];
@@ -117,6 +118,7 @@ export class EcrituresComponent implements OnInit {
   tiersObligatoire: boolean;
   societeBi: any;
   userBi: any;
+  exerciceBi: any;
 
   constructor(
     private natureOperationService: NatureOperationService,
@@ -138,6 +140,7 @@ export class EcrituresComponent implements OnInit {
       categorieId: [null, Validators.required],
       societeId: [null],
       userId: [null],
+      exerciceId: [null],
       typeNature: [null],
       sectionAnalytiqueId: [null],
       tiersId: [null],
@@ -148,8 +151,8 @@ export class EcrituresComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.pageTitle = [{ label: "Vos écritures", path: '/', active: true }];
-    this.chargerNatureOperationDtos();
+    this.pageTitle = [{ label: "Vos opérations", path: '/', active: true }];
+    this.chargerOperationPageable();
     this.chargerCategories();
     this.chargerPlansAnalytiques();
     this.chargerCodesJournaux();
@@ -157,13 +160,16 @@ export class EcrituresComponent implements OnInit {
     this.chargerComptesComptables();
     this.chargerTiers();
     this.initSearchListener();
-    
+
     const societeActiveStr = localStorage.getItem("societeActive");
     const userActive = localStorage.getItem("user");
+    const exerciceActive = localStorage.getItem("exerciceEnCours");
 
-    if (societeActiveStr && userActive) {
+    if (societeActiveStr && userActive && exerciceActive) {
       this.societeBi = JSON.parse(societeActiveStr);
       this.userBi = JSON.parse(userActive);
+      console.log(this.userBi);
+      this.exerciceBi = JSON.parse(exerciceActive);
     }
 
     this.ecritureForm.get('montantHt')?.valueChanges.subscribe(() => this.calculerMontantTtc());
@@ -261,7 +267,11 @@ export class EcrituresComponent implements OnInit {
   }
 
   private applyCategorieRules(categorie: Categorie) {
-    this.showSectionAnalytique = ['RECETTE', 'DEPENSE'].includes(categorie.type);
+    const ANALYTICAL_TYPES = ['RECETTE', 'DEPENSE'];
+    const TIERS_REQUIRED_TYPES = ['RECETTE', 'DEPENSE', 'SALAIRE'];
+    const TIERS_OPTIONAL_TYPES = ['IMMOBILISATION', 'TRESORERIE', 'TRANSFERT'];
+
+    this.showSectionAnalytique = ANALYTICAL_TYPES.includes(categorie.type);
     this.showTVA = this.showSectionAnalytique;
     this.showTTC = this.showSectionAnalytique;
 
@@ -269,17 +279,21 @@ export class EcrituresComponent implements OnInit {
       this.ecritureForm.patchValue({
         tva: 0,
         montantTtc: this.ecritureForm.value.montantHt
-      });
+      }, { emitEvent: false });
     }
 
-    if (['RECETTE', 'DEPENSE', 'SALAIRE'].includes(categorie.type)) {
+    if (TIERS_REQUIRED_TYPES.includes(categorie.type)) {
       this.showTiers = true;
       this.isTiersObligatoire = true;
-      this.ecritureForm.get('tiersId')?.setValidators([Validators.required]);
-    } else if (['IMMOBILISATION', 'TRESORERIE', 'TRANSFERT'].includes(categorie.type)) {
+      const tiersControl = this.ecritureForm.get('tiersId');
+      tiersControl?.setValidators([Validators.required]);
+      tiersControl?.updateValueAndValidity();
+    } else if (TIERS_OPTIONAL_TYPES.includes(categorie.type)) {
       this.showTiers = true;
       this.isTiersObligatoire = false;
-      this.ecritureForm.get('tiersId')?.clearValidators();
+      const tiersControl = this.ecritureForm.get('tiersId');
+      tiersControl?.clearValidators();
+      tiersControl?.updateValueAndValidity();
     } else {
       this.resetCategorieRules();
     }
@@ -336,7 +350,7 @@ export class EcrituresComponent implements OnInit {
   //   this.deleteCabinet(cabinet);
   // }
 
-  edit(nature: NatureOperationDto): void {
+  edit(nature: OperationDto): void {
     this.selected = { ...nature };
     this.ecritureForm.patchValue(this.selected);
     this.formVisible = true;
@@ -365,7 +379,7 @@ export class EcrituresComponent implements OnInit {
 
     action$.subscribe({
       next: () => {
-        this.chargerNatureOperationDtos();
+        this.chargerOperationPageable();
         const msg = this.selected?.id ? 'Modifié' : 'Enregistré';
         this.notification.showSuccess(`${msg} avec succès`);
         this.loading = false;
@@ -381,7 +395,7 @@ export class EcrituresComponent implements OnInit {
     });
   }
 
-  chargerNatureOperationDtos(page: number = 0): void {
+  chargerOperationPageable(page: number = 0): void {
     this.isLoading = true;
     this.result = false;
 
@@ -536,7 +550,7 @@ export class EcrituresComponent implements OnInit {
         this.natureOperationService.delete(nature.id!).subscribe({
           next: () => {
             this.natureOperations = [];
-            this.chargerNatureOperationDtos();
+            this.chargerOperationPageable();
             Swal.fire('Succès', 'Nature supprimée avec succès.', 'success');
           },
           error: () => {
@@ -559,7 +573,7 @@ export class EcrituresComponent implements OnInit {
   }
 
   patchForm() {
-    this.ecritureForm.patchValue({ societeId: this.societeBi.id, userId: this.userBi.id });
+    this.ecritureForm.patchValue({ societeId: this.societeBi.id, userId: this.userBi.id, exerciceId: this.exerciceBi.id });
   }
 
   closeModal(): void {
@@ -588,7 +602,7 @@ export class EcrituresComponent implements OnInit {
   }
 
   goToPage(page: number = 0) {
-    this.chargerNatureOperationDtos(page);
+    this.chargerOperationPageable(page);
   }
 
   totalPages(): number {

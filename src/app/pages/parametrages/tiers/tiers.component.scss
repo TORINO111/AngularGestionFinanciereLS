@@ -129,6 +129,10 @@ tr {
   transition: background-color 0.2s ease;
 }
 
+.pagination .page-item + .page-item {
+  margin-left: 5px;
+}
+
 .btn-success {
   background-color: #37a6de; 
   border: #37a6de

@@ -1,299 +1,340 @@
 <!-- page title -->
 <app-page-title [breadcrumbItems]="pageTitle" title="Utilisateurs"></app-page-title>
+
 @if (!result) {
-  <div class="loader-container">
-    <div class="lds-dual-ring"></div>
-  </div>
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
 }
 @if (result) {
-  <div >
-    <div class="row">
-      <div class="col-12">
-        <div class="page-title-box">
-          <h4 class="page-title"></h4>
-          <div class="page-title-right">
-            <div class="mt-2 mt-md-0">
-              <button (click)="openScrollableModal(utilisateurModal)" type="button" class="btn btn-success me-1 mb-2 mb-sm-0">
-                <i class="uil-plus me-1"></i> CREER UN UTILISATEUR
-              </button>
-            </div>
-          </div>
+<!-- <div>
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box">
+        <div class="mt-2" style="float: left;">
+          <button (click)="openModal()" type="button" class="btn btn-success">
+            + CREER UN UTILISATEUR
+          </button>
         </div>
       </div>
     </div>
-    <!-- Refonte par Victorin-->
-    <ng-template #utilisateurModal let-modal>
-      <div class="modal-header" style="background-color: #37a6de;">
-        <h4 class="modal-title text-light" id="NewTaskModalLabel">UTILISATEUR</h4>
-        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
-      </div>
-      <div class="modal-body">
-        <form (ngSubmit)="onSaveUtilisateur(utilisateurForm);modal.close('Close click')" 
-              [formGroup]="utilisateurForm" class="p-2">
+  </div>
 
-          <!-- Nom et Prénom -->
-          <div class="row mb-1">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="nom">Nom</label>
-                <input type="text" id="nom" formControlName="nom" class="form-control" placeholder="Nom">
-                @if (utilisateurForm.get('nom')?.hasError('required') && utilisateurForm.get('nom')?.touched) {
-                  <strong class="text-danger">Ce champ est obligatoire !</strong>
-                }
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="prenom">Prénom(s)</label>
-                <input type="text" id="prenom" formControlName="prenom" class="form-control" placeholder="Prénom">
-                @if (utilisateurForm.get('prenom')?.hasError('required') && utilisateurForm.get('prenom')?.touched) {
-                  <strong class="text-danger">Ce champ est obligatoire !</strong>
-                }
-              </div>
-            </div>
-          </div>
+  Refonte par Victorin
+  <ng-template #utilisateurModal let-modal>
+    <div class="modal-header" style="background-color: #37a6de;">
+      <h4 class="modal-title text-light" id="NewTaskModalLabel">UTILISATEUR</h4>
+      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="onSaveUtilisateur(utilisateurForm);modal.close('Close click')" [formGroup]="utilisateurForm"
+        class="p-2">
 
-          <!-- Username et Civilité -->
-          <div class="row mb-1">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" formControlName="username" class="form-control" placeholder="Username">
-                @if (utilisateurForm.get('username')?.hasError('required') && utilisateurForm.get('username')?.touched) {
-                  <strong class="text-danger">Ce champ est obligatoire !</strong>
-                }
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="civilite">Civilité</label>
-                <select formControlName="civilite" class="form-select" id="civilite" required>
-                  <option value="" disabled selected>--- Sélectionner ---</option>
-                  <option value="HOMME">Homme</option>
-                  <option value="FEMME">Femme</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Email et Téléphone -->
-          <div class="row mb-1">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" formControlName="email" class="form-control" placeholder="Email">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="telephone">Téléphone</label>
-                <input type="text" id="telephone" formControlName="telephone" class="form-control" placeholder="Téléphone">
-              </div>
-            </div>
-          </div>
-
-          <!-- Mot de passe et Type -->
-          <div class="row mb-1">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="password">Mot de passe</label>
-                <input type="password" id="password" formControlName="password" class="form-control" placeholder="Mot de passe">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="type">Type</label>
-                <input type="text" id="type" formControlName="type" class="form-control" placeholder="Type">
-              </div>
-            </div>
-          </div>
-
-          <!-- Société et Rôles -->
-          <div class="row mb-1">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="societeId">Société</label>
-                <select formControlName="societeId" class="form-select" id="societeId">
-                  <option value="" disabled selected>--- Sélectionner ---</option>
-                  <option *ngFor="let s of societes" [value]="s.id">{{s.nom}}</option>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="rolesId">Rôles</label>
-                <select formControlName="rolesId" class="form-select" id="rolesId" multiple required>
-                  <option *ngFor="let role of roles" [value]="role.id">{{role.libelle}}</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Enabled -->
-          <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" id="enabled" formControlName="enabled">
-            <label class="form-check-label" for="enabled">Compte actif</label>
-          </div>
-
-          <!-- Footer -->
-          <div class="modal-footer">
-            <button type="button" class="btn btn-danger" (click)="modal.close('Close click')">FERMER</button>
-            <button type="submit" [disabled]="utilisateurForm.invalid" class="btn btn-primary">
-              @if (!loading) {
-                <span>ENREGISTRER</span>
+        Nom et Prénom 
+        <div class="row mb-1">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="nom">Nom</label>
+              <input type="text" id="nom" formControlName="nom" class="form-control" placeholder="Nom">
+              @if (utilisateurForm.get('nom')?.hasError('required') && utilisateurForm.get('nom')?.touched) {
+              <strong class="text-danger">Ce champ est obligatoire !</strong>
               }
-              @if (loading) {
-                <span>EN COURS <span class="spinner-border"></span></span>
-              }
-            </button>
+            </div>
           </div>
-        </form>
-      </div>
-    </ng-template>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="prenom">Prénom(s)</label>
+              <input type="text" id="prenom" formControlName="prenom" class="form-control" placeholder="Prénom">
+              @if (utilisateurForm.get('prenom')?.hasError('required') && utilisateurForm.get('prenom')?.touched) {
+              <strong class="text-danger">Ce champ est obligatoire !</strong>
+              }
+            </div>
+          </div>
+        </div>
 
-    <div  class="card">
-      <div class="card-body">
+        <!-- Username et Civilité
+        <div class="row mb-1">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input type="text" id="username" formControlName="username" class="form-control" placeholder="Username">
+              @if (utilisateurForm.get('username')?.hasError('required') && utilisateurForm.get('username')?.touched) {
+              <strong class="text-danger">Ce champ est obligatoire !</strong>
+              }
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="civilite">Civilité</label>
+              <select formControlName="civilite" class="form-select" id="civilite" required>
+                <option value="" disabled selected>--- Sélectionner ---</option>
+                <option value="HOMME">Homme</option>
+                <option value="FEMME">Femme</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Email et Téléphone 
+        <div class="row mb-1">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" formControlName="email" class="form-control" placeholder="Email">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="telephone">Téléphone</label>
+              <input type="text" id="telephone" formControlName="telephone" class="form-control"
+                placeholder="Téléphone">
+            </div>
+          </div>
+        </div>
+
+        <!-- Mot de passe et Type 
+        <div class="row mb-1">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="password">Mot de passe</label>
+              <input type="password" id="password" formControlName="password" class="form-control"
+                placeholder="Mot de passe">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="type">Type</label>
+              <input type="text" id="type" formControlName="type" class="form-control" placeholder="Type">
+            </div>
+          </div>
+        </div>
+
+        <!-- Société et Rôles 
+        <div class="row mb-1">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="societeId">Société</label>
+              <select formControlName="societeId" class="form-select" id="societeId">
+                <option value="" disabled selected>--- Sélectionner ---</option>
+                <option *ngFor="let s of societes" [value]="s.id">{{s.nom}}</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="rolesId">Rôles</label>
+              <select formControlName="rolesId" class="form-select" id="rolesId" multiple required>
+                <option *ngFor="let role of roles" [value]="role.id">{{role.libelle}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enabled 
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="enabled" formControlName="enabled">
+          <label class="form-check-label" for="enabled">Compte actif</label>
+        </div>
+
+        <!-- Footer 
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" (click)="modal.close('Close click')">FERMER</button>
+          <button type="submit" [disabled]="utilisateurForm.invalid" class="btn btn-primary">
+            @if (!loading) {
+            <span>ENREGISTRER</span>
+            }
+            @if (loading) {
+            <span>EN COURS <span class="spinner-border"></span></span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </ng-template>
+
+  <!-- Tableau des utilisateurs 
+  <div class="card">
+    <div class="card-body">
+      <div class="row">
+        <div class="d-flex gap-2 ms-auto mb-3">
+  <input class="p-2" placeholder="Rechercher par nom ou username"
+         [(ngModel)]="searchLibelle"
+         (keyup)="onFilterChange()"
+         (ngModelChange)="onFilterChange()" />
+</div>
+
+        <div class="col-sm-6">
+          <h5 class="card-title mt-0 mb-0 header-title">Liste des utilisateurs</h5>
+        </div>
+      </div><br>
+      <div>
         <div class="row">
-          <div class="col-sm-6">
-            <h5 class="card-title mt-0 mb-0 header-title">Liste des utilisateurs</h5>
-          </div>
-        </div><br>
-        <div>
-          <div class="row">
-            <div class="col-sm-12">
-              <div class="table-responsive m-t-40">
-                <table class="table stylish-table">
-                  <thead>
-                    <tr>
-                      <th>Nom</th>
-                      <th>Prénom</th>
-                      <th>Username</th>
-                      <th>Statut</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (u of formsArr | paginate: configPagination; track u) {
-                      <tr>
-                        <td>{{u.value.nom}}</td>
-                        <td>{{u.value.prenom}}</td>
-                        <td>{{u.value.username}}</td>
-                        <td>
-                          @if (u.value.enabled) {
-                            <span class="badge bg-success py-1">Actif</span>
-                          }
-                          @if (!u.value.enabled) {
-                            <span class="badge bg-danger py-1" style="color: white;">Non Actif</span>
-                          }
-                        </td>
-                        <td  style="cursor:pointer;">
-                          <span style="color:blue"  class="fa fa-edit fa-2x mr-1" (click)="openModal(content3)"></span>
-                          <span   class="fa fa-trash fa-2x text-danger" (click)="deleteUser(u.value.id)"></span>
-                          <div class="col-md-12">
-                            <ng-template #content3 let-modal>
-                              <div class="modal-header" style="background-color: #128C7E;">
-                                <h4 class="modal-title text-light" id="NewTaskModalLabel">Modification Utilisateur</h4>
-                                <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('')"></button>
-                              </div>
-                              <div class="modal-body">
-                                <form novalidate [formGroup]="u" (ngSubmit)="onUpdateUser(u.value);modal.close('Close click')">
-                                  <div class="row mb-1">
-                                    <div class="col-md-6">
-                                      <div class="form-group">
-                                        <label for="">Nom</label>
-                                        <input type="text" id="nom" name="nom" formControlName="nom" class="form-control" placeholder="Nom" >
-                                        @if (u.get('nom')?.hasError('required') && u.get('nom')?.touched) {
-                                          <strong class="text-danger"> Ce champ est obligatoire !</strong>
-                                        }
-                                        @if (u.get('nom')?.hasError('minlength') && u.get('nom')?.touched) {
-                                          <strong class="text-danger"> Minimum 2 caractères !</strong>
-                                        }
-                                      </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                      <div class="form-group">
-                                        <label for="">Prénom(s)</label>
-                                        <input type="text" id="prenom" name="prenom" formControlName="prenom" class="form-control" placeholder="prenom" >
-                                        @if (u.get('prenom')?.hasError('required') && u.get('prenom')?.touched) {
-                                          <strong class="text-danger"> Ce champ est obligatoire !</strong>
-                                        }
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div class="row mb-1">
-                                    <div class="col-md-6">
-                                      <div class="form-group">
-                                        <label for="">Username</label>
-                                        <input type="text" id="username" name="username" formControlName="username" class="form-control" placeholder="username">
-                                        @if (u.get('username')?.hasError('required') && u.get('username')?.touched) {
-                                          <strong class="text-danger"> Ce champ est obligatoire !</strong>
-                                        }
-                                      </div>
-                                    </div>
-                                    <div class="col-xs-12 col-sm-6">
-                                      <div class="form-group">
-                                        <label for="">Roles</label>
-                                        <select required name="idRole" formControlName="idRole" class="form-select" id="idRole">
-                                          <option value="null" disabled>---Select Role---</option>
-                                          @for (role of roles; track role) {
-                                            <option [value]="role.id">{{role.libelle}}</option>
-                                          }
-                                        </select>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div class="row">
-                                    <div class="col-md-6" >
-                                      <div class="form-group">
-                                        <label for="">Statut</label>
-                                        <div class="">
-                                          <div class="row">
-                                            <div class="col-md-3" >
-                                              <div  class="form-check mb-1">
-                                                <input type="radio" [value]="true" formControlName="enabled" name="enabled" id="enabled1" class="form-check-input">
-                                                <label style="cursor: pointer;" class="form-check-label" for="enabled1">Actif</label>
-                                              </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                              <div class="form-check">
-                                                <input type="radio" [value]="false" formControlName="enabled" name="enabled" id="enabled2" class="form-check-input">
-                                                <label style="cursor: pointer;" class="form-check-label" for="enabled2">Inactif</label>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div></div>
-                                      </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                      <button type="button" class="btn btn-danger" (click)="modal.close('Close click')">FERMER</button>
-                                      <button type="submit" [disabled]="u.invalid" class="btn btn-primary">
-                                        @if (!loading) {
-                                          <span >MODIFIER </span>
-                                        }
-                                        @if (loading) {
-                                          <span>EN COURS <span class="spinner-border"></span></span>
-                                        }
-                                      </button>
-                                    </div>
-                                  </form>
-                                </div>
-                              </ng-template>
-                            </div>
-                          </td>
-                        </tr>
+          <div class="col-sm-12">
+            <div class="table-responsive m-t-40">
+              <table class="table stylish-table">
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Username</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (u of formsArr | paginate: configPagination; track u) {
+                  <tr>
+                    <td>{{u.value.nom}}</td>
+                    <td>{{u.value.prenom}}</td>
+                    <td>{{u.value.username}}</td>
+                    <td>
+                      @if (u.value.enabled) {
+                      <span class="badge bg-success py-1">Actif</span>
                       }
-                    </tbody>
-                  </table>
-                  <div class="text-right" >
-                    <pagination-controls (pageChange)="pageChange($event)" previousLabel="Précédent" nextLabel="Suivant" >
-                    </pagination-controls>
-                  </div>
-                </div>
+                      @if (!u.value.enabled) {
+                      <span class="badge bg-danger py-1" style="color: white;">Non Actif</span>
+                      }
+                    </td>
+                    <td style="cursor:pointer;">
+                      <span style="color:blue" class="fa fa-edit fa-2x mr-1" (click)="openModal()"></span>
+                      <span class="fa fa-trash fa-2x text-danger" (click)="deleteUser(u.value.id)"></span>
+                      <div class="col-md-12">
+                        <ng-template #content3 let-modal>
+                          <div class="modal-header" style="background-color: #128C7E;">
+                            <h4 class="modal-title text-light" id="NewTaskModalLabel">Modification Utilisateur</h4>
+                            <button type="button" class="btn-close" aria-label="Close"
+                              (click)="modal.dismiss('')"></button>
+                          </div>
+                          <div class="modal-body">
+                            <form novalidate [formGroup]="u"
+                              (ngSubmit)="onUpdateUser(u.value);modal.close('Close click')">
+                              <div class="row mb-1">
+                                <div class="col-md-6">
+                                  <div class="form-group">
+                                    <label for="">Nom</label>
+                                    <input type="text" id="nom" name="nom" formControlName="nom" class="form-control"
+                                      placeholder="Nom">
+                                    @if (u.get('nom')?.hasError('required') && u.get('nom')?.touched) {
+                                    <strong class="text-danger"> Ce champ est obligatoire !</strong>
+                                    }
+                                    @if (u.get('nom')?.hasError('minlength') && u.get('nom')?.touched) {
+                                    <strong class="text-danger"> Minimum 2 caractères !</strong>
+                                    }
+                                  </div>
+                                </div>
+                                <div class="col-md-6">
+                                  <div class="form-group">
+                                    <label for="">Prénom(s)</label>
+                                    <input type="text" id="prenom" name="prenom" formControlName="prenom"
+                                      class="form-control" placeholder="prenom">
+                                    @if (u.get('prenom')?.hasError('required') && u.get('prenom')?.touched) {
+                                    <strong class="text-danger"> Ce champ est obligatoire !</strong>
+                                    }
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="row mb-1">
+                                <div class="col-md-6">
+                                  <div class="form-group">
+                                    <label for="">Username</label>
+                                    <input type="text" id="username" name="username" formControlName="username"
+                                      class="form-control" placeholder="username">
+                                    @if (u.get('username')?.hasError('required') && u.get('username')?.touched) {
+                                    <strong class="text-danger"> Ce champ est obligatoire !</strong>
+                                    }
+                                  </div>
+                                </div>
+                                <div class="col-xs-12 col-sm-6">
+                                  <div class="form-group">
+                                    <label for="">Roles</label>
+                                    <select required name="idRole" formControlName="idRole" class="form-select"
+                                      id="idRole">
+                                      <option value="null" disabled>---Select Role---</option>
+                                      @for (role of roles; track role) {
+                                      <option [value]="role.id">{{role.libelle}}</option>
+                                      }
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="row">
+                                <div class="col-md-6">
+                                  <div class="form-group">
+                                    <label for="">Statut</label>
+                                    <div class="">
+                                      <div class="row">
+                                        <div class="col-md-3">
+                                          <div class="form-check mb-1">
+                                            <input type="radio" [value]="true" formControlName="enabled" name="enabled"
+                                              id="enabled1" class="form-check-input">
+                                            <label style="cursor: pointer;" class="form-check-label"
+                                              for="enabled1">Actif</label>
+                                          </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                          <div class="form-check">
+                                            <input type="radio" [value]="false" formControlName="enabled" name="enabled"
+                                              id="enabled2" class="form-check-input">
+                                            <label style="cursor: pointer;" class="form-check-label"
+                                              for="enabled2">Inactif</label>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-danger"
+                                  (click)="modal.close('Close click')">FERMER</button>
+                                <button type="submit" [disabled]="u.invalid" class="btn btn-primary">
+                                  @if (!loading) {
+                                  <span>MODIFIER </span>
+                                  }
+                                  @if (loading) {
+                                  <span>EN COURS <span class="spinner-border"></span></span>
+                                  }
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+                        </ng-template>
+                      </div>
+                    </td>
+                  </tr>
+                  }
+                  <nav aria-label="Pagination">
+                    <ul class="pagination mt-3">
+                      <li class="page-item" [class.disabled]="currentPage === 0">
+                        <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)">Précédent</a>
+                      </li>
+
+                      <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
+                        <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)">
+                          {{ page + 1 }}
+                        </a>
+                      </li>
+
+                      <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
+                        <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage + 1)">Suivant</a>
+                      </li>
+                    </ul>
+                  </nav>
+
+                </tbody>
+              </table>
+              <div class="text-right">
+                <pagination-controls (pageChange)="pageChange($event)" previousLabel="Précédent" nextLabel="Suivant">
+                </pagination-controls>
               </div>
             </div>
-            <!-- Row -->
           </div>
         </div>
+        <!-- Row 
       </div>
     </div>
-  }
+  </div>
+</div> -->
+
+
+}

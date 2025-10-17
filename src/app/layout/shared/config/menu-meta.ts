@@ -104,11 +104,11 @@ const MENU_ITEMS: MenuItem[] = [
     },
     {
         key: 'cabinet',
-        label: 'Infos Cabinet',
+        label: 'Cabinets',
         link: '/parametrages/informations-cabinet',
         icon: 'package',
         isTitle: false,
-        roles: ['SUPERVISEUR']
+        roles: ['SUPERVISEUR',]
     },
     {
         key: 'societes',
@@ -119,9 +119,9 @@ const MENU_ITEMS: MenuItem[] = [
         roles: ['SUPERVISEUR']
     },
     {
-        key: 'ecritures',
-        label: "Ecritures",
-        link: '/parametrages/ecritures',
+        key: 'operations',
+        label: "Operations",
+        link: '/parametrages/operations',
         icon: 'package',
         isTitle: false,
         roles: ['ADMIN']
@@ -164,7 +164,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/cabinets',
         icon: 'package',
         isTitle: false,
-        roles: ['SUPERVISEUR']
+        roles: ['ADMIN', 'SUPERVISEUR']
     },
     {
         key: 'categories',

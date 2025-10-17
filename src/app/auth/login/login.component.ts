@@ -166,7 +166,7 @@ export class LoginComponent implements OnInit {
                   this.router.navigate(['/auth/signin']);
                 } else {
                   if (this.authenticationService.isAdmin()) {
-                    this.returnUrl = '/parametrages/ecritures';
+                    this.returnUrl = '/parametrages/operations';
                   }
                   localStorage.setItem("user", JSON.stringify(data));
                   sessionStorage.setItem("currentUser", JSON.stringify(data));

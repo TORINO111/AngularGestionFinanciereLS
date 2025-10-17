@@ -5,8 +5,8 @@ import { AuthGuard } from '../../core/guards/auth.guard';
 const routes: Routes = [
 
   {
-    path: 'ecritures',
-    loadChildren: () => import('./ecritures/ecritures.module').then(m => m.EcrituresModule),
+    path: 'operations',
+    loadChildren: () => import('./operations/operations.module').then(m => m.OperationsModule),
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }
   },
@@ -22,17 +22,12 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: ['SUPERVISEUR'] }
   },
-  // {
-  //   path: 'cabinets',
-  //   loadChildren: () => import('./cabinets/cabinets.module').then(m => m.CabinetsModule),
-  //   canActivate: [AuthGuard],
-  //   data: { roles: ['ADMIN'] }
-  // },
+
   {
     path: 'cabinets',
     loadChildren: () => import('./cabinets/cabinets.module').then(m => m.CabinetsModule),
     canActivate: [AuthGuard],
-    data: { roles: ['SUPERVISEUR'] }
+    data: { roles: ['SUPERVISEUR', 'ADMIN'] }
   },
   {
     path: 'informations-cabinet',

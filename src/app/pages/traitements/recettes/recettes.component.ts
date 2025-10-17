@@ -3,10 +3,10 @@ import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
-import { NatureOperationDto } from 'src/app/models/nature-operation.model';
-import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
-import { ImportOperationResultDTO, Operation } from 'src/app/models/operation.model';
-import { OperationService } from 'src/app/services/operations/operation.service';
+import { OperationDto } from 'src/app/models/operation.model';
+import { NatureOperationService } from 'src/app/services/operations/operations.service';
+import { ImportOperationResultDTO, Operation } from 'src/app/models/operationRevoke.model';
+import { OperationService } from 'src/app/services/operationsRevolu/operation.service';
 import { Tiers } from 'src/app/models/tiers.model';
 import { TiersService } from 'src/app/services/tiers/tiers.service';
 import { Select2Data } from 'ng-select2-component';
@@ -277,7 +277,7 @@ export class RecettesComponent implements OnInit {
   //           .map(t => ({ value: t.id as number, label: t.intitule }));
 
 
-  //         this.natureOperations = (natureOperations as NatureOperationDto[])
+  //         this.natureOperations = (natureOperations as OperationDto[])
   //         .filter(n => n.id !== undefined)
   //         .map(n => ({ value: n.id as number, label: n.libelle }));
 
@@ -373,7 +373,7 @@ export class RecettesComponent implements OnInit {
   //   this.natureOperationService.getByFilters(societeId, 'RECETTE', 'RECETTE')
   //     .pipe(takeUntil(this.destroy$))
   //     .subscribe({
-  //       next: (data: NatureOperationDto[]) => {
+  //       next: (data: OperationDto[]) => {
   //         this.natureOperations = data
   //           .filter(n => n.id !== undefined)
   //           .map(n => ({ value: n.id as number, label: n.libelle }));

@@ -156,8 +156,8 @@ export class TopbarComponent implements OnInit {
   }
 
   /**
- * On view init - feather icons
- */
+   * On view init - feather icons
+   */
   ngAfterViewInit() {
   }
 

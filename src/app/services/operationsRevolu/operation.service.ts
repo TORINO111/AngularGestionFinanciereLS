@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { ImportOperationResultDTO, Operation } from '../../models/operation.model';
+import { ImportOperationResultDTO, Operation } from '../../models/operationRevoke.model';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';

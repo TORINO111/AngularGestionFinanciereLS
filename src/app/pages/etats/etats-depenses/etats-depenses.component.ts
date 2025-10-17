@@ -5,7 +5,7 @@ import { OperationDetailDTO } from 'src/app/models/operation-detail.model';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
-import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
+import { NatureOperationService } from 'src/app/services/operations/operations.service';
 import { SocieteSelectionService } from 'src/app/services/societe-selection/societe-selection.service';
 import { Societe } from 'src/app/models/societe.model';
 import { Subject } from 'rxjs';

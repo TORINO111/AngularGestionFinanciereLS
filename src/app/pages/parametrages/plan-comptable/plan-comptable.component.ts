@@ -31,6 +31,7 @@ export interface ImportPlanComptableResultDTO {
   standalone: false
 })
 export class PlanComptableComponent implements OnInit {
+  
   @ViewChild('modalContent', { static: true }) modalContent!: TemplateRef<any>;
   @ViewChild('importExcelModal', { static: true }) importExcelModal!: TemplateRef<any>;
 

@@ -4,10 +4,10 @@ import {UntypedFormGroup,Validators,UntypedFormBuilder } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
-import { NatureOperationDto } from 'src/app/models/nature-operation.model';
-import { NatureOperationService } from 'src/app/services/nature-operation/nature-operation.service';
-import { Operation } from 'src/app/models/operation.model';
-import { OperationService } from 'src/app/services/operations/operation.service';
+import { OperationDto } from 'src/app/models/operation.model';
+import { NatureOperationService } from 'src/app/services/operations/operations.service';
+import { Operation } from 'src/app/models/operationRevoke.model';
+import { OperationService } from 'src/app/services/operationsRevolu/operation.service';
 import { Tiers } from 'src/app/models/tiers.model';
 import { TiersService } from 'src/app/services/tiers/tiers.service';
 import { Select2Data } from 'ng-select2-component';
@@ -253,7 +253,7 @@ export class DecaissementsComponent implements OnInit {
   //       }));
   
   //       // 👉 3. Charger les natureOperations dans dropdown
-  //       this.natureOperations = (natureOperations as NatureOperationDto[]).map(n => ({
+  //       this.natureOperations = (natureOperations as OperationDto[]).map(n => ({
   //         value: n.id!,
   //         label: n.libelle
   //       }));
@@ -335,7 +335,7 @@ export class DecaissementsComponent implements OnInit {
     );
   }
 
-  // chargerNatureOperationDtos() {
+  // chargerOperationDtos() {
   //   const societeId = this.societeActive?.id;
   //   if (!societeId) {
   //     this.message = "Aucune société active sélectionnée.";
@@ -346,7 +346,7 @@ export class DecaissementsComponent implements OnInit {
   //   this.natureOperationService
   //     .getByFilters(societeId, 'DECAISSEMENT', 'TRESORERIE')
   //     .subscribe(
-  //       (data: NatureOperationDto[]) => {
+  //       (data: OperationDto[]) => {
   //         // On filtre les éléments sans id et on crée un tableau plat
   //         this.natureOperations = data
   //           .filter(n => n.id !== undefined)

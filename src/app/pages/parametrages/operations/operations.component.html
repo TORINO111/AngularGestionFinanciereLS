@@ -1,4 +1,4 @@
-<app-page-title [breadcrumbItems]="pageTitle" title="Écritures"></app-page-title>
+<app-page-title [breadcrumbItems]="pageTitle" title="Opérations"></app-page-title>
 
 @if (!result) {
 <div class="loader-container">
@@ -13,7 +13,7 @@
     <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
 
       <!-- Bouton Nouvelle Écriture -->
-      <button class="btn btn-success" (click)="openModal()">Nouvelle Écriture</button>
+      <button class="btn btn-success" (click)="openModal()">Nouvelle Opération</button>
 
       <!-- Barre de recherche + filtres -->
       <div class="d-flex gap-2 ms-auto">
@@ -23,8 +23,8 @@
           (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
 
         <!-- Filtre par journal -->
-        <ng-select class="mt-1" [items]="filteredJournaux" placeholder="Filtrer par journal" bindLabel="libelle" bindValue="id"
-          [(ngModel)]="selectedJournalId" (ngModelChange)="onFilterChange()">
+        <ng-select class="mt-1" [items]="filteredJournaux" placeholder="Filtrer par journal" bindLabel="libelle"
+          bindValue="id" [(ngModel)]="selectedJournalId" (ngModelChange)="onFilterChange()">
           <ng-template ng-notfound-tmp>Aucun journal disponible</ng-template>
         </ng-select>
 
@@ -49,22 +49,22 @@
       <thead class="table-custom">
         <tr>
           <th>
-            <h5>Date</h5>
-          </th>
-          <th>
             <h5>Code</h5>
           </th>
-          <th>
+          <th style="width: 250px">
             <h5>Libellé</h5>
           </th>
           <th>
             <h5>Compte comptable</h5>
           </th>
           <th>
+            <h5>Compte contre partie</h5>
+          </th>
+          <th>
             <h5>Tiers</h5>
           </th>
           <th>
-            <h5>Montant TTC</h5>
+            <h5>Montant TTC (FCFA)</h5>
           </th>
           <th>
             <h5>Actions</h5>
@@ -74,14 +74,27 @@
 
       <tbody *ngIf="!isLoading && lignes.length > 0">
         <tr *ngFor="let e of lignes; let i = index" [class.table-active]="i === selectedIndex">
-          <td>{{ e.date | date:'dd/MM/yyyy' }}</td>
           <td>{{ e.code }}</td>
           <td>{{ e.libelle }}</td>
-          <td>{{ e.compteComptableCode }} - {{ e.compteComptableIntitule }}</td>
-          <td>{{ e.tiersLibelle || '-' }}</td>
-          <td>{{ e.montantTtc | number:'1.0-0' }} FCFA</td>
           <td>
-            <span class="fa fa-edit fa-2x text-primary me-2" style="cursor:pointer" (click)="editNature(i)"></span>
+            <div class="text-center">
+              <div>{{ e.compteComptableCode }}</div>
+              <div class="mt-1">{{ e.compteComptableIntitule }}</div>
+            </div>
+          </td>
+          <td>
+            <div class="text-center">
+              <div>{{ e.compteContrePartieCode }} </div>
+              <div class="mt-1">{{ e.compteContrePartieIntitule }}</div>
+            </div>
+          </td>
+          <td>{{ e.tiersLibelle || '-' }}</td>
+          <td>{{ e.montantTtc | number:'1.0-0' }} </td>
+
+          <!-- Actions -->
+          <td class="d-flex gap-2 align-items-center">
+            <span class="fa fa-eye fa-2x text-info" style="cursor:pointer"></span>
+            <span class="fa fa-edit fa-2x text-primary " style="cursor:pointer" (click)="editNature(i)"></span>
             <span class="fa fa-trash fa-2x text-danger" style="cursor:pointer"
               (click)="deleteNatureOperationDto(i)"></span>
           </td>
@@ -139,6 +152,11 @@
   </div>
 </div>
 }
+
+<!-- Detail modal -->
+<div class="modal-dialog modal-dialog-scrollable" #detailModalContent >
+  ...
+</div>
 
 <!-- Modal Création / Modification -->
 <ng-template #modalContent>
