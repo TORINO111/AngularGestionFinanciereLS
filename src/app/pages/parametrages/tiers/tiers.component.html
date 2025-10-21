@@ -119,8 +119,7 @@
         <div class="col-md-4">
           <label>Type</label>
           <ng-select [items]="types" bindLabel="libelle" bindValue="id" formControlName="type"
-            placeholder="Sélection type">
-            [searchable]="true">
+            placeholder="Sélection type" [searchable]="true">
             <ng-template ng-notfound-tmp>
               Aucun type disponible
             </ng-template>
@@ -147,20 +146,25 @@
         <div formArrayName="comptesParCategorie" class="mt-3">
           <div *ngFor="let pair of comptesParCategorie.controls; let i=index" [formGroupName]="i"
             class="row g-3 align-items-end mb-2">
+
             <div class="col-md-4">
               <label>Type Catégorie</label>
-              <select formControlName="typeCategorie" class="form-select">
-                <option value="" disabled>Choisir type</option>
-                <option *ngFor="let t of typesCategorie" [value]="t.id">{{ t.libelle }}</option>
-              </select>
+              <ng-select [items]="typesCategorie" bindLabel="libelle" bindValue="id" placeholder="Choisir type"
+                formControlName="typeCategorie" [clearable]="true">
+              </ng-select>
             </div>
 
             <div class="col-md-4">
               <label>Compte Comptable</label>
-              <select formControlName="compteId" class="form-select">
-                <option value="" disabled>Choisir compte</option>
-                <option *ngFor="let c of comptes" [value]="c.id">{{ c.code }} - {{ c.intitule }}</option>
-              </select>
+              <ng-select [items]="comptes" bindLabel="code" bindValue="id" placeholder="Choisir compte"
+                formControlName="compteId" [clearable]="true">
+                <ng-template ng-label-tmp let-item="item">
+                  {{ item.code }} - {{ item.intitule }}
+                </ng-template>
+                <ng-template ng-option-tmp let-item="item">
+                  {{ item.code }} - {{ item.intitule }}
+                </ng-template>
+              </ng-select>
             </div>
 
             <div class="col-md-2">
@@ -168,7 +172,7 @@
             </div>
           </div>
 
-          <button type="button"  class="btn btn-success mt-2" (click)="addPair()">+ Ajouter une paire</button>
+          <button type="button" class="btn btn-success mt-2" (click)="addPair()">+ Ajouter une paire</button>
         </div>
 
       </div>
@@ -177,7 +181,6 @@
 
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
-    <button type="button" class="btn btn-success" (click)="enregistrer()"
-      >Enregistrer</button>
+    <button type="button" class="btn btn-success" (click)="enregistrer()">Enregistrer</button>
   </div>
 </ng-template>

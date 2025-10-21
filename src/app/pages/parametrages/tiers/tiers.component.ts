@@ -95,7 +95,7 @@ export class TiersComponent implements OnInit {
       type: ['', Validators.required],
       societeId: [null],
       userId: [null],
-      comptesParCategorie: this.fb.array([])
+      comptesParCategorie: this.fb.array([], Validators.required)
     });
 
     this.modelImportForm = this.fb.group({
@@ -142,8 +142,8 @@ export class TiersComponent implements OnInit {
 
   addPair(typeCategorie?: string, compteId?: number): void {
     const group = this.fb.group({
-      typeCategorie: [typeCategorie || '', Validators.required],
-      compteId: [compteId || '', Validators.required],
+      typeCategorie: [typeCategorie ?? null, Validators.required],
+      compteId: [compteId ?? null, Validators.required],
     });
     this.comptesParCategorie.push(group);
   }
@@ -278,7 +278,9 @@ export class TiersComponent implements OnInit {
           this.chargerTiers();
           this.formVisible = false;
         },
-        error: (err) => this.notification.showError(err)
+        error: (err) => {
+          this.notification.showError(err);
+        }
       });
   }
 
@@ -420,7 +422,6 @@ export class TiersComponent implements OnInit {
     this.resetForm();
 
     this.formVisible = true;
-
     const modalRef = this.modalService.open(this.modalContent, { size: 'lg', centered: true });
     modalRef.result.finally(() => {
       this.resetForm();
@@ -485,7 +486,7 @@ export class TiersComponent implements OnInit {
 
   }
 
-  clearComptes(){
+  clearComptes() {
     const comptesArray = this.tiersForm.get('comptesParCategorie') as FormArray;
     comptesArray.clear();
   }

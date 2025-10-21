@@ -92,7 +92,7 @@ const MENU_ITEMS: MenuItem[] = [
         roles: ['SUPERVISEUR','COMPTABLE']
     },
     
-    { key: 'parametrages', label: 'PARAMETRAGES', isTitle: true ,roles: ['ADMIN','SUPERVISEUR','COMPTABLE']},
+    { key: 'parametrages', label: 'PARAMETRAGES', isTitle: true , roles: ['ADMIN','SUPERVISEUR','COMPTABLE']},
     
     {
         key: 'exercice-comptable',
@@ -186,6 +186,14 @@ const MENU_ITEMS: MenuItem[] = [
         key: 'tiers',
         label: 'Tiers',
         link: '/parametrages/tiers',
+        icon: 'package',
+        isTitle: false,
+        roles: ['ADMIN']
+    },
+    {
+        key: 'articles',
+        label: 'Articles',
+        link: '/parametrages/articles',
         icon: 'package',
         isTitle: false,
         roles: ['ADMIN']

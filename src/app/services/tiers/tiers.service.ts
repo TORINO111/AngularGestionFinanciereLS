@@ -67,7 +67,7 @@ export class TiersService {
 
   getBySocieteAndType(societeId: number, type: string): Observable<Tiers[]> {
     const params = { societeId: societeId.toString(), type };
-    return this.http.get<Tiers[]>(`${this.baseUrl}/api/tiers-societe-type`, { params });
+    return this.http.get<Tiers[]>(`${this.baseUrl}/api/tiers/tiers-societe-type`, { params });
   }
 
   importerTiers(formData: FormData) {
