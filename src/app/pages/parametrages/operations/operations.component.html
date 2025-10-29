@@ -29,8 +29,14 @@
         </ng-select>
 
         <!-- Filtre par catégorie -->
-        <ng-select class="mt-1" [items]="categories" placeholder="Filtrer par catégorie" bindLabel="libelle"
+        <!-- <ng-select class="mt-1" [items]="categories" placeholder="Filtrer par catégorie" bindLabel="libelle"
           bindValue="id" [(ngModel)]="selectedCategorieId" (ngModelChange)="onFilterChange()">
+          <ng-template ng-notfound-tmp>Aucune catégorie disponible</ng-template>
+        </ng-select> -->
+
+        <!-- Filtre par article -->
+        <ng-select class="mt-1" [items]="articles" placeholder="Filtrer par article" bindLabel="designation"
+          bindValue="id" [(ngModel)]="selectedArticleId" (ngModelChange)="onFilterChange()">
           <ng-template ng-notfound-tmp>Aucune catégorie disponible</ng-template>
         </ng-select>
 
@@ -154,18 +160,18 @@
 }
 
 <!-- Detail modal -->
-<div class="modal-dialog modal-dialog-scrollable" #detailModalContent >
+<div class="modal-dialog modal-dialog-scrollable" #detailModalContent>
   ...
 </div>
 
 <!-- Modal Création / Modification -->
 <ng-template #modalContent>
   <div class="modal-header text-white" style="background-color: #37a6de;  ">
-    <h4 class="modal-title" style="color: white;">{{ selectedIndex !== null ? 'Modifier Écriture' : 'Écriture' }}</h4>
+    <h4 class="modal-title" style="color: white;">{{ selectedIndex !== null ? 'Modifier Opération' : 'Opération' }}</h4>
   </div>
 
   <div class="modal-body">
-    <form [formGroup]="ecritureForm">
+    <form [formGroup]="operationForm">
       <input type="hidden" formControlName="id">
 
       <div class="row g-3">
@@ -174,54 +180,75 @@
         <div class="col-md-4">
           <label>Intitulé</label>
           <input type="text" class="form-control" formControlName="libelle" placeholder="Intitulé">
-          <div *ngIf="ecritureForm.get('libelle')?.hasError('required') && ecritureForm.get('libelle')?.touched"
+          <div *ngIf="operationForm.get('libelle')?.hasError('required') && operationForm.get('libelle')?.touched"
             class="text-danger">Champ obligatoire !</div>
         </div>
-
-        <!-- Journal 
-        <div class="col-md-4">
-          <label>Code journal</label>
-          <ng-select [items]="codesjournaux" bindLabel="libelle" bindValue="code" placeholder="Sélection Journal"
-            formControlName="codeJournalId" [searchable]="true">
-            <ng-template ng-notfound-tmp>Aucun journal disponible</ng-template>
-          </ng-select>
-        </div>
-
-        Catégorie 
-        <div class="col-md-4">
-          <label>Catégorie</label>
-          <ng-select [items]="categories" bindLabel="libelle" bindValue="id" placeholder="Sélection Catégorie"
-            formControlName="categorieId" [searchable]="true" (change)="onCategorieChange()">
-            <ng-template ng-notfound-tmp>Aucune catégorie disponible</ng-template>
-          </ng-select>
-          <div
-            *ngIf="ecritureForm.get('categorieId')?.hasError('required') && ecritureForm.get('categorieId')?.touched"
-            class="text-danger">Champ obligatoire !</div>
-        </div> -->
 
         <!-- Journal -->
         <div class="col-md-4">
           <label>Journal</label>
           <ng-select [items]="filteredJournaux" bindLabel="libelle" bindValue="id" formControlName="codeJournalId"
             (ngModelChange)="onJournalChange($event)" placeholder="Sélectionner un journal">
+            <ng-template ng-notfound-tmp>
+              Aucun journal disponible
+            </ng-template>
+          </ng-select>
+        </div>
+
+        <!-- Type de Mouvement -->
+        <div class="col-md-4">
+          <label>Mouvement</label>
+          <ng-select [items]="mouvements" bindLabel="libelle" bindValue="id" formControlName="mouvement"
+            placeholder="Sélectionner le mouvement" (ngModelChange)="onMouvementChange()">
           </ng-select>
         </div>
 
         <!-- Catégorie -->
-        <div class="col-md-4">
+        <!-- <div class="col-md-4">
           <label>Catégorie</label>
           <ng-select [items]="filteredCategories" bindLabel="libelle" bindValue="id" formControlName="categorieId"
             (ngModelChange)="onCategorieChange($event)" placeholder="Sélectionner une catégorie">
           </ng-select>
+        </div> -->
+
+        <!-- Article -->
+        <div class="col-md-4">
+          <label>Article</label>
+          <ng-select [items]="filteredArticles" bindLabel="designation" bindValue="id" formControlName="articleId"
+            (ngModelChange)="onArticleChange($event)" placeholder="Sélectionner une catégorie">
+            <ng-template ng-notfound-tmp>
+              Aucun article disponible
+            </ng-template>
+          </ng-select>
         </div>
 
-        <!-- Montant HT -->
+        <!-- Quantite -->
         <div class="col-md-4">
-          <label>Montant (hors taxe)</label>
+          <label>Quantité</label>
           <div class="input-group">
-            <input type="number" class="form-control" formControlName="montantHt" placeholder="Montant">
-            <span class="input-group-text">FCFA</span>
+            <input type="text" class="form-control" formControlName="quantite"
+              [placeholder]="selectedArticle?.quantite != null
+              ? selectedArticle.quantite + (operationForm.get('mouvement')?.value === 'ACHAT' ? ' en stock' : ' disponible')
+              : 'Quantité'"
+              (keypress)="controleForm.allowNumbersOnly($event)">
+            <span class="input-group-text">pc(s)</span>
           </div>
+          <div *ngIf="operationForm.get('quantite')?.hasError('quantiteMax')" class="text-danger mt-1">
+            La quantité maximale disponible est
+            <strong>{{ operationForm.get('quantite')?.getError('quantiteMax')?.max }}</strong> pc(s).
+          </div>
+        </div>
+
+        <!-- Tiers -->
+        <div class="col-md-4" *ngIf="showTiers">
+          <label>Tiers</label>
+          <ng-select [items]="tiersList" bindLabel="intitule" bindValue="id" placeholder="Sélection Tiers"
+            formControlName="tiersId" [searchable]="true">
+            <ng-template ng-notfound-tmp>Aucun tiers disponible</ng-template>
+          </ng-select>
+          <div
+            *ngIf="isTiersObligatoire && operationForm.get('tiersId')?.hasError('required') && operationForm.get('tiersId')?.touched"
+            class="text-danger">Champ obligatoire !</div>
         </div>
 
         <!-- TVA -->
@@ -230,26 +257,25 @@
           <input type="number" class="form-control" formControlName="tva" placeholder="Ex: 18">
         </div>
 
+        <!-- Montant HT -->
+        <div class="col-md-4">
+          <label>Montant (hors taxe)</label>
+          <div class="input-group">
+            <input type="number" class="form-control" formControlName="montantHt"
+              [placeholder]="operationForm.get('quantite')?.value != null && selectedArticle != null ? (operationForm.get('quantite')?.value * selectedArticle.prixUnitaire) : 'montantHt'"
+              readonly>
+            <span class="input-group-text">FCFA</span>
+          </div>
+        </div>
+
         <!-- Montant TTC (readonly) -->
-        <div class="col-md-4" *ngIf="showTTC">
+        <div class="col-md-4" >
           <label>Montant TTC</label>
           <div class="input-group">
             <input type="number" class="form-control" formControlName="montantTtc" placeholder="Montant TTC" readonly>
             <span class="input-group-text">FCFA</span>
           </div>
         </div>
-
-        <!-- Compte Comptable -->
-        <div class="col-md-6">
-          <label>Compte Comptable</label>
-          <ng-select [items]="comptes" bindValue="id" placeholder="Sélection Compte" formControlName="compteComptableId"
-            [searchable]="true" [disabled]="comptes.length === 0">
-            <ng-template ng-label-tmp let-item="item">{{ item.code }} ({{ item.intitule }})</ng-template>
-            <ng-template ng-option-tmp let-item="item">{{ item.code }} ({{ item.intitule }})</ng-template>
-            <ng-template ng-notfound-tmp>Aucun compte comptable disponible</ng-template>
-          </ng-select>
-        </div>
-
 
         <!-- Section Analytique -->
         <div class="col-md-6" *ngIf="showSectionAnalytique">
@@ -260,17 +286,7 @@
           </ng-select>
         </div>
 
-        <!-- Tiers -->
-        <div class="col-md-6" *ngIf="showTiers">
-          <label>Tiers</label>
-          <ng-select [items]="tiersList" bindLabel="intitule" bindValue="id" placeholder="Sélection Tiers"
-            formControlName="tiersId" [searchable]="true">
-            <ng-template ng-notfound-tmp>Aucun tiers disponible</ng-template>
-          </ng-select>
-          <div
-            *ngIf="isTiersObligatoire && ecritureForm.get('tiersId')?.hasError('required') && ecritureForm.get('tiersId')?.touched"
-            class="text-danger">Champ obligatoire !</div>
-        </div>
+
 
       </div>
     </form>

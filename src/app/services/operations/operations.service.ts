@@ -56,7 +56,7 @@ export class NatureOperationService {
   }
 
   getAllCodeJournal(): Observable<any[]> {
-    return this.http.get<any[]>(`${environment.apiUrl}/api/code-journal/all`).pipe(
+    return this.http.get<any[]>(`${environment.apiUrl}/api/journaux/all`).pipe(
       catchError(this.handleError)
     );
   }

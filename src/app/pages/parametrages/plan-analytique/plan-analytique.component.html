@@ -11,7 +11,7 @@
   <div class="card-body">
 
     <!-- Boutons principaux -->
-    <div class="mb-3 d-flex gap-2">
+    <div class="mb-3 d-flex gap-2 flex-wrap align-items-center justify-content-between">
       <button class="btn btn-success" (click)="openModal()">Nouveau
         Plan
         Analytique</button>
@@ -141,6 +141,6 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
-    <button type="button" class="btn btn-success" (click)="enregistrer()" >Enregistrer</button>
+    <button type="button" class="btn btn-success" (click)="enregistrer()">Enregistrer</button>
   </div>
 </ng-template>

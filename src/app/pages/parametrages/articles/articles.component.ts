@@ -95,7 +95,7 @@ export class ArticlesComponent implements OnInit {
     }
 
     this.chargerArticles();
-    this.chargerSocietes();
+    // this.chargerSocietes();
     this.chargerComptesComptables();
     this.initSearchListener();
     this.chargerTypesCategories();
@@ -165,7 +165,12 @@ export class ArticlesComponent implements OnInit {
       article.comptesParCategorie.forEach(c => this.addTriple(c.typeCategorie, c.typeMouvement, c.compteId));
     }
   }
-
+  /**
+   * 
+   * @param page 
+   * @author VICTORIN
+   * chargement d'articles paginés avec ou sans filtre 
+   */
   chargerArticles(page: number = 0) {
     this.result = false;
     this.isLoading = true;
@@ -198,13 +203,13 @@ export class ArticlesComponent implements OnInit {
     });
   }
 
-  chargerSocietes() {
-    this.societes = [];
-    this.societeService.getAllSociete().subscribe({
-      next: (data: Societe[]) => this.societes = data.map(d => ({ id: d.id, nom: d.nom })),
-      error: () => this.notification.showError('Erreur lors du chargement des sociétés')
-    });
-  }
+  // chargerSocietes() {
+  //   this.societes = [];
+  //   this.societeService.getAllSociete().subscribe({
+  //     next: (data: Societe[]) => this.societes = data.map(d => ({ id: d.id, nom: d.nom })),
+  //     error: () => this.notification.showError('Erreur lors du chargement des sociétés')
+  //   });
+  // }
 
   ajouter(): void { this.formVisible = true; }
   modifier(): void { if (this.selectedIndex !== null) this.formVisible = true; }
@@ -223,7 +228,7 @@ export class ArticlesComponent implements OnInit {
       this.notification.showWarning('Formulaire invalide');
       return;
     }
-
+    this.result = false;
     this.isLoading = true;
     const articleData = this.articleForm.value;
     console.log(articleData);

@@ -10,7 +10,7 @@ import { environment } from 'src/environments/environment';
 })
 export class CodeJournalService {
 
-  private apiUrl = `${environment.apiUrl}/api/code-journal`;
+  private apiUrl = `${environment.apiUrl}/api/journaux`;
 
 
   constructor(private http: HttpClient) { }
@@ -35,7 +35,7 @@ export class CodeJournalService {
   }
 
   create(request: any): Observable<CodeJournal> {
-    return this.http.post<CodeJournal>(this.apiUrl, request);
+    return this.http.post<CodeJournal>(`${this.apiUrl}`, request);
   }
 
   update(id: number, request: any): Observable<CodeJournal> {

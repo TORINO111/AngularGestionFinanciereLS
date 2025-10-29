@@ -15,6 +15,10 @@ export class ArticlesService {
 
   getAll(): Observable<ArticleDTO[]> {
     return this.http.get<ArticleDTO[]>(this.baseUrl);
+  } 
+
+  getAllWithRelations(): Observable<ArticleDTO[]> {
+    return this.http.get<ArticleDTO[]>(`${this.baseUrl}/with-relations`);
   }
 
   getArticleById(id: number) {

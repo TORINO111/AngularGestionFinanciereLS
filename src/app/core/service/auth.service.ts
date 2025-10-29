@@ -210,6 +210,7 @@ export class AuthenticationService {
     const token = this.getToken();
     if (!token) return [];
     const payload = JSON.parse(atob(token.split('.')[1]));
+    console.log(payload);
     if (!payload.roles) return [];
 
     if (typeof payload.roles[0] === 'string') return payload.roles;

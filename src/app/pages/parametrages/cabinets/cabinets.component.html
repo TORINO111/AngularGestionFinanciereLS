@@ -1,12 +1,19 @@
 <app-page-title [breadcrumbItems]="pageTitle" title="Les cabinets"></app-page-title>
 
+@if (!result) {
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
+}
+
+@if (result){
 <div class="card mt-2">
   <div class="card-body">
 
     <!-- Boutons principaux -->
-    <div class="mb-3 d-flex gap-2 flex-wrap">
-      <button class="btn btn-success" (click)="openModal()" >Nouveau Cabinet</button>
-
+    <div class="mb-3 d-flex gap-2 flex-wrap align-items-center justify-content-between">
+      <button class="btn btn-success" style="padding: -2;" (click)="openModal()">Nouveau Cabinet</button>
+      
       <!-- Barre de recherche + filtre -->
       <div class="d-flex gap-2 ms-auto">
         <input #searchInputNom class="p-2" placeholder="Rechercher par nom" [(ngModel)]="searchNom"
@@ -118,11 +125,12 @@
       </nav>
 
     </div>
-    
+
   </div>
 </div>
+}
 
-<!-- Modal Création / Modification Cabinet -->
+<!-- Modal Création / Modification Casbinet -->
 <ng-template #modalContent>
   <div *ngIf="isFormReady">
     <div class="modal-header text-white" style="background-color: #37a6de;  ">
@@ -184,7 +192,7 @@
 
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
-      <button type="button" class="btn btn-success" (click)="enregistrer()" >Enregistrer</button>
+      <button type="button" class="btn btn-success" (click)="enregistrer()">Enregistrer</button>
     </div>
 
   </div>

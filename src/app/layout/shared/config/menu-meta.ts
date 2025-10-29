@@ -191,6 +191,30 @@ const MENU_ITEMS: MenuItem[] = [
         roles: ['ADMIN']
     },
     {
+        key: 'bailleurs',
+        label: 'Bailleurs',
+        link: '/parametrages/bailleurs',
+        icon: 'package',
+        isTitle: false,
+        roles: ['ADMIN']
+    },
+    {
+        key: 'cohortes',
+        label: 'Cohortes',
+        link: '/parametrages/cohortes',
+        icon: 'package',
+        isTitle: false,
+        roles: ['ADMIN']
+    },
+    {
+        key: 'clients-numexis',
+        label: 'Clients Numexis',
+        link: '/parametrages/clients-numexis',
+        icon: 'package',
+        isTitle: false,
+        roles: ['ADMIN']
+    },
+    {
         key: 'articles',
         label: 'Articles',
         link: '/parametrages/articles',

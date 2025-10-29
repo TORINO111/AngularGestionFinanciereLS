@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 @Injectable({
   providedIn: 'root'
@@ -34,4 +35,29 @@ export class ControlesFormulairesService {
       event.preventDefault();
     }
   }
+
+  // quantiteMaxValidator(maxQuantite: number, typeMouvement: string): ValidatorFn {
+  //   return (control: AbstractControl): ValidationErrors | null => {
+  //     const value = Number(control.value);
+  //     if (typeMouvement !== 'VENTE') return null;
+  //     if (isNaN(value)) return null;
+  //     return value > maxQuantite ? { quantiteMax: { max: maxQuantite, actual: value } } : null;
+  //   };
+  // }
+
+  // Validator dynamique : lit le mouvement et max depuis le formulaire
+  quantiteMaxValidator(getQuantiteMax: () => number, getTypeMouvement: () => string): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = Number(control.value);
+      const mouvement = getTypeMouvement();
+      const maxQuantite = getQuantiteMax();
+
+      if (mouvement !== 'VENTE') return null; 
+      if (isNaN(value)) return null;
+      return value > maxQuantite
+        ? { quantiteMax: { max: maxQuantite, actual: value } }
+        : null;
+    };
+  }
+
 }

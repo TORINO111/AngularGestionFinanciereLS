@@ -4,7 +4,7 @@ import { Component, ElementRef, OnInit, TemplateRef, ViewChild, ViewEncapsulatio
 import { NatureOperationService } from 'src/app/services/operations/operations.service';
 import { CategorieService } from 'src/app/services/categories/categorie.service';
 import { PlanComptableService } from 'src/app/services/plan-comptable/plan-comptable.service';
-import { UntypedFormGroup, Validators, UntypedFormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormGroup, Validators, UntypedFormBuilder, FormGroup, AbstractControl } from '@angular/forms';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import Swal from 'sweetalert2';
 import { Select2Data } from 'ng-select2-component';
@@ -21,6 +21,9 @@ import { OperationDto } from 'src/app/models/operation.model';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { debounceTime, Subject, switchMap, tap } from 'rxjs';
 import { TiersService } from 'src/app/services/tiers/tiers.service';
+import { ArticlesService } from 'src/app/services/articles/articles.service';
+import { ArticleDTO } from 'src/app/models/article.model';
+import { ControlesFormulairesService } from 'src/app/core/service/controles-formulaires/controles-formulaires.service';
 
 @Component({
   selector: 'app-nature-operations',
@@ -54,11 +57,11 @@ export class OperationsComponent implements OnInit {
     categorieId?: number;
     tiersId?: number;
   }>();
-  journaux: any[] = [];
 
   searchTerm: string = '';
   selectedJournalId?: number;
   selectedCategorieId?: number;
+  selectedArticleId: number | null;
   selectedTiersId?: number;
 
   searchCate: number;
@@ -73,11 +76,10 @@ export class OperationsComponent implements OnInit {
   comptes: CompteComptableDTO[] = [];
   listeSens = [{ id: 'CREDIT', libelle: 'CREDIT' }, { id: 'DEBIT', libelle: 'DEBIT' }];
 
-  codeJournaux: CodeJournal[] = [];
-  filteredJournaux: CodeJournal[] = [];
-  categories: Categorie[] = [];
-  filteredCategories: Categorie[] = [];
+  mouvements = [{ id: 'ACHAT', libelle: 'Achat' }, { id: 'VENTE', libelle: 'Vente' }];
 
+  journaux: any[] = [];
+  filteredJournaux: CodeJournal[] = [];
 
   typeNatures = [
     { label: 'Dépense', value: 'DEPENSE' },
@@ -94,13 +96,12 @@ export class OperationsComponent implements OnInit {
   types: any[] = [];
 
   selectedIndex: number | null = null;
-  ecritureForm!: UntypedFormGroup;
+  operationForm!: UntypedFormGroup;
   pageTitle: BreadcrumbItem[] = [];
 
   loading = false;
   isLoading = false;
   result = false;
-  formVisible = false;
 
   isTiersObligatoire = false;
   selectedCategorie: any;
@@ -119,10 +120,15 @@ export class OperationsComponent implements OnInit {
   societeBi: any;
   userBi: any;
   exerciceBi: any;
+  articles: any[];
+  selectedArticle: any;
+  filteredArticles: Categorie[];
+  selectedCompte: any;
 
   constructor(
     private natureOperationService: NatureOperationService,
     private categorieService: CategorieService,
+    private articleService: ArticlesService,
     private planComptableService: PlanComptableService,
     private compteComptableService: CompteComptableService,
     private planAnalytiqueService: PlansAnalytiquesService,
@@ -130,20 +136,23 @@ export class OperationsComponent implements OnInit {
     private notification: NotificationService,
     private sectionAnalytiqueService: SectionAnalytiqueService,
     private tiersService: TiersService,
+    public controleForm: ControlesFormulairesService,
     private modalService: NgbModal
   ) {
-    this.ecritureForm = this.fb.group({
+    this.operationForm = this.fb.group({
       id: [],
-      libelle: ['', [Validators.required, Validators.minLength(2)]],
-      compteComptableId: ['', Validators.required],
+      libelle: [null, [Validators.required, Validators.minLength(2)]],
+      compteComptableId: [null, Validators.required],
       codeJournalId: [null, Validators.required],
-      categorieId: [null, Validators.required],
+      articleId: [{ value: null, disabled: true }, Validators.required],
+      mouvement: [{ value: null, disabled: true }, Validators.required],
       societeId: [null],
       userId: [null],
       exerciceId: [null],
       typeNature: [null],
       sectionAnalytiqueId: [null],
       tiersId: [null],
+      quantite: [0, Validators.required],
       montantHt: [0, Validators.required],
       tva: [0],
       montantTtc: [{ value: 0, disabled: true }]
@@ -152,14 +161,6 @@ export class OperationsComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageTitle = [{ label: "Vos opérations", path: '/', active: true }];
-    this.chargerOperationPageable();
-    this.chargerCategories();
-    this.chargerPlansAnalytiques();
-    this.chargerCodesJournaux();
-    this.chargerSectionsAnalytiques();
-    this.chargerComptesComptables();
-    this.chargerTiers();
-    this.initSearchListener();
 
     const societeActiveStr = localStorage.getItem("societeActive");
     const userActive = localStorage.getItem("user");
@@ -168,64 +169,221 @@ export class OperationsComponent implements OnInit {
     if (societeActiveStr && userActive && exerciceActive) {
       this.societeBi = JSON.parse(societeActiveStr);
       this.userBi = JSON.parse(userActive);
-      console.log(this.userBi);
       this.exerciceBi = JSON.parse(exerciceActive);
     }
+    this.chargerOperationPageable();
 
-    this.ecritureForm.get('montantHt')?.valueChanges.subscribe(() => this.calculerMontantTtc());
-    this.ecritureForm.get('tva')?.valueChanges.subscribe(() => this.calculerMontantTtc());
+
+    this.chargerArticles();
+    this.chargerPlansAnalytiques();
+    this.chargerJournaux();
+    this.chargerSectionsAnalytiques();
+    this.chargerComptesComptables();
+    this.chargerTiers();
+    this.initSearchListener();
+
+    this.operationForm.get('quantite')?.valueChanges.subscribe(() => this.calculerMontantTtc());
+    this.operationForm.get('articleId')?.valueChanges.subscribe(() => this.calculerMontantTtc());
+
+
+    this.operationForm.get('montantHt')?.valueChanges.subscribe(() => this.calculerMontantTtc());
+    this.operationForm.get('tva')?.valueChanges.subscribe(() => this.calculerMontantTtc());
   }
+
+  // calculerMontantTtc() {
+  //   const ht = Number(this.operationForm.get('montantHt')?.value) || 0;
+  //   const tva = Number(this.operationForm.get('tva')?.value) || 0;
+  //   const ttc = ht + (ht * tva / 100);
+  //   this.operationForm.patchValue({ montantTtc: ttc }, { emitEvent: false });
+  // }
 
   calculerMontantTtc() {
-    const ht = Number(this.ecritureForm.get('montantHt')?.value) || 0;
-    const tva = Number(this.ecritureForm.get('tva')?.value) || 0;
-    const ttc = ht + (ht * tva / 100);
-    this.ecritureForm.patchValue({ montantTtc: ttc }, { emitEvent: false });
+    const article = this.selectedArticle;
+    const quantite = Number(this.operationForm.get('quantite')?.value) || 0;
+    const tva = Number(this.operationForm.get('tva')?.value) || 0;
+
+    const montantHt = article ? quantite * article.prixUnitaire : 0;
+
+    const montantTtc = montantHt + (montantHt * tva / 100);
+
+    this.operationForm.patchValue(
+      { montantHt, montantTtc },
+      { emitEvent: false } // pour éviter une boucle infinie
+    );
   }
+
 
   onJournalChange(journalId: number) {
     this.selectedJournalId = journalId;
 
-    const journal = this.codeJournaux.find((j: { id: number; }) => j.id === journalId);
-    console.log(journal);
-    if (journal?.allowedCategoryTypes?.length) {
-      this.filteredCategories = this.categories.filter(cat =>
-        journal.allowedCategoryTypes?.includes(cat.type)
-      );
+    if (journalId != null) {
+      const journal = this.journaux.find(j => j.id === journalId);
+      console.log(journal);
+
+      if (journal?.allowedCategoryTypes?.length) {
+        this.filteredArticles = this.articles.filter(article =>
+          article.comptesParCategorie?.some((c: { typeCategorie: string; }) =>
+            journal.allowedCategoryTypes?.includes(c.typeCategorie)
+          )
+        );
+      } else {
+        // Aucun filtre spécifique : on garde tous les articles
+        this.filteredArticles = [...this.articles];
+      }
+
+      // Reset de l'article sélectionné à chaque changement de journal
+      this.selectedArticleId = null;
+      this.selectedArticle = null;
+      this.operationForm.patchValue({ articleId: null });
+
+      // Activer le champ article
+      this.operationForm.get('mouvement')?.enable();
+      this.operationForm.get('articleId')?.enable();
     } else {
-      this.filteredCategories = [...this.categories];
-    }
-
-    // Si une catégorie est déjà sélectionnée, vérifier qu'elle est toujours valide
-    if (this.selectedCategorieId && !this.filteredCategories.some(c => c.id === this.selectedCategorieId)) {
-      this.selectedCategorieId = undefined;
-      this.ecritureForm.patchValue({ categorieId: null });
+      // Aucun journal sélectionné : désactiver le champ article
+      this.filteredArticles = [];
+      this.selectedArticleId = null;
+      this.selectedArticle = null;
+      this.operationForm.patchValue({ articleId: null });
+      this.operationForm.get('articleId')?.disable();
+      this.operationForm.get('mouvement')?.disable();
     }
   }
 
-  onCategorieChange(categorieId: number | null) {
-    if (!categorieId) {
-      this.resetCategorieSelection();
+  // onArticleChange(articleId: number | null) {
+  //   if (!articleId) {
+  //     this.resetArticleSelection();
+  //     return;
+  //   }
+
+  //   const article = this.articles.find(a => a.id === articleId);
+  //   if (!article) {
+  //     this.resetArticleSelection();
+  //     return;
+  //   }
+
+  //   this.selectedArticle = article;
+
+  //   // assignation de validators pour gérer le stock dispo lors de l'enregistrement d'une vente
+  //   this.assignerValidatorsQuantiteArticle();
+
+  //   // Charger comptes et règles de l'article
+  //   this.loadComptesForArticle(article);
+  //   this.filterJournauxForArticle(article);
+
+  //   this.applyArticleRules({
+  //     typesCategorie: article.comptesParCategorie?.map((c: { typeCategorie: any; }) => c.typeCategorie) ?? [],
+  //     typesMouvement: article.comptesParCategorie?.map((c: { typeMouvement: any; }) => c.typeMouvement) ?? []
+  //   });
+
+  //   // Récupérer le compte lié au type de catégorie autorisé par le journal
+  //   if (this.selectedJournalId) {
+  //     const journal = this.journaux.find(j => j.id === this.selectedJournalId);
+
+  //     if (journal?.allowedCategoryTypes?.length) {
+  //       // On cherche le compte correspondant au premier type autorisé du journal
+  //       const matchedCompte = article.comptesParCategorie?.find((c: { typeCategorie: string; }) =>
+  //         journal?.allowedCategoryTypes?.includes(c.typeCategorie)
+  //       );
+  //       console.log(matchedCompte);
+  //       this.operationForm.patchValue({ compteComptableId: matchedCompte.compteId })
+  //       console.log(this.operationForm.value);
+
+  //       if (matchedCompte) {
+  //         this.selectedCompte = matchedCompte;
+  //       } else {
+  //         this.selectedCompte = null;
+  //       }
+  //     }
+  //   }
+  // }
+  onArticleChange(articleId: number | null) {
+    if (!articleId) {
+      this.resetArticleSelection();
       return;
     }
 
-    const categorie = this.categories.find(c => c.id === categorieId);
-    this.selectedCategorie = categorie;
-
-    if (!categorie) {
-      this.resetCategorieSelection();
+    const article = this.articles.find(a => a.id === articleId);
+    if (!article) {
+      this.resetArticleSelection();
       return;
     }
 
-    this.selectedTypeNature = categorie.type;
-    this.loadComptesForCategorie(categorie);
-    this.filterJournauxForCategorie(categorie);
-    this.applyCategorieRules(categorie);
-    this.checkSelectedJournal();
+    this.selectedArticle = article;
+
+    const mouvement = this.operationForm.get('mouvement')?.value;
+    let comptesFiltres = article.comptesParCategorie ?? [];
+
+    // 🔍 Si un mouvement est sélectionné, on ne garde que les comptes correspondants
+    if (mouvement) {
+      comptesFiltres = comptesFiltres.filter((c: { typeMouvement: any; }) => c.typeMouvement === mouvement);
+    }
+
+    // S’il n’y a aucun compte pour ce mouvement => reset
+    if (!comptesFiltres.length) {
+      this.notification.showWarning(
+        `Aucun compte associé à cet article pour le mouvement "${mouvement}".`
+      );
+      this.resetArticleSelection();
+      return;
+    }
+
+    // 🧠 On continue avec les comptes filtrés
+    this.loadComptesForArticle({ ...article, comptesParCategorie: comptesFiltres });
+    this.filterJournauxForArticle(article);
+    this.applyArticleRules({
+      typesCategorie: comptesFiltres.map((c: { typeCategorie: any; }) => c.typeCategorie),
+      typesMouvement: comptesFiltres.map((c: { typeMouvement: any; }) => c.typeMouvement)
+    });
+
+    // Récupérer le compte comptable selon le journal sélectionné
+    if (this.selectedJournalId) {
+      const journal = this.journaux.find(j => j.id === this.selectedJournalId);
+
+      if (journal?.allowedCategoryTypes?.length) {
+        const matchedCompte = comptesFiltres.find((c: { typeCategorie: any; }) =>
+          journal.allowedCategoryTypes.includes(c.typeCategorie)
+        );
+
+        if (matchedCompte) {
+          this.operationForm.patchValue({ compteComptableId: matchedCompte.compteId });
+          this.selectedCompte = matchedCompte;
+        } else {
+          this.selectedCompte = null;
+        }
+      }
+    }
+
+    this.assignerValidatorsQuantiteArticle();
   }
 
-  private resetCategorieSelection() {
-    this.selectedCategorie = null;
+
+  onMouvementChange() {
+    this.assignerValidatorsQuantiteArticle();
+
+    const articleId = this.operationForm.get('articleId')?.value;
+    if (articleId) {
+      this.onArticleChange(articleId);
+    }
+  }
+
+
+  assignerValidatorsQuantiteArticle() {
+    const quantiteControl = this.operationForm.get('quantite');
+
+    quantiteControl?.setValidators([
+      Validators.required,
+      this.controleForm.quantiteMaxValidator(
+        () => this.selectedArticle?.quantite ?? 0,
+        () => this.operationForm.get('mouvement')?.value ?? ''
+      )
+    ]);
+
+    quantiteControl?.updateValueAndValidity();
+  }
+
+  private resetArticleSelection() {
+    this.selectedArticle = null;
     this.selectedTypeNature = " ";
     this.comptes = [];
     this.showTVA = false;
@@ -234,8 +392,8 @@ export class OperationsComponent implements OnInit {
     this.showTiers = false;
     this.isTiersObligatoire = false;
 
-    this.ecritureForm.patchValue({
-      categorieId: null,
+    this.operationForm.patchValue({
+      articleId: null,
       compteComptableId: null,
       tva: 0,
       montantTtc: 0,
@@ -243,78 +401,107 @@ export class OperationsComponent implements OnInit {
       sectionAnalytiqueId: null
     });
 
-    this.resetCategorieRules();
+    this.resetArticleRules();
   }
 
-  private loadComptesForCategorie(categorie: Categorie) {
-    this.comptes = categorie.compteComptableIds.map((id, i) => ({
-      id,
-      code: categorie.compteComptableCodes[i],
-      intitule: categorie.compteComptableIntitules[i],
-      planComptableId: 0,
-      classeCompte: ''
-    })) as CompteComptableDTO[];
+  private loadComptesForArticle(article: ArticleDTO): void {
+    if (!article || !article.comptesParCategorie?.length) {
+      this.resetArticleRules();
+      return;
+    }
 
-    this.ecritureForm.patchValue({
-      compteComptableId: this.comptes.length > 0 ? this.comptes[0].id : null
-    });
+    const comptes = article.comptesParCategorie;
+    const typesCategorie = comptes.map(c => c.typeCategorie);
+    const typesMouvement = comptes.map(c => c.typeMouvement);
+
+    // Application des règles analytiques et tiers
+    this.applyArticleRules({ typesCategorie, typesMouvement });
   }
 
-  private filterJournauxForCategorie(categorie: Categorie) {
-    this.filteredJournaux = this.codeJournaux.filter(j =>
-      !j.allowedCategoryTypes?.length || j.allowedCategoryTypes.includes(categorie.type)
+  private filterJournauxForArticle(article: ArticleDTO): void {
+    if (!article?.comptesParCategorie?.length) {
+      this.filteredJournaux = this.journaux;
+      return;
+    }
+
+    // Extraire tous les types de catégories associés à l'article
+    const articleTypes = article.comptesParCategorie.map(c => c.typeCategorie);
+
+    // Filtrer les journaux compatibles
+    this.filteredJournaux = this.journaux.filter(journal =>
+      !journal.allowedCategoryTypes?.length ||
+      journal.allowedCategoryTypes.some((t: string) => articleTypes.includes(t))
     );
   }
 
-  private applyCategorieRules(categorie: Categorie) {
+  private applyArticleRules(data: { typesCategorie: string[], typesMouvement: string[] }) {
     const ANALYTICAL_TYPES = ['RECETTE', 'DEPENSE'];
     const TIERS_REQUIRED_TYPES = ['RECETTE', 'DEPENSE', 'SALAIRE'];
     const TIERS_OPTIONAL_TYPES = ['IMMOBILISATION', 'TRESORERIE', 'TRANSFERT'];
 
-    this.showSectionAnalytique = ANALYTICAL_TYPES.includes(categorie.type);
-    this.showTVA = this.showSectionAnalytique;
-    this.showTTC = this.showSectionAnalytique;
+    const { typesCategorie } = data;
 
-    if (!this.showTVA) {
-      this.ecritureForm.patchValue({
+    this.updateAnalyticalSections(typesCategorie, ANALYTICAL_TYPES);
+    this.updateTiersRules(typesCategorie, TIERS_REQUIRED_TYPES, TIERS_OPTIONAL_TYPES);
+  }
+
+  private updateAnalyticalSections(types: string[], analyticalTypes: string[]) {
+    const showAnalytical = types.some(t => analyticalTypes.includes(t));
+
+    this.showSectionAnalytique = showAnalytical;
+    this.showTVA = showAnalytical;
+    this.showTTC = showAnalytical;
+
+    if (!showAnalytical) {
+      this.operationForm.patchValue({
         tva: 0,
-        montantTtc: this.ecritureForm.value.montantHt
+        montantTtc: this.operationForm.value.montantHt
       }, { emitEvent: false });
     }
+  }
 
-    if (TIERS_REQUIRED_TYPES.includes(categorie.type)) {
-      this.showTiers = true;
-      this.isTiersObligatoire = true;
-      const tiersControl = this.ecritureForm.get('tiersId');
-      tiersControl?.setValidators([Validators.required]);
-      tiersControl?.updateValueAndValidity();
-    } else if (TIERS_OPTIONAL_TYPES.includes(categorie.type)) {
-      this.showTiers = true;
-      this.isTiersObligatoire = false;
-      const tiersControl = this.ecritureForm.get('tiersId');
-      tiersControl?.clearValidators();
-      tiersControl?.updateValueAndValidity();
+  private updateTiersRules(
+    types: string[],
+    requiredTypes: string[],
+    optionalTypes: string[]
+  ) {
+    const tiersControl = this.operationForm.get('tiersId');
+
+    if (types.some(t => requiredTypes.includes(t))) {
+      this.configureTiers(true, tiersControl);
+    } else if (types.some(t => optionalTypes.includes(t))) {
+      this.configureTiers(false, tiersControl);
     } else {
-      this.resetCategorieRules();
+      this.resetArticleRules();
     }
+  }
+
+  private configureTiers(isRequired: boolean, control: AbstractControl | null) {
+    this.showTiers = true;
+    this.isTiersObligatoire = isRequired;
+
+    if (isRequired) control?.setValidators([Validators.required]);
+    else control?.clearValidators();
+
+    control?.updateValueAndValidity();
   }
 
   private checkSelectedJournal() {
     if (this.selectedJournalId && !this.filteredJournaux.some(j => j.id === this.selectedJournalId)) {
       this.selectedJournalId = undefined;
-      this.ecritureForm.patchValue({ codeJournalId: null });
+      this.operationForm.patchValue({ codeJournalId: null });
     }
 
-    this.ecritureForm.get('tiersId')?.updateValueAndValidity();
+    this.operationForm.get('tiersId')?.updateValueAndValidity();
   }
 
-  resetCategorieRules(): void {
+  resetArticleRules(): void {
     this.showSectionAnalytique = false;
     this.showTiers = false;
     this.isTiersObligatoire = false;
-    this.ecritureForm.patchValue({ sectionAnalytiqueId: null, tiersId: null });
-    this.ecritureForm.get('tiersId')?.clearValidators();
-    this.ecritureForm.get('tiersId')?.updateValueAndValidity();
+    this.operationForm.patchValue({ sectionAnalytiqueId: null, tiersId: null });
+    this.operationForm.get('tiersId')?.clearValidators();
+    this.operationForm.get('tiersId')?.updateValueAndValidity();
   }
 
   searchFn(term: string, item: any) {
@@ -324,40 +511,19 @@ export class OperationsComponent implements OnInit {
   }
 
   ajouter(): void {
-    this.ecritureForm.patchValue({
+    this.operationForm.patchValue({
       societeId: 1
     });
-    this.formVisible = true;
     this.selectedIndex = null;
     this.selected = null;
   }
 
-  modifier(): void {
-    if (this.selectedIndex !== null) {
-      this.formVisible = true;
-    }
-  }
-
-  // supprimer(): void {
-  //   if (this.selectedIndex !== null) {
-  //     const currentData = this.lignes[this.selectedIndex] as NatureOperationDto;
-  //     this.ecritureForm.setValue(currentData);
-  //     this.lignes.splice(this.selectedIndex, 1);
-  //     this.selectedIndex = null;
-  //     this.deleteNatureOperationDto(currentData);
-  //   }
-  //   const cabinet = this.lignes[this.selectedIndex].value;
-  //   this.deleteCabinet(cabinet);
-  // }
-
   edit(nature: OperationDto): void {
     this.selected = { ...nature };
-    this.ecritureForm.patchValue(this.selected);
-    this.formVisible = true;
+    this.operationForm.patchValue(this.selected);
   }
 
   fermer(): void {
-    this.formVisible = false;
     this.selectedIndex = null;
   }
 
@@ -366,12 +532,12 @@ export class OperationsComponent implements OnInit {
     this.isLoading = true;
     this.result = false;
 
-    if (this.ecritureForm.invalid) {
+    if (this.operationForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
       return;
     }
 
-    const natureOperation = this.ecritureForm.value;
+    const natureOperation = this.operationForm.value;
     console.log(natureOperation);
     const action$ = natureOperation?.id
       ? this.natureOperationService.update(natureOperation.id, natureOperation)
@@ -424,18 +590,18 @@ export class OperationsComponent implements OnInit {
     });
   }
 
-  chargerCodesJournaux() {
+  chargerJournaux() {
     this.natureOperationService.getAllCodeJournal().subscribe(
       {
         next: (data: any) => {
-          this.codeJournaux = data;
-          this.filteredJournaux = [...this.codeJournaux];
+          this.journaux = data;
+          this.filteredJournaux = [...this.journaux];
           this.result = true;
         },
         error: (error: any) => {
           this.result = true;
-          console.log('Erreur lors du chargement des codes journaux', error);
-          this.notification.showError("erreur lors du chargement des codes journaux");
+          console.log('Erreur lors du chargement des journaux', error);
+          this.notification.showError("erreur lors du chargement des journaux");
         }
       }
     );
@@ -457,17 +623,17 @@ export class OperationsComponent implements OnInit {
     );
   }
 
-  chargerCategories() {
-    this.categorieService.getAllCategories().subscribe({
+  chargerArticles() {
+    this.articleService.getAllWithRelations().subscribe({
       next: (data: any[]) => {
-        this.categories = data;
-        this.filteredCategories = [...this.categories];
+        this.articles = data;
+        this.filteredArticles = [...data];
         this.result = true;
       },
       error: (error: any) => {
         this.result = true;
         console.log('Erreur lors du chargement des categories', error);
-        this.notification.showError("Erreur lors du chargement des catégories");
+        this.notification.showError("Erreur lors du chargement des articles");
       }
     });
   }
@@ -564,30 +730,26 @@ export class OperationsComponent implements OnInit {
   }
 
   openModal(): void {
-    this.formVisible = true;
-    this.selectedIndex = null;
-    this.ecritureForm.reset();
+    this.operationForm.reset();
     this.patchForm();
-    console.log(this.ecritureForm.value);
     this.modalService.open(this.modalContent, { size: 'lg', centered: true });
   }
 
   patchForm() {
-    this.ecritureForm.patchValue({ societeId: this.societeBi.id, userId: this.userBi.id, exerciceId: this.exerciceBi.id });
+    this.operationForm.patchValue({ societeId: this.societeBi.id, userId: this.userBi.id, exerciceId: this.exerciceBi.id });
   }
 
   closeModal(): void {
     this.modalService.dismissAll();
-    this.selectedIndex = null;
-    this.formVisible = false;
+    this.operationForm.reset();
+
   }
 
   editNature(index: number): void {
     this.selectedIndex = index;
     const nature = this.lignes[index];
     this.selected = nature;
-    this.ecritureForm.patchValue(nature);
-    this.formVisible = true;
+    this.operationForm.patchValue(nature);
     this.modalService.open(this.modalContent, { size: 'lg', centered: true });
   }
 

@@ -1,0 +1,129 @@
+<app-page-title [breadcrumbItems]="pageTitle" title="Clients Numexis"></app-page-title>
+
+@if (!result) {
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
+}
+
+@if (result) {
+<div class="card">
+  <div class="card-body">
+    <div class="mb-3">
+      <button class="btn btn-success" (click)="openModal()">Nouveau Client</button>
+    </div>
+
+    <table class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th style="background-color: #37a6de; color: white;">Nom</th>
+          <th style="background-color: #37a6de; color: white;">Sigle</th>
+          <th style="background-color: #37a6de; color: white;">Téléphone</th>
+          <th style="background-color: #37a6de; color: white;">Email</th>
+          <th style="background-color: #37a6de; color: white;">Ville</th>
+          <th style="background-color: #37a6de; color: white;">Pays</th>
+          <th style="width:120px; background-color: #37a6de; color: white;">Actions</th>
+        </tr>
+      </thead>
+      <tbody *ngIf="!isLoading && clients.length > 0">
+        <tr *ngFor="let client of clients">
+          <td>{{ client.nom }}</td>
+          <td>{{ client.sigle }}</td>
+          <td>{{ client.telephone }}</td>
+          <td>{{ client.email }}</td>
+          <td>{{ client.ville }}</td>
+          <td>{{ client.pays }}</td>
+          <td>
+            <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="openModal(client)"></span>
+            <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x" (click)="deleteClient(client)"></span>
+          </td>
+        </tr>
+      </tbody>
+      <tbody *ngIf="!isLoading && clients.length == 0">
+        <tr>
+          <td colspan="7" class="text-center">
+            <h5>AUCUN CLIENT TROUVÉ</h5>
+          </td>
+        </tr>
+      </tbody>
+      <tbody *ngIf="isLoading">
+        <tr>
+          <td colspan="7" class="text-center">
+            <div class="spinner-border text-secondary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <!-- Pagination -->
+    <nav aria-label="Pagination">
+      <ul class="pagination mt-3">
+        <li class="page-item" [class.disabled]="currentPage === 0">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)">Précédent</a>
+        </li>
+        <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)">{{ page + 1 }}</a>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage + 1)">Suivant</a>
+        </li>
+      </ul>
+    </nav>
+
+  </div>
+</div>
+}
+
+<ng-template #modalContent>
+  <div class="modal-header text-white" style="background-color: #37a6de;">
+    <h4 class="modal-title">{{ selectedClient ? 'Modifier Client' : 'Nouveau Client' }}</h4>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="clientForm">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="nom" class="form-label">Nom</label>
+          <input type="text" id="nom" formControlName="nom" class="form-control">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="sigle" class="form-label">Sigle</label>
+          <input type="text" id="sigle" formControlName="sigle" class="form-control">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="telephone" class="form-label">Téléphone</label>
+          <input type="text" id="telephone" formControlName="telephone" class="form-control">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" id="email" formControlName="email" class="form-control">
+        </div>
+        <div class="col-md-12 mb-3">
+          <label for="adresse" class="form-label">Adresse</label>
+          <input type="text" id="adresse" formControlName="adresse" class="form-control">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="numeroRccm" class="form-label">Numéro RCCM</label>
+          <input type="text" id="numeroRccm" formControlName="numeroRccm" class="form-control">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="numeroIFU" class="form-label">Numéro IFU</label>
+          <input type="text" id="numeroIFU" formControlName="numeroIFU" class="form-control">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="ville" class="form-label">Ville</label>
+          <input type="text" id="ville" formControlName="ville" class="form-control">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="pays" class="form-label">Pays</label>
+          <input type="text" id="pays" formControlName="pays" class="form-control">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
+    <button type="button" class="btn btn-success" (click)="enregistrer()">Enregistrer</button>
+  </div>
+</ng-template>

@@ -1,0 +1,96 @@
+<app-page-title [breadcrumbItems]="pageTitle" title="Cohortes"></app-page-title>
+
+@if (!result) {
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
+}
+
+@if (result) {
+<div class="card">
+  <div class="card-body">
+    <div class="mb-3">
+      <button class="btn btn-success" (click)="openModal()">Nouvelle Cohorte</button>
+    </div>
+
+    <table class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th style="background-color: #37a6de; color: white;">Nom</th>
+          <th style="background-color: #37a6de; color: white;">Bailleur</th>
+          <th style="width:120px; background-color: #37a6de; color: white;">Actions</th>
+        </tr>
+      </thead>
+      <tbody *ngIf="!isLoading && cohortes.length > 0">
+        <tr *ngFor="let cohorte of cohortes">
+          <td>{{ cohorte.nom }}</td>
+          <td>{{ cohorte.bailleurNom }}</td>
+          <td>
+            <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="openModal(cohorte)"></span>
+            <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x" (click)="deleteCohorte(cohorte)"></span>
+          </td>
+        </tr>
+      </tbody>
+      <tbody *ngIf="!isLoading && cohortes.length == 0">
+        <tr>
+          <td colspan="3" class="text-center">
+            <h5>AUCUNE COHORTE TROUVÉE</h5>
+          </td>
+        </tr>
+      </tbody>
+      <tbody *ngIf="isLoading">
+        <tr>
+          <td colspan="3" class="text-center">
+            <div class="spinner-border text-secondary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <!-- Pagination -->
+    <nav aria-label="Pagination">
+      <ul class="pagination mt-3">
+        <li class="page-item" [class.disabled]="currentPage === 0">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)">Précédent</a>
+        </li>
+        <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)">{{ page + 1 }}</a>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage + 1)">Suivant</a>
+        </li>
+      </ul>
+    </nav>
+
+  </div>
+</div>
+}
+
+<ng-template #modalContent>
+  <div class="modal-header text-white" style="background-color: #37a6de;">
+    <h4 class="modal-title">{{ selectedCohorte ? 'Modifier Cohorte' : 'Nouvelle Cohorte' }}</h4>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="cohorteForm">
+      <div class="mb-3">
+        <label for="nom" class="form-label">Nom</label>
+        <input type="text" id="nom" formControlName="nom" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="bailleurId" class="form-label">Bailleur</label>
+        <ng-select [items]="bailleurs"
+                   bindLabel="nom"
+                   bindValue="id"
+                   formControlName="bailleurId"
+                   id="bailleurId">
+        </ng-select>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
+    <button type="button" class="btn btn-success" (click)="enregistrer()">Enregistrer</button>
+  </div>
+</ng-template>

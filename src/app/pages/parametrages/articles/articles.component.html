@@ -16,8 +16,8 @@
                 <button class="btn btn-success" (click)="openModal()">Nouvel Article</button>
             </div>
 
-            <div class="d-flex gap-2 ms-auto">
-                <input #searchInputDesignation class="p-2" placeholder="Rechercher par désignation"
+            <div class="d-flex gap-2 ms-auto" >
+                <input #searchInputDesignation class="p-2" style="width: 200px;" placeholder="Recherche par désignation"
                     [(ngModel)]="searchDesignation" (ngModelChange)="onFilterChange()" />
             </div>
         </div>

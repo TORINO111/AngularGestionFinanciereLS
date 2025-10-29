@@ -54,6 +54,24 @@ const routes: Routes = [
     data: { roles: ['ADMIN'] }
   },
   {
+    path: 'bailleurs',
+    loadChildren: () => import('./bailleurs/bailleurs.module').then(m => m.BailleursModule),
+    canActivate: [AuthGuard],
+    data: { roles: ['ADMIN'] }
+  },
+  {
+    path: 'cohortes',
+    loadChildren: () => import('./cohortes/cohortes.module').then(m => m.CohortesModule),
+    canActivate: [AuthGuard],
+    data: { roles: ['ADMIN'] }
+  },
+  {
+    path: 'clients-numexis',
+    loadChildren: () => import('./clients-numexis/clients-numexis.module').then(m => m.ClientsNumexisModule),
+    canActivate: [AuthGuard],
+    data: { roles: ['ADMIN'] }
+  },
+  {
     path: 'articles',
     loadChildren: () => import('./articles/articles.module').then(m => m.ArticlesModule),
     canActivate: [AuthGuard],
