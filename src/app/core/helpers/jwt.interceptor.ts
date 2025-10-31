@@ -35,43 +35,6 @@ export class JwtInterceptor implements HttpInterceptor {
         private router: Router
     ) { }
 
-    // intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    //     // Récupérer le token via le service
-    //     const token = this.authenticationService.getToken();
-
-    //     if (token) {
-    //         request = request.clone({
-    //             setHeaders: {
-    //                 Authorization: `Bearer ${token}`
-    //             }
-    //         });
-    //     }
-
-    //     return next.handle(request).pipe(
-    //         catchError(err => {
-    //             if (err.status === 401) {
-    //                 // Tentative de refresh
-    //                 return this.authenticationService.refreshTokenRequest().pipe(
-    //                     switchMap((res: any) => {
-    //                         this.authenticationService.saveTokens(res.token, res.refreshToken);
-    //                         request = request.clone({
-    //                             setHeaders: { Authorization: `Bearer ${res.token}` }
-    //                         });
-    //                         return next.handle(request);
-    //                     }),
-    //                     catchError(innerErr => {
-    //                         // Si refresh échoue -> logout
-    //                         localStorage.removeItem('token');
-    //                         localStorage.removeItem('refreshToken');
-    //                         return throwError(() => innerErr);
-    //                     })
-    //                 );
-    //             }
-    //             return throwError(() => err);
-    //         })
-    //     );
-    // }
-
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         let token = this.authenticationService.getToken();
 

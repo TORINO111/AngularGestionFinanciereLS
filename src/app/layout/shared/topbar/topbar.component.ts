@@ -56,7 +56,7 @@ export class TopbarComponent implements OnInit {
 
   constructor(
     private exerciceService: ExerciceComptableService,
-    private authService: AuthenticationService,
+    public authService: AuthenticationService,
     private eventService: EventService,
     private societeService: SocieteService,
     private societeSelectionService: SocieteSelectionService,
@@ -66,7 +66,9 @@ export class TopbarComponent implements OnInit {
 
   ngOnInit(): void {
     this.loggedInUser = this.authService.currentUser();
-    this.loadSocieteForuser();
+    if(!this.authService.isAdmin()){
+      this.loadSocieteForuser();
+    }
     this._fetchMenus();
     this._fetchSearchData();
     this._fetchNotifications();

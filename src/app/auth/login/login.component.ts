@@ -57,92 +57,6 @@ export class LoginComponent implements OnInit {
   */
   get formValues() { return this.loginForm.controls; }
 
-  //   onSubmit(): void {
-  //   this.formSubmitted = true;
-  //   this.error = '';
-  //   console.log('Form submitted with values:', this.loginForm.value);
-
-  //   if (!this.loginForm.valid) {
-  //     this.error = 'Formulaire invalide';
-  //     console.log('Formulaire invalide');
-  //     return;
-  //   }
-
-  //   this.loading = true;
-
-  //   this.authenticationService.login(this.loginForm.value)
-  //     .subscribe({
-  //       next: (response: any) => {
-  //         console.log('Réponse complète du login:', response);
-
-  //         let jwt = response.headers.get('Authorization');
-  //         console.log('Token dans le header Authorization:', jwt);
-
-  //         if (!jwt) {
-  //           this.error = 'Impossible de récupérer le token';
-  //           this.loading = false;
-  //           return;
-  //         }
-
-  //         // Retirer le préfixe "Bearer " si présent
-  //         jwt = jwt.startsWith('Bearer ') ? jwt.slice(7) : jwt;
-  //         console.log('Token après nettoyage du préfixe Bearer:', jwt);
-
-  //         // Sauvegarde le token et décode les rôles
-  //         this.authenticationService.saveToken(jwt);
-
-  //         console.log('Token sauvegardé dans localStorage:', localStorage.getItem('token'));
-  //         console.log('Roles sauvegardés:', sessionStorage.getItem('roles'));
-
-  //         // Récupérer les infos utilisateur
-  //         this.authenticationService.getUserByUsername(this.loginForm.value.username)
-  //           .subscribe({
-  //             next: (userData: any) => {
-  //               console.log('Données utilisateur récupérées:', userData);
-
-  //               if (!userData.enabled) {
-  //                 this.error = 'Compte inactif, merci de contacter l\'administrateur';
-  //                 this.loading = false;
-  //                 this.router.navigate(['/auth/signin']);
-  //                 return;
-  //               }
-
-  //               localStorage.setItem('user', JSON.stringify(userData));
-  //               sessionStorage.setItem('currentUser', JSON.stringify(userData));
-
-  //               if (this.authenticationService.isAdmin()) {
-  //                 this.returnUrl = '/parametrages/cabinets';
-  //               } else if (this.authenticationService.isSuperviseur()) {
-  //                 this.returnUrl = '/superviseur/dashboard';
-  //               } else if (this.authenticationService.isComptable()) {
-  //                 this.returnUrl = '/comptable/dashboard';
-  //               } else {
-  //                 this.returnUrl = '/';
-  //               }
-
-  //               console.log('Redirection vers :', this.returnUrl);
-  //               this.router.navigate([this.returnUrl]);
-  //               this.loading = false;
-  //             },
-  //             error: (err) => {
-  //               console.error('Erreur lors de la récupération des infos utilisateur:', err);
-  //               this.error = 'Impossible de récupérer les informations utilisateur';
-  //               this.loading = false;
-  //             }
-  //           });
-  //       },
-  //       error: (err) => {
-  //         console.error('Erreur login:', err);
-  //         if (err.status === 401) {
-  //           this.error = 'Username ou mot de passe incorrect';
-  //         } else {
-  //           this.error = 'Erreur serveur';
-  //         }
-  //         this.loading = false;
-  //       }
-  //     });
-  // }
-
   onSubmit(): void {
     this.formSubmitted = true;
     //console.log(this.loginForm.value)
@@ -159,6 +73,7 @@ export class LoginComponent implements OnInit {
 
               let jwt = data.headers.get('Authorization');
               this.authenticationService.saveTokens(token, refreshToken);
+
               this.authenticationService.getUserByUsername(this.loginForm.value.username).subscribe((data: any) => {
                 if (!data.enabled) {
                   this.error = 'Compte inactif, Merci de contacter l\'administrateur';
@@ -166,11 +81,14 @@ export class LoginComponent implements OnInit {
                   this.router.navigate(['/auth/signin']);
                 } else {
                   if (this.authenticationService.isAdmin()) {
-                    this.returnUrl = '/parametrages/operations';
+                    localStorage.setItem("user", JSON.stringify(data));
+                    sessionStorage.setItem("currentUser", JSON.stringify(data));
+                    this.returnUrl = '/parametrages/cohortes';
+                    this.router.navigate([this.returnUrl]);
+                  } else {
+                    console.log('Doxoul');
                   }
-                  localStorage.setItem("user", JSON.stringify(data));
-                  sessionStorage.setItem("currentUser", JSON.stringify(data));
-                  this.router.navigate([this.returnUrl]);
+
                 }
 
               });

@@ -16,19 +16,18 @@ export class AuthenticationService {
   private jwtToken: any;
   private refreshToken!: string;
   helper = new JwtHelperService();
-  current_user_roles: string[];
 
   constructor(private _http: HttpClient, private router: Router) { }
 
   /** -------------------- Gestion du token -------------------- */
   getToken(): string | null {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (!token) return null;
     return token.startsWith('Bearer') ? token.slice(7) : token;
   }
 
   getRefreshToken() {
-    return this.refreshToken || localStorage.getItem('refreshToken');
+    return this.refreshToken || sessionStorage.getItem('refreshToken');
   }
 
   refreshTokenRequest(): Observable<any> {
@@ -43,38 +42,6 @@ export class AuthenticationService {
     });
   }
 
-  /*saveToken(authHeader: string) {
-    if (!authHeader) {
-      console.error("Token manquant !");
-      return;
-    }
-
-    const jwt = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
-    this.jwtToken = jwt;
-    localStorage.setItem('token', jwt);
-
-    let decoded: any;
-    try {
-      decoded = this.helper.decodeToken(jwt);
-    } catch (err) {
-      console.error("Impossible de décoder le token :", err);
-      this.current_user_roles = [];
-      sessionStorage.removeItem('role');
-      sessionStorage.removeItem('roles');
-      return;
-    }
-
-    // Extraire les rôles
-    this.current_user_roles = decoded.roles?.map((r: any) => typeof r === 'string' ? r : r.libelle) || [];
-
-    // Déterminer le rôle principal
-    const rolePriority: { [key: string]: string } = { 'ADMIN': 'a', 'SUPERVISEUR': 'b', 'COMPTABLE': 'c' };
-    const mainRole = ['ADMIN', 'SUPERVISEUR', 'COMPTABLE'].find(r => this.current_user_roles.includes(r)) || '';
-
-    sessionStorage.setItem('role', rolePriority[mainRole] || '');
-    sessionStorage.setItem('roles', JSON.stringify(this.current_user_roles));
-  }*/
-
   saveTokens(token: string, refreshToken: string) {
     if (!token) {
       console.error("Token manquant !");
@@ -84,34 +51,42 @@ export class AuthenticationService {
     const jwt = token.startsWith('Bearer') ? token.slice(7) : token;
     this.jwtToken = jwt;
     this.refreshToken = refreshToken;
-
-    // Sauvegarde locale
-    localStorage.setItem('token', jwt);
-    if (refreshToken) {
-      localStorage.setItem('refreshToken', refreshToken);
-    }
+    sessionStorage.setItem('token', jwt);
+    if (refreshToken) sessionStorage.setItem('refreshToken', refreshToken);
 
     let decoded: any;
     try {
       decoded = this.helper.decodeToken(jwt);
     } catch (err) {
       console.error("Impossible de décoder le token :", err);
-      this.current_user_roles = [];
       sessionStorage.removeItem('role');
-      sessionStorage.removeItem('roles');
       return;
     }
 
-    // Extraire les rôles
-    this.current_user_roles = decoded.roles?.map((r: any) => typeof r === 'string' ? r : r.libelle) || [];
+    // Maintenant roles est un simple string
+    const role = decoded.role ? decoded.role.toUpperCase() : '';
 
-    // Déterminer le rôle principal
-    const rolePriority: { [key: string]: string } = { 'ADMIN': 'a', 'SUPERVISEUR': 'b', 'COMPTABLE': 'c' };
-    const mainRole = ['ADMIN', 'SUPERVISEUR', 'COMPTABLE'].find(r => this.current_user_roles.includes(r)) || '';
-
-    sessionStorage.setItem('role', rolePriority[mainRole] || '');
-    sessionStorage.setItem('roles', JSON.stringify(this.current_user_roles));
+    // Priorité sur role pour sessionStorage
+    const rolePriority: { [key: string]: string } = {
+      'ADMIN': 'ADMIN',
+      'CLIENT_ADMIN': 'CLIENT_ADMIN',
+      'CLIENT_COMPTABLE': 'CLIENT_COMPTABLE',
+      'BAILLEUR': 'BAILLEUR',
+      'COHORTE_COMPTABLE': 'COHORTE_COMPTABLE',
+      'ENTREPRISE_USER': 'ENTREPRISE_USER',
+    };
+    sessionStorage.setItem('role', rolePriority[role] || '');
   }
+
+
+  isAdmin() { return sessionStorage.getItem('role') === 'ADMIN'; }
+  isClientAdmin() { return sessionStorage.getItem('role') === 'CLIENT_ADMIN'; }
+  isClientComptable() { return sessionStorage.getItem('role') === 'CLIENT_COMPTABLE'; }
+  isBailleur() { return sessionStorage.getItem('role') === 'BAILLEUR'; }
+  isCohorteComptable() { return sessionStorage.getItem('role') === 'COHORTE_COMPTABLE'; }
+  isEntrepriseUser() { return sessionStorage.getItem('role') === 'ENTREPRISE_USER'; }
+
+  isComptable() { return sessionStorage.getItem('role') === 'ENTREPRISE_USER'; }
 
   logout(): void {
     sessionStorage.clear();
@@ -206,21 +181,15 @@ export class AuthenticationService {
   }
 
   /** -------------------- Rôles -------------------- */
-  getRolesFromToken(): string[] {
+  getRoleFromToken(): string | null {
     const token = this.getToken();
-    if (!token) return [];
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    console.log(payload);
-    if (!payload.roles) return [];
+    if (!token) return null;
 
-    if (typeof payload.roles[0] === 'string') return payload.roles;
-    return payload.roles.filter((auth: any) => auth && auth.authority).map((auth: any) => auth.authority);
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.role ? payload.role.toUpperCase() : null;
   }
 
-  isAdmin() { return sessionStorage.getItem('role') === 'a'; }
-  isSuperviseur() { return sessionStorage.getItem('role') === 'b'; }
-  isComptable() { return sessionStorage.getItem('role') === 'c'; }
-  
+
   get isLoggedIn(): boolean {
     return !!this.getToken();
   }

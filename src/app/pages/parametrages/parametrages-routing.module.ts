@@ -23,12 +23,12 @@ const routes: Routes = [
     data: { roles: ['SUPERVISEUR'] }
   },
 
-  {
-    path: 'cabinets',
-    loadChildren: () => import('./cabinets/cabinets.module').then(m => m.CabinetsModule),
-    canActivate: [AuthGuard],
-    data: { roles: ['SUPERVISEUR', 'ADMIN'] }
-  },
+  // {
+  //   path: 'cabinets',
+  //   loadChildren: () => import('./cabinets/cabinets.module').then(m => m.CabinetsModule),
+  //   canActivate: [AuthGuard],
+  //   data: { roles: ['SUPERVISEUR', 'ADMIN'] }
+  // },
   {
     path: 'informations-cabinet',
     loadChildren: () => import('./informations-societe/informations-societe.module').then(m => m.InformationsSocieteModule),

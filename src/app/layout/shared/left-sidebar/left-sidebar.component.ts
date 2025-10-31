@@ -26,7 +26,8 @@ export class LeftSidebarComponent implements OnInit, AfterViewInit {
 
 
   menuItems: MenuItem[] = [];
-  roles: string[] = [];
+  role: string | null = null;
+
   constructor (
     router: Router,
     private authService: AuthenticationService,
@@ -40,16 +41,15 @@ export class LeftSidebarComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    //console.log(this.authService.getRolesFromToken())
-    this.roles = this.authService.getRolesFromToken();
-    //console.log(this.roles);  // ✅ Doit afficher ['ADMIN']
-    this.menuItems =[];
-    this.menuItems = MENU_ITEMS.filter((item: any) => {
-      return Array.isArray(item.roles) && item.roles.some((role: any) => this.roles.includes(role));
+    // Récupérer le rôle unique
+    this.role = this.authService.getRoleFromToken();
 
-    });
-    // console.log(this.menuItems)
-    //this.initMenu();
+    // Filtrer le menu selon le rôle
+    this.menuItems = MENU_ITEMS.filter(item => 
+      Array.isArray(item.roles) && this.role ? item.roles.includes(this.role) : false
+    );
+
+    // Utilisateur courant
     this.loggedInUser = this.authService.currentUser();
   }
 
