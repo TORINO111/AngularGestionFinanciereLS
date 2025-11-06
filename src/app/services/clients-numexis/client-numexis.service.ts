@@ -21,34 +21,26 @@ export class ClientNumexisService {
     page: number = 0,
     size: number = 20,
     nom?: string,
-    sigle?: string,
-    telephone?: string,
-    email?: string,
-    adresse?: string,
-    numeroRccm?: string,
-    numeroIFU?: string,
+    tel?: string,
     ville?: string,
-    pays?: string
+    pays?: string,
+    typeClientNumexis?: string
   ): Observable<any> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
 
     if (nom) params = params.set('nom', nom);
-    if (sigle) params = params.set('sigle', sigle);
-    if (telephone) params = params.set('telephone', telephone);
-    if (email) params = params.set('email', email);
-    if (adresse) params = params.set('adresse', adresse);
-    if (numeroRccm) params = params.set('numeroRccm', numeroRccm);
-    if (numeroIFU) params = params.set('numeroIFU', numeroIFU);
+    if (tel) params = params.set('tel', tel);
     if (ville) params = params.set('ville', ville);
-    if (pays) params = params.set('pays', pays);
+    if (pays) params = params.set('pays', pays);  
+    if (typeClientNumexis) params = params.set('typeClientNumexis', typeClientNumexis);
 
     return this.http.get<any>(`${this.baseUrl}/pageable`, { params });
   }
 
   create(clientNumexis: Partial<ClientNumexis>): Observable<ClientNumexis> {
-    return this.http.post<ClientNumexis>(this.baseUrl, clientNumexis);
+    return this.http.post<ClientNumexis>(`${this.baseUrl}/create`, clientNumexis);
   }
 
   update(id: number, clientNumexis: Partial<ClientNumexis>): Observable<ClientNumexis> {

@@ -1,3 +1,9 @@
+export enum TypeClientNumexis {
+    CGA = 'CGA',
+    CABINETCOMPTABLE = 'CABINETCOMPTABLE',
+    SAE = 'SAE'
+}
+
 export interface ClientNumexis {
     id: number;
     nom: string;
@@ -9,4 +15,5 @@ export interface ClientNumexis {
     numeroIFU: string;
     ville: string;
     pays: string;
+    typeClientNumexis: TypeClientNumexis;
 }

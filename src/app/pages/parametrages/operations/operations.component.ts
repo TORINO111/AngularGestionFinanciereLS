@@ -23,7 +23,7 @@ import { debounceTime, Subject, switchMap, tap } from 'rxjs';
 import { TiersService } from 'src/app/services/tiers/tiers.service';
 import { ArticlesService } from 'src/app/services/articles/articles.service';
 import { ArticleDTO } from 'src/app/models/article.model';
-import { ControlesFormulairesService } from 'src/app/core/service/controles-formulaires/controles-formulaires.service';
+import { ControlesFormulairesService } from 'src/app/services/composite/controles-formulaires/controles-formulaires.service';
 
 @Component({
   selector: 'app-nature-operations',

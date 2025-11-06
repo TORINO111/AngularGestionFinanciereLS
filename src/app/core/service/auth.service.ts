@@ -78,7 +78,6 @@ export class AuthenticationService {
     sessionStorage.setItem('role', rolePriority[role] || '');
   }
 
-
   isAdmin() { return sessionStorage.getItem('role') === 'ADMIN'; }
   isClientAdmin() { return sessionStorage.getItem('role') === 'CLIENT_ADMIN'; }
   isClientComptable() { return sessionStorage.getItem('role') === 'CLIENT_COMPTABLE'; }

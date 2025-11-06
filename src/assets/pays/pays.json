@@ -1,0 +1,48 @@
+{
+  "countries": [
+    {
+      "name": "Sénégal",
+      "cities": ["Dakar", "Touba", "Thiès", "Pikine", "Rufisque", "Kaolack", "M'Bour", "Saint-Louis", "Ziguinchor", "Diourbel", "Tambacounda", "Louga", "Kolda", "Richard-Toll", "Joal-Fadiouth", "Kaffrine", "Tivaouane", "Fatick", "Bignona", "Sébikhotane", "Pout", "Nguékhokh", "Bargny", "Diamniadio", "Guédiawaye", "Matam", "Kédougou", "Sédhiou", "Podor", "Meckhe", "Yoff", "Agnam-Goly", "Cap Skirring", "Kidira", "Kayar", "Kirène", "Koussanar", "Malicounda"]
+    },
+    {
+      "name": "Mali",
+      "cities": ["Bamako", "Sikasso", "Koutiala", "Kayes", "Tombouctou", "Gao", "Mopti", "Ségou", "Kati", "Niono", "San", "Koro", "Bla", "Bougouni", "Mandé", "Baguineda-Camp", "Djenné", "Kidal", "Kita", "Koulikoro", "Ménaka", "Taoudenni", "Yoro", "Kalabancoro"]
+    },
+    {
+      "name": "Côte d'Ivoire",
+      "cities": ["Abidjan", "Yamoussoukro", "Bouaké", "San Pedro", "Daloa", "Korhogo", "Man", "Divo", "Gagnoa", "Soubré", "Anyama", "Abengourou", "Abobo", "Koumassi", "Marcory", "Sinfra", "Aboisso", "Adiaké", "Agboville", "Bingerville", "Bondoukou", "Bonoua", "Bouaflé", "Boundiali", "Dabakala", "Dabou", "Danané", "Diabo", "Didiévi", "Duékoué", "Ferkessédougou", "Grand-Bassam", "Grand-Lahou"]
+    },
+    {
+      "name": "Guinée",
+      "cities": ["Conakry", "Kindia", "Labé", "Kankan", "Nzérékoré", "Mamou", "Boké", "Faranah", "Guéckédou", "Macenta", "Beyla", "Boffa", "Coyah", "Dabola", "Dalaba", "Dinguiraye", "Dubréka", "Forécariah", "Fria", "Gaoual", "Kérouané", "Kissidougou", "Koubia", "Koundara", "Kouroussa", "Lélouma", "Lola", "Mandiana", "Mali", "Pita", "Siguiri", "Télimélé", "Timbo", "Tougué", "Yomou"]
+    },
+    {
+      "name": "Burkina Faso",
+      "cities": ["Ouagadougou", "Bobo-Dioulasso", "Koudougou", "Banfora", "Fada N'gourma", "Ouahigouya", "Kaya", "Tenkodogo", "Dédougou", "Manga", "Houndé", "Aribinda", "Batié", "Bogandé", "Boromo", "Boulsa", "Boussé", "Dano", "Diapaga", "Diébougou", "Djibo", "Dori", "Gaoua", "Garango", "Gayéri", "Gorom-Gorom", "Gourcy", "Kantchari", "Kokologo", "Kombissiri", "Kongoussi", "Koupéla", "Léo", "Loropeni", "Nouna", "Orodara", "Pama", "Pissila", "Pô", "Pouytenga", "Réo", "Sapouy", "Sebba", "Sindou", "Solenzo", "Titao", "Toma", "Tougan", "Yako", "Ziniaré", "Zorgo"]
+    },
+    {
+      "name": "Niger",
+      "cities": ["Niamey", "Zinder", "Maradi", "Tahoua", "Agadez", "Arlit", "Dosso", "Diffa", "Tillabéri", "Tessaoua", "Gaya", "Bilma", "Miria", "Dogondoutchi", "Abalak", "Aguié", "Akokan", "Alaghsas", "Ayourou", "Balléyara", "Bani-Bangou", "Birni N Konni", "Boubon", "Galmi", "Guidimouni", "Kollo", "Kouré", "Matameye", "Samia", "Timia"]
+    },
+    {
+      "name": "Bénin",
+      "cities": ["Porto-Novo", "Cotonou", "Parakou", "Abomey", "Djougou", "Bohicon", "Kandi", "Natitingou", "Ouidah", "Savalou", "Lokossa", "Abomey-Calavi", "Adja-Ouere", "Adjarra", "Adjohoun", "Agbangnizoun", "Agoua", "Aguegues", "Akassato", "Aklankpa", "Akpro-Misserete", "Allada", "Aplahoue", "Athiémè", "Attogon", "Avrankou", "Banikoara", "Bante", "Bassila", "Bembèrèkè", "Bétérou", "Bonou", "Bopa", "Bori", "Boukoumbé", "Cobly", "Comè", "Copargo", "Cové", "Dangbo", "Dassa-Zoumé", "Djakotomey", "Djidja", "Dogbo-Tota", "Glazoue", "Godomey", "Gogounou", "Grand-Popo", "Karimama", "Malanville", "Ouinhi", "Sèmè-Kpodji", "Za-Kpota", "Zangnanado", "Zogbodomey"]
+    },
+    {
+      "name": "Togo",
+      "cities": ["Lomé", "Sokodé", "Kara", "Atakpamé", "Dapaong", "Kpalimé", "Tsévié", "Bassar", "Aného", "Mango", "Tchamba", "Niamtougou", "Bafilo", "Notsé", "Sotouboua", "Vogan", "Badou", "Biankouri", "Tabligbo", "Kandé", "Amlamé", "Galangachi", "Adeta", "Agbodrafo", "Cinkassé", "Tandjouare", "Togoville"]
+    },
+    {
+      "name": "Guinée-Bissau",
+      "cities": ["Bissau", "Bafatá", "Gabú", "Bissorã", "Cacheu", "Bolama", "Canchungo", "Farim", "Mansôa", "Bubaque", "Catió", "Buba", "Bula", "Contuboel", "Mansabá", "São Domingos", "Bedanda", "Bigene", "Cacine", "Caió", "Caravela", "Bambadinca", "Sonaco"]
+    },
+    {
+      "name": "Sierra Leone",
+      "cities": ["Freetown", "Bo", "Kenema", "Makeni", "Koidu Town", "Waterloo", "Lunsar", "Port Loko", "Kabala", "Magburaka", "Daru", "Falaba", "Gbinti", "Kamakwie", "Kaima", "Koindu", "Lungi", "Madina", "Mange", "Mano", "Matru", "Pepel", "Pendembu", "Shenge", "Sulima", "Taiama", "Tongo", "Yana", "Yele", "Yengema", "Yonibana"]
+    },
+    {
+      "name": "Libéria",
+      "cities": ["Monrovia", "Gbarnga", "Buchanan", "Zwedru", "Bopolu", "Harper", "Voinjama", "Greenville", "Robertsport", "Sanniquellie", "Arthington", "Barclayville", "Bensonville", "Buutuo", "Caldwell", "Careysburg", "Clay-Ashland", "Edina", "Fish Town", "Ganta", "Harbel", "Kakata", "Marshall", "Paynesville", "Pleebo", "River Cess", "Sacleipea", "Tubmanburg", "Virginia", "Yekepa", "Zorzor"]
+    }
+  ]
+}

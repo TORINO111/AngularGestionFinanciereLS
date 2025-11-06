@@ -14,7 +14,7 @@ import { CompteComptableService } from 'src/app/services/comptes-comptables/comp
 import { CompteComptableDTO } from 'src/app/models/compte-comptable';
 import { TypeCategorie } from 'src/app/models/type-categorie.model';
 import { TypeMouvement } from 'src/app/models/type-mouvement.model';
-import { ControlesFormulairesService } from 'src/app/core/service/controles-formulaires/controles-formulaires.service';
+import { ControlesFormulairesService } from 'src/app/services/composite/controles-formulaires/controles-formulaires.service';
 
 @Component({
   selector: 'app-articles-component',
