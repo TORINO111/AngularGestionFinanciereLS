@@ -1,6 +1,6 @@
 export enum TypeClientNumexis {
     CGA = 'CGA',
-    CABINETCOMPTABLE = 'CABINETCOMPTABLE',
+    CABINETCOMPTABLE = 'CABINETCOMPTABLE<',
     SAE = 'SAE'
 }
 

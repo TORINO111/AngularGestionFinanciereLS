@@ -1,6 +1,6 @@
 import { Component, OnInit, TemplateRef, ViewChild } from "@angular/core";
-import { Subject } from 'rxjs';
-import { debounceTime, switchMap, tap } from 'rxjs/operators';
+import { Subject } from "rxjs";
+import { debounceTime, switchMap, tap } from "rxjs/operators";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { ClientNumexisService } from "src/app/services/clients-numexis/client-numexis.service";
@@ -29,8 +29,8 @@ export class ClientsNumexisComponent implements OnInit {
   isLoading = false;
   result = false;
 
-  searchTerm: string = '';
-  searchTelephone: string = '';
+  searchTerm: string = "";
+  searchTelephone: string = "";
   selectedPays?: string;
   selectedVille?: string;
   selectedType?: TypeClientNumexis;
@@ -107,7 +107,7 @@ export class ClientsNumexisComponent implements OnInit {
         },
         error: (err) => {
           this.isLoading = false;
-          console.error('Erreur lors de la recherche', err);
+          console.error("Erreur lors de la recherche", err);
         },
       });
   }
@@ -119,27 +119,39 @@ export class ClientsNumexisComponent implements OnInit {
   }
 
   onCountryChange(selectedCountry: any): void {
-    this.selectedVille = undefined;
+  this.selectedVille = undefined;
 
-    const countryName = selectedCountry?.name || this.selectedPays;
-    if (countryName) {
-      this.locationService
-        .getCitiesByCountry(countryName)
-        .subscribe((cities) => {
-          this.cities = cities;
-        });
-    } else {
-      this.cities = [];
-    }
-    this.onFilterChange();
+  const countryName = selectedCountry?.name || this.selectedPays;
+  const villeControl = this.clientForm.get('ville');
+
+  if (countryName) {
+    this.locationService.getCitiesByCountry(countryName).subscribe((cities) => {
+      this.cities = cities || [];
+
+      // Active le contrôle seulement s'il y a des villes
+      if (this.cities.length > 0) {
+        villeControl?.enable();
+      } else {
+        villeControl?.disable();
+      }
+    });
+  } else {
+    this.cities = [];
+    villeControl?.disable();
   }
+
+  this.onFilterChange();
+}
+
 
   onFilterCountryChange(): void {
     this.selectedVille = undefined;
     if (this.selectedPays) {
-      this.locationService.getCitiesByCountry(this.selectedPays).subscribe(cities => {
-        this.cities = cities;
-      });
+      this.locationService
+        .getCitiesByCountry(this.selectedPays)
+        .subscribe((cities) => {
+          this.cities = cities;
+        });
     } else {
       this.cities = [];
     }
@@ -150,27 +162,29 @@ export class ClientsNumexisComponent implements OnInit {
     this.isLoading = true;
     this.result = false;
     this.currentPage = page;
-    this.clientNumexisService.getAllPageable(
-      page,
-      this.pageSize,
-      this.searchTerm || undefined,
-      this.searchTelephone || undefined,
-      this.selectedVille || undefined,
-      this.selectedPays || undefined,
-      this.selectedType || undefined
-    ).subscribe({
-      next: (data) => {
-        this.clients = data.content;
-        this.totalElements = data.totalElements;
-        this.isLoading = false;
-        this.result = true;
-      },
-      error: (err) => {
-        this.notification.showError("Erreur de chargement des clients");
-        this.isLoading = false;
-        this.result = true;
-      },
-    });
+    this.clientNumexisService
+      .getAllPageable(
+        page,
+        this.pageSize,
+        this.searchTerm || undefined,
+        this.searchTelephone || undefined,
+        this.selectedVille || undefined,
+        this.selectedPays || undefined,
+        this.selectedType || undefined
+      )
+      .subscribe({
+        next: (data) => {
+          this.clients = data.content;
+          this.totalElements = data.totalElements;
+          this.isLoading = false;
+          this.result = true;
+        },
+        error: (err) => {
+          this.notification.showError("Erreur de chargement des clients");
+          this.isLoading = false;
+          this.result = true;
+        },
+      });
   }
 
   openModal(client?: ClientNumexis): void {

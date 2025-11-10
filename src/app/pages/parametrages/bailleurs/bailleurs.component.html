@@ -1,48 +1,123 @@
-<app-page-title [breadcrumbItems]="pageTitle" title="Bailleurs"></app-page-title>
+<app-page-title [breadcrumbItems]="pageTitle" title="Bailleurs">
+</app-page-title>
 
 @if (!result) {
 <div class="loader-container">
   <div class="lds-dual-ring"></div>
 </div>
-}
-
-@if (result) {
+} @if (result) {
 <div class="card">
   <div class="card-body">
-    <div class="mb-3">
-      <button class="btn btn-success" (click)="openModal()">Nouveau Bailleur</button>
+    <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
+      <button class="btn btn-success" (click)="openModal()">
+        Nouveau Bailleur
+      </button>
+
+      <div class="d-flex gap-2 ms-auto">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Rechercher par nom"
+          [(ngModel)]="searchTerm"
+          (keyup)="onFilterChange()"
+          (ngModelChange)="onFilterChange()"
+        />
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Rechercher par téléphone"
+          [(ngModel)]="searchTelephone"
+          (keyup)="onFilterChange()"
+          (ngModelChange)="onFilterChange()"
+        />
+        <ng-select
+          class="mt-1"
+          [items]="clientsNumexis"
+          bindLabel="nom"
+          bindValue="id"
+          placeholder="Filtrer par client"
+          [(ngModel)]="selectedClientNumexisId"
+          (ngModelChange)="onFilterChange()"
+        >
+          <ng-template ng-notfound-tmp>Aucun client disponible</ng-template>
+        </ng-select>
+        <ng-select
+          class="mt-1"
+          [items]="countries"
+          bindLabel="name"
+          bindValue="name"
+          placeholder="Filtrer par pays"
+          [(ngModel)]="selectedPays"
+          (ngModelChange)="onFilterCountryChange()"
+        >
+          <ng-template ng-option-tmp let-item="item">
+            {{ item.name }}
+          </ng-template>
+          <ng-template ng-notfound-tmp>Aucun pays disponible</ng-template>
+        </ng-select>
+        <ng-select
+          class="mt-1"
+          [items]="cities"
+          placeholder="Filtrer par ville"
+          [(ngModel)]="selectedVille"
+          (ngModelChange)="onFilterChange()"
+          [disabled]="!selectedPays"
+        >
+          <ng-template ng-notfound-tmp>Aucune ville disponible</ng-template>
+        </ng-select>
+      </div>
     </div>
 
     <table class="table table-bordered table-striped">
       <thead>
         <tr>
-          <th style="background-color: #37a6de; color: white;">Nom</th>
-          <th style="background-color: #37a6de; color: white;">Client Numexis ID</th>
-          <th style="background-color: #37a6de; color: white;">Client Numexis Nom</th>
-          <th style="width:120px; background-color: #37a6de; color: white;">Actions</th>
+          <th style="background-color: #37a6de; color: white">Nom</th>
+          <th style="background-color: #37a6de; color: white">Téléphone</th>
+          <th style="background-color: #37a6de; color: white">Email</th>
+          <th style="background-color: #37a6de; color: white">Adresse</th>
+          <th style="background-color: #37a6de; color: white">Ville</th>
+          <th style="background-color: #37a6de; color: white">Pays</th>
+          <th style="background-color: #37a6de; color: white">
+            Client Numexis Affilié
+          </th>
+          <th style="width: 120px; background-color: #37a6de; color: white">
+            Actions
+          </th>
         </tr>
       </thead>
       <tbody *ngIf="!isLoading && bailleurs.length > 0">
         <tr *ngFor="let bailleur of bailleurs">
           <td>{{ bailleur.nom }}</td>
-          <td>{{ bailleur.clientNumexisId }}</td>
+          <td>{{ bailleur.telephone }}</td>
+          <td>{{ bailleur.email }}</td>
+          <td>{{ bailleur.adresse }}</td>
+          <td>{{ bailleur.ville }}</td>
+          <td>{{ bailleur.pays }}</td>
           <td>{{ bailleur.clientNumexisNom }}</td>
           <td>
-            <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="openModal(bailleur)"></span>
-            <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x" (click)="deleteBailleur(bailleur)"></span>
+            <span
+              style="color: blue; cursor: pointer"
+              class="fa fa-edit fa-2x me-3"
+              (click)="openModal(bailleur)"
+            ></span>
+            <span
+              style="color: red; cursor: pointer"
+              class="fa fa-trash fa-2x"
+              (click)="deleteBailleur(bailleur)"
+            ></span>
           </td>
         </tr>
       </tbody>
       <tbody *ngIf="!isLoading && bailleurs.length == 0">
         <tr>
-          <td colspan="4" class="text-center">
+          <td colspan="8" class="text-center">
             <h5>AUCUN BAILLEUR TROUVÉ</h5>
           </td>
         </tr>
       </tbody>
       <tbody *ngIf="isLoading">
         <tr>
-          <td colspan="4" class="text-center">
+          <td colspan="8" class="text-center">
             <div class="spinner-border text-secondary" role="status">
               <span class="visually-hidden">Chargement...</span>
             </div>
@@ -50,48 +125,148 @@
         </tr>
       </tbody>
     </table>
-    
+
     <!-- Pagination -->
     <nav aria-label="Pagination">
       <ul class="pagination mt-3">
         <li class="page-item" [class.disabled]="currentPage === 0">
-          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)">Précédent</a>
+          <a
+            class="page-link"
+            href="javascript:void(0)"
+            (click)="goToPage(currentPage - 1)"
+            >Précédent</a
+          >
         </li>
-        <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
-          <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)">{{ page + 1 }}</a>
+        <li
+          *ngFor="let page of pages()"
+          class="page-item"
+          [class.active]="page === currentPage"
+        >
+          <a
+            class="page-link"
+            href="javascript:void(0)"
+            (click)="goToPage(page)"
+            >{{ page + 1 }}</a
+          >
         </li>
-        <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
-          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage + 1)">Suivant</a>
+        <li
+          class="page-item"
+          [class.disabled]="currentPage >= totalPages() - 1"
+        >
+          <a
+            class="page-link"
+            href="javascript:void(0)"
+            (click)="goToPage(currentPage + 1)"
+            >Suivant</a
+          >
         </li>
       </ul>
     </nav>
-
   </div>
 </div>
 }
 
 <ng-template #modalContent>
   <div class="modal-header text-white" style="background-color: #37a6de;">
-    <h4 class="modal-title">{{ selectedBailleur ? 'Modifier Bailleur' : 'Nouveau Bailleur' }}</h4>
+    <h4 class="modal-title text-white">
+      {{ selectedBailleur ? "Modifier Bailleur" : "Nouveau Bailleur" }}
+    </h4>
   </div>
   <div class="modal-body">
     <form [formGroup]="bailleurForm">
-      <div class="mb-3">
-        <label for="nom" class="form-label">Nom</label>
-        <input type="text" id="nom" formControlName="nom" class="form-control">
-      </div>
-      <div class="mb-3">
-        <label for="clientNumexisId" class="form-label">Client Numexis ID</label>
-        <input type="number" id="clientNumexisId" formControlName="clientNumexisId" class="form-control">
-      </div>
-      <div class="mb-3">
-        <label for="clientNumexisNom" class="form-label">Client Numexis Nom</label>
-        <input type="text" id="clientNumexisNom" formControlName="clientNumexisNom" class="form-control">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="nom" class="form-label">Nom</label>
+          <input
+            type="text"
+            id="nom"
+            formControlName="nom"
+            class="form-control"
+          />
+        </div>
+        
+        <div class="col-md-6 mb-3">
+          <label for="telephone" class="form-label">Téléphone</label>
+          <input
+            type="text"
+            id="telephone"
+            formControlName="telephone"
+            class="form-control"
+          />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            class="form-control"
+          />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="adresse" class="form-label">Adresse</label>
+          <input
+            type="text"
+            id="adresse"
+            formControlName="adresse"
+            class="form-control"
+          />
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="pays" class="form-label">Pays</label>
+          <ng-select
+            formControlName="pays"
+            [items]="countries"
+            bindLabel="name"
+            bindValue="name"
+            placeholder="Sélectionner un pays"
+            (change)="onCountryChange($event)"
+          >
+          </ng-select>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="ville" class="form-label">Ville</label>
+          <ng-select
+            formControlName="ville"
+            [items]="cities"
+            placeholder="Sélectionner une ville"
+          >
+          </ng-select>
+        </div>
+
+        <div class="col-md-12 mb-3">
+          <label for="clientNumexisId" class="form-label"
+            >Client Numexis Affilié</label
+          >
+          <ng-select
+            [items]="clientsNumexis"
+            bindLabel="nom"
+            bindValue="id"
+            formControlName="clientNumexisId"
+            id="clientNumexisId"
+            placeholder="Sélectionner un client Numexis"
+          >
+            <ng-template ng-option-tmp let-item="item">
+              {{ item.nom }}
+            </ng-template>
+            <ng-template ng-notfound-tmp>
+              Aucun client Numexis disponible
+            </ng-template>
+          </ng-select>
+        </div>
       </div>
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
-    <button type="button" class="btn btn-success" (click)="enregistrer()">Enregistrer</button>
+    <button type="button" class="btn btn-secondary" (click)="closeModal()">
+      Fermer
+    </button>
+    <button type="button" class="btn btn-success" (click)="enregistrer()">
+      Enregistrer
+    </button>
   </div>
 </ng-template>

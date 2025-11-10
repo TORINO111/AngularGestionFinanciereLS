@@ -14,7 +14,7 @@ export class ClientNumexisService {
   constructor(private http: HttpClient) { }
 
   getAll(): Observable<ClientNumexis[]> {
-    return this.http.get<ClientNumexis[]>(this.baseUrl);
+    return this.http.get<ClientNumexis[]>(`${this.baseUrl}/all`);
   }
 
   getAllPageable(

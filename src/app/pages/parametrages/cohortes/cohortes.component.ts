@@ -1,4 +1,6 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Subject } from 'rxjs';
+import { debounceTime, switchMap, tap } from 'rxjs/operators';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { CohorteService } from 'src/app/services/cohortes/cohorte.service';
@@ -25,6 +27,11 @@ export class CohortesComponent implements OnInit {
   selectedCohorte: Cohorte | null = null;
   isLoading = false;
   result = false;
+
+  searchTerm: string = '';
+  selectedBailleurId?: number;
+
+  private search$ = new Subject<void>();
   
   totalElements = 0;
   pageSize = 10;
@@ -48,13 +55,54 @@ export class CohortesComponent implements OnInit {
     this.pageTitle = [{ label: 'Cohortes', path: '/', active: true }];
     this.loadCohortes();
     this.loadBailleurs();
+    this.initSearchListener();
+  }
+
+  onFilterChange(): void {
+    this.search$.next();
+  }
+
+  private initSearchListener(): void {
+    this.search$
+      .pipe(
+        debounceTime(300),
+        tap(() => {
+          this.isLoading = true;
+        }),
+        switchMap(() => {
+          this.currentPage = 0;
+          return this.cohorteService.getAllPageable(
+            0,
+            this.pageSize,
+            this.searchTerm || undefined,
+            this.selectedBailleurId || undefined
+          );
+        })
+      )
+      .subscribe({
+        next: (data) => {
+          this.cohortes = data.content;
+          this.totalElements = data.totalElements;
+          this.currentPage = 0;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          this.isLoading = false;
+          console.error('Erreur lors de la recherche', err);
+        },
+      });
   }
 
   loadCohortes(page: number = 0): void {
     this.isLoading = true;
     this.result = false;
     this.currentPage = page;
-    this.cohorteService.getAllPageable(page, this.pageSize).subscribe({
+    this.cohorteService.getAllPageable(
+      page,
+      this.pageSize,
+      this.searchTerm || undefined,
+      this.selectedBailleurId || undefined
+    ).subscribe({
       next: (data) => {
         this.cohortes = data.content;
         this.totalElements = data.totalElements;

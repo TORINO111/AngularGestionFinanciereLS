@@ -9,8 +9,30 @@
 @if (result) {
 <div class="card">
   <div class="card-body">
-    <div class="mb-3">
+    <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
       <button class="btn btn-success" (click)="openModal()">Nouvelle Cohorte</button>
+
+      <div class="d-flex gap-2 ms-auto">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Rechercher par nom"
+          [(ngModel)]="searchTerm"
+          (keyup)="onFilterChange()"
+          (ngModelChange)="onFilterChange()"
+        />
+        <ng-select
+          class="mt-1"
+          [items]="bailleurs"
+          bindLabel="nom"
+          bindValue="id"
+          placeholder="Filtrer par bailleur"
+          [(ngModel)]="selectedBailleurId"
+          (ngModelChange)="onFilterChange()"
+        >
+          <ng-template ng-notfound-tmp>Aucun bailleur disponible</ng-template>
+        </ng-select>
+      </div>
     </div>
 
     <table class="table table-bordered table-striped">
@@ -69,8 +91,8 @@
 }
 
 <ng-template #modalContent>
-  <div class="modal-header text-white" style="background-color: #37a6de;">
-    <h4 class="modal-title">{{ selectedCohorte ? 'Modifier Cohorte' : 'Nouvelle Cohorte' }}</h4>
+  <div class="modal-header" style="background-color: #37a6de;">
+    <h4 class="modal-title text-white">{{ selectedCohorte ? 'Modifier Cohorte' : 'Nouvelle Cohorte' }}</h4>
   </div>
   <div class="modal-body">
     <form [formGroup]="cohorteForm">

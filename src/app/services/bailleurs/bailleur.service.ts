@@ -22,7 +22,9 @@ export class BailleurService {
     size: number = 20,
     nom?: string,
     clientNumexisId?: number,
-    clientNumexisNom?: string
+    telephone?: string,
+    pays?: string,
+    ville?: string,
   ): Observable<any> {
     let params = new HttpParams()
       .set('page', page.toString())
@@ -34,10 +36,15 @@ export class BailleurService {
     if (clientNumexisId) {
       params = params.set('clientNumexisId', clientNumexisId.toString());
     }
-    if (clientNumexisNom) {
-      params = params.set('clientNumexisNom', clientNumexisNom);
+    if (telephone) {
+      params = params.set('telephone', telephone);
     }
-
+    if (pays) {
+      params = params.set('pays', pays);
+    }
+    if (ville) {
+      params = params.set('ville', ville);
+    }
     return this.http.get<any>(`${this.baseUrl}/pageable`, { params });
   }
 
