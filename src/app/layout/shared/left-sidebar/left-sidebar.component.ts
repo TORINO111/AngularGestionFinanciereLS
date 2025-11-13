@@ -43,12 +43,10 @@ export class LeftSidebarComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     // Récupérer le rôle unique
     this.role = this.authService.getRoleFromToken();
-
     // Filtrer le menu selon le rôle
     this.menuItems = MENU_ITEMS.filter(item => 
       Array.isArray(item.roles) && this.role ? item.roles.includes(this.role) : false
     );
-
     // Utilisateur courant
     this.loggedInUser = this.authService.currentUser();
   }

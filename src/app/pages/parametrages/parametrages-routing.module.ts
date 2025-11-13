@@ -5,7 +5,7 @@ import { AuthGuard } from '../../core/guards/auth.guard';
 const routes: Routes = [
 
   {
-    path: 'operations',
+    path: 'operations',   
     loadChildren: () => import('./operations/operations.module').then(m => m.OperationsModule),
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN'] }
@@ -45,7 +45,7 @@ const routes: Routes = [
     path: 'mon-compte',
     loadChildren: () => import('./compte/compte.module').then(m => m.CompteModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN', 'SUPERVISEUR', 'COMPTABLE'] }
+    data: { roles: ['ADMIN', 'SUPERVISEUR', 'COMPTABLE', 'CLIENT_ADMIN'] }
   },
   {
     path: 'tiers',
@@ -57,13 +57,13 @@ const routes: Routes = [
     path: 'bailleurs',
     loadChildren: () => import('./bailleurs/bailleurs.module').then(m => m.BailleursModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['ADMIN', 'CLIENT_ADMIN'] }
   },
   {
     path: 'cohortes',
     loadChildren: () => import('./cohortes/cohortes.module').then(m => m.CohortesModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['ADMIN', 'CLIENT_ADMIN'] }
   },
   {
     path: 'clients-numexis',

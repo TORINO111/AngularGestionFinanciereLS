@@ -92,7 +92,7 @@ const MENU_ITEMS: MenuItem[] = [
         roles: ['SUPERVISEUR','COMPTABLE']
     },
     
-    { key: 'parametrages', label: 'PARAMETRAGES', isTitle: true , roles: ['ADMIN','SUPERVISEUR','COMPTABLE']},
+    { key: 'parametrages', label: 'PARAMETRAGES', isTitle: true , roles: ['ADMIN','SUPERVISEUR','COMPTABLE', 'CLIENT_ADMIN']},
     
     {
         key: 'exercice-comptable',
@@ -196,7 +196,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/bailleurs',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN']
+        roles: ['ADMIN', 'CLIENT_ADMIN']
     },
     {
         key: 'cohortes',
@@ -204,7 +204,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/cohortes',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN']
+        roles: ['ADMIN', 'CLIENT_ADMIN']
     },
     {
         key: 'clients-numexis',

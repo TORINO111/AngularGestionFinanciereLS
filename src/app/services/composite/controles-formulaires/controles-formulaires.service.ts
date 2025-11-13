@@ -5,7 +5,6 @@ import { AbstractControl, ValidationErrors, ValidatorFn } from "@angular/forms";
   providedIn: "root",
 })
 export class ControlesFormulairesService {
-  
   allowNumbersOnly(event: KeyboardEvent) {
     const allowedKeys = [
       "Backspace",
@@ -31,12 +30,30 @@ export class ControlesFormulairesService {
   }
 
   allowNumbersAndDecimal(event: KeyboardEvent) {
+    const allowedKeys = [
+      "Backspace",
+      "Tab",
+      "ArrowLeft",
+      "ArrowRight",
+      "Delete",
+    ];
+
+    if (
+      (event.ctrlKey &&
+        ["a", "c", "v", "x"].includes(event.key.toLowerCase())) ||
+      allowedKeys.includes(event.key)
+    ) {
+      return;
+    }
+
     const char = event.key;
     const input = event.target as HTMLInputElement;
-    // autorise chiffres et un seul point ou virgule
+
+    // autoriser chiffres et un seul point ou virgule
     if (!/^\d$/.test(char) && char !== "." && char !== ",") {
       event.preventDefault();
     }
+
     if (
       (char === "." || char === ",") &&
       (input.value.includes(".") || input.value.includes(","))
@@ -46,9 +63,23 @@ export class ControlesFormulairesService {
   }
 
   allowAlphanumericWithAccents(event: KeyboardEvent) {
-    const char = event.key;
+    const allowedKeys = [
+      "Backspace",
+      "Tab",
+      "ArrowLeft",
+      "ArrowRight",
+      "Delete",
+    ];
 
-    // regex pour autoriser lettres, chiffres, espaces, tirets, apostrophes et lettres accentuées
+    if (
+      (event.ctrlKey &&
+        ["a", "c", "v", "x"].includes(event.key.toLowerCase())) ||
+      allowedKeys.includes(event.key)
+    ) {
+      return;
+    }
+
+    const char = event.key;
     const regex = /^[a-zA-Z0-9\s\-\:\'éèêëàâäîïôöùûüçÉÈÊËÀÂÄÎÏÔÖÙÛÜÇ]$/;
 
     if (!regex.test(char)) {

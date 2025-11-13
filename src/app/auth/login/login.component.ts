@@ -83,12 +83,26 @@ export class LoginComponent implements OnInit {
             this.authenticationService
               .getUserByUsername(this.loginForm.value.username)
               .subscribe((data: any) => {
-                if (this.authenticationService.isAdmin()) {
-                  localStorage.setItem("user", JSON.stringify(data));
-                  sessionStorage.setItem("currentUser", JSON.stringify(data));
-                  this.returnUrl = "/parametrages/cohortes";
-                  this.router.navigate([this.returnUrl]);
+                localStorage.setItem("user", JSON.stringify(data));
+                sessionStorage.setItem("currentUser", JSON.stringify(data));
+                const userRole = data.role;
+                switch (userRole) {
+                  case "ADMIN":
+                    this.returnUrl = "/parametrages/cohortes";
+                    this.router.navigate([this.returnUrl]);
+                    break;
+                  case "CLIENT_ADMIN":
+                    this.returnUrl = "/parametrages/cohortes";
+                    this.router.navigate([this.returnUrl]);
+                    break;
+
+                  default:
+                    this.returnUrl = "/";
+                    this.router.navigate([this.returnUrl]);
+                    break;
                 }
+                // if (this.authenticationService.isAdmin()) {
+                // }
               });
           },
           error: (error: any) => {
@@ -102,7 +116,7 @@ export class LoginComponent implements OnInit {
               this.error = details || message || "Erreur inconnue.";
             }
 
-            this.loading = false; 
+            this.loading = false;
           },
         });
     } else {
