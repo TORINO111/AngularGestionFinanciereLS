@@ -1,6 +1,37 @@
+.table-custom th {
+  background-color: #37a6de;
+  padding: 6px 4px;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
+.table-custom th h5 {
+  margin: 6px;
+  color: white;
+  font-weight: bold;
+  text-align: left;
+  vertical-align: middle;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
+}
+
+nav[aria-label="Pagination"] {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 0;
+}
+
+.pagination .page-item + .page-item {
+  margin-left: 5px;
+}
+
+.btn.btn-success {
+  background-color: #37a6de;
+  border: #37a6de;
 }
 
 /* Zebra striping */
@@ -21,69 +52,6 @@ th {
   text-align: left;
 }
 
-.btn-success{
-  background-color: #37a6de;
-  border: #37a6de
-}
-
-/* 
-  Max width before this PARTICULAR table gets nasty
-  This query will take effect for any screen smaller than 760px
-  and also iPads specifically.
-  */
-@media only screen and (max-width: 760px),
-(min-device-width: 768px) and (max-device-width: 1024px) {
-
-  /* Force table to not be like tables anymore */
-  table,
-  thead,
-  tbody,
-  th,
-  td,
-  tr {
-    display: block;
-  }
-
-  /* Hide table headers (but not display: none;, for accessibility) */
-  thead tr {
-    position: absolute;
-    top: -9999px;
-    left: -9999px;
-  }
-
-  tr {
-    border: 1px solid #ccc;
-  }
-
-  td {
-    /* Behave  like a "row" */
-    border: none;
-    border-bottom: 1px solid #eee;
-    position: relative;
-    padding-left: 50%;
-  }
-
-  td:before {
-    /* Now like a table header */
-    position: absolute;
-    /* Top/left values mimic padding */
-    top: 6px;
-    left: 6px;
-    width: 45%;
-    padding-right: 10px;
-    white-space: nowrap;
-  }
-
-  /*
-  Label the data
-  */
-
-}
-
-.title {
-  font-family: sans-serif;
-}
-
 /* loader*/
 .loader-container {
   display: flex;
@@ -96,6 +64,11 @@ th {
 .lds-dual-ring,
 .lds-dual-ring:after {
   box-sizing: border-box;
+}
+
+.btn-success {
+  background-color: #37a6de; 
+  border: #37a6de
 }
 
 .lds-dual-ring {
@@ -125,4 +98,15 @@ th {
   100% {
     transform: rotate(360deg);
   }
+}
+
+.btn-color {
+  background: #FF6F61;
+  color: white;
+  font-weight: bold;
+}
+
+.swal2-confirm i,
+.swal2-cancel i {
+  margin-right: 5px;
 }

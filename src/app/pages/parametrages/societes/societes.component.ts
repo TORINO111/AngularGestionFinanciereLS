@@ -59,7 +59,6 @@ export class SocietesComponent implements OnInit {
     });
     this.chargerSocietes();
     this.chargerPays();
-    this.chargerComptables();
   }
 
   ngOnInit(): void {
@@ -188,22 +187,6 @@ export class SocietesComponent implements OnInit {
           this.result=true;
           console.log('Erreur lors du chargement des pays', error);
           this.showError("erreur lors du chargement des pays");
-        }
-      }
-    );
-  }
-
-  chargerComptables() {
-    this.utilisateurService.allComptables().subscribe(
-      {
-        next:(data:any) => {
-          this.comptables=data;
-          this.result=true;
-        },
-        error:(error:any) => {
-          this.result=true;
-          console.log('Erreur lors du chargement des comptables', error);
-          this.showError("erreur lors du chargement des comptables");
         }
       }
     );

@@ -34,7 +34,7 @@
         </ng-select>
       </div>
     </div>
-
+    
     <table class="table table-bordered table-striped">
       <thead>
         <tr>
@@ -43,7 +43,7 @@
           <th style="width:120px; background-color: #37a6de; color: white;">Actions</th>
         </tr>
       </thead>
-      <tbody *ngIf="!isLoading && cohortes.length > 0">
+      <tbody *ngIf="!isLoading && cohortes.length > 0"> 
         <tr *ngFor="let cohorte of cohortes">
           <td>{{ cohorte.nom }}</td>
           <td>{{ cohorte.bailleurNom }}</td>

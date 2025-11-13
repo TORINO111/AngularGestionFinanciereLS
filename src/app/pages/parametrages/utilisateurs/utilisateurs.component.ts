@@ -1,25 +1,34 @@
-import { UtilisateurService } from './../../../services/utilisateurs/utilisateur.service';
-import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
-import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
-import { UntypedFormGroup, Validators, UntypedFormBuilder } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
-import Swal from 'sweetalert2';
-import { TresorerieService } from 'src/app/services/tresorerie/tresorerie.service';
-import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
-import { SocieteService } from 'src/app/services/societe/societe.service';
-import { NotificationService } from 'src/app/services/notifications/notifications-service';
-import { debounceTime, Subject, switchMap, tap } from 'rxjs';
+import { UtilisateurService } from "./../../../services/utilisateurs/utilisateur.service";
+import { Component, OnInit, ViewChild, TemplateRef } from "@angular/core";
+import { BreadcrumbItem } from "src/app/shared/page-title/page-title/page-title.model";
+import {
+  UntypedFormGroup,
+  Validators,
+  UntypedFormBuilder,
+} from "@angular/forms";
+import { ToastrService } from "ngx-toastr";
+import Swal from "sweetalert2";
+import { NgbModal, ModalDismissReasons } from "@ng-bootstrap/ng-bootstrap";
+import { SocieteService } from "src/app/services/societe/societe.service";
+import { NotificationService } from "src/app/services/notifications/notifications-service";
+import { debounceTime, Subject, switchMap, tap } from "rxjs";
+import { Utilisateur } from "src/app/models/utilisateur.model";
+import { ClientNumexisService } from "src/app/services/clients-numexis/client-numexis.service";
+import { BailleurService } from "src/app/services/bailleurs/bailleur.service";
+import { ClientNumexis } from "src/app/models/client-numexis.model";
+import { Bailleur } from "src/app/models/bailleur.model";
+import { ControlesFormulairesService } from "src/app/services/composite/controles-formulaires/controles-formulaires.service";
 @Component({
-  selector: 'app-utilisateurs',
-  templateUrl: './utilisateurs.component.html',
-  styleUrls: ['./utilisateurs.component.scss'],
-  standalone: false
+  selector: "app-utilisateurs",
+  templateUrl: "./utilisateurs.component.html",
+  styleUrls: ["./utilisateurs.component.scss"],
+  standalone: false,
 })
 export class UtilisateursComponent implements OnInit {
-  @ViewChild('content', { static: true }) content: TemplateRef<any>;
-  @ViewChild('editcontent', { static: true }) editcontent: any;
+  @ViewChild("content", { static: true }) content: TemplateRef<any>;
+  @ViewChild("editcontent", { static: true }) editcontent: any;
 
-  closeResult: string = '';
+  closeResult: string = "";
   pageTitle: BreadcrumbItem[] = [];
   subtitle: string;
   utilisateurForm: UntypedFormGroup;
@@ -30,56 +39,74 @@ export class UtilisateursComponent implements OnInit {
   users: any[] = [];
   roles: any[] = [];
   superviseurs: any[] = [];
-  formsArr: UntypedFormGroup[] = [];
   admin = false;
   societes: any[] = [];
+  clientsNumexis: ClientNumexis[] = [];
+  bailleurs: Bailleur[] = [];
   idAdmin: number;
   user: any;
 
   result = false;
   isLoading = false;
-  searchLibelle = '';
-  private search$ = new Subject<{ libelle: string }>();
+  searchNom: string = "";
+  searchPrenom: string = "";
+  searchUsername: string = "";
+  selectedRole: string | null = null;
+
+  selectedRoleForModal: string | null = null;
+  selectedUser: Utilisateur | null = null;
+  civiliteOptions: string[] = ['HOMME', 'FEMME'];
+  
+  private search$ = new Subject<{
+    nom: string;
+    prenom: string;
+    username: string;
+    role: string | null;
+  }>();
 
   totalElements = 0;
   pageSize = 10;
   currentPage = 0;
+  modifUser: boolean = false;
 
   constructor(
     private societeService: SocieteService,
     private modalService: NgbModal,
-    private tresorerieService: TresorerieService,
     private fb: UntypedFormBuilder,
-    private toastr: ToastrService,
     private notification: NotificationService,
     private utilisateurService: UtilisateurService,
+    private clientNumexisService: ClientNumexisService,
+    public controleForm: ControlesFormulairesService,
+    private bailleurService: BailleurService
   ) {
     const userJson = localStorage.getItem("user");
     this.user = userJson ? JSON.parse(userJson) : null;
 
     this.utilisateurForm = this.fb.group({
       id: [],
-      username: ['', [Validators.required, Validators.minLength(2)]],
-      nom: ['', [Validators.required, Validators.minLength(2)]],
-      prenom: ['', Validators.required],
-      email: [''],
-      password: [''],
-      confirmation: [''],
+      username: ["", [Validators.required, Validators.minLength(2)]],
+      nom: ["", [Validators.required, Validators.minLength(2)]],
+      prenom: ["", Validators.required],
+      email: ["", [Validators.email]],
+      password: [""],
       enabled: [],
-      idRole: [],
-      cabinetId: [this.user?.cabinet?.id],
-      superviseurId: []
+      role: ['', Validators.required],
+      societeId: [null],
+      clientNumexisId: [null],
+      bailleurId: [null],
+      telephone: ['', Validators.required],
+      civilite: ['', Validators.required],
     });
-
-    this.chargerRoles();
-    this.chargerSuperviseurs();
-    this.loadUsers();
-    console.log(this.user?.cabinet);
   }
 
   ngOnInit(): void {
-    this.pageTitle = [{ label: 'utilisateurs', path: '/', active: true }];
+    this.pageTitle = [{ label: "utilisateurs", path: "/", active: true }];
     this.loadSocietes();
+    this.chargerRoles();
+    this.loadClientsNumexis();
+    this.loadBailleurs();
+    this.loadUsers();
+    this.initSearchListener();
   }
 
   private loadSocietes(): void {
@@ -88,150 +115,136 @@ export class UtilisateursComponent implements OnInit {
         this.societes = data;
       },
       error: (err) => {
-        console.error('Erreur lors du chargement des sociétés', err);
-      }
+        console.error("Erreur lors du chargement des sociétés", err);
+      },
+    });
+  }
+
+  private loadClientsNumexis(): void {
+    this.clientNumexisService.getAll().subscribe({
+      next: (data: ClientNumexis[]) => {
+        this.clientsNumexis = data;
+      },
+      error: (err) => {
+        console.error("Erreur lors du chargement des clients Numexis", err);
+      },
+    });
+  }
+
+  private loadBailleurs(): void {
+    this.bailleurService.getAll().subscribe({
+      next: (data: Bailleur[]) => {
+        this.bailleurs = data;
+      },
+      error: (err) => {
+        console.error("Erreur lors du chargement des bailleurs", err);
+      },
     });
   }
 
   chargerRoles() {
-    this.tresorerieService.allRoles().subscribe(
-      (data: any) => { // <== utiliser 'any' ici
+    this.utilisateurService.allRoles().subscribe(
+      (data: any) => {
+        // <== utiliser 'any' ici
         let roles: any[] = data as any[];
-
-        if (this.user?.cabinet !== null && this.user?.cabinet !== undefined) {
-          roles = roles.filter(role => role.libelle !== 'ADMIN');
-        }
 
         this.roles = roles;
         this.result = true;
       },
-      error => {
+      (error) => {
         this.result = true;
         this.notification.showError("Erreur lors du chargement des rôles.");
       }
     );
   }
 
-  chargerSuperviseurs() {
-    this.tresorerieService.allSuperviseurs().subscribe({
-      next: (data) => {
-        this.superviseurs = data;
+  enregistrer(): void {
+    this.modalService.dismissAll();
+    this.isLoading = true;
+    this.result = false;
+
+    if (this.utilisateurForm.invalid) {
+      this.notification.showWarning('Formulaire invalide');
+      return;
+    }
+
+    const utilisateur = this.utilisateurForm.value;
+    const action$ = utilisateur?.id
+      ? this.utilisateurService.updateUtilisateur(utilisateur.id, utilisateur)
+      : this.utilisateurService.addUser(utilisateur);
+
+    action$.subscribe({
+      next: () => {
+        this.loadUsers();
+        const msg = utilisateur?.id ? 'Modifié' : 'Enregistré';
+        this.notification.showSuccess(`${msg} avec succès`);
+        this.loading = false;
         this.result = true;
+        this.selectedUser = null;
       },
-      error: (err) => {
+      error: () => {
+        this.loading = false;
         this.result = true;
-        this.notification.showError("Erreur lors du chargement des superviseurs.");
+        this.notification.showError('Erreur serveur !!!');
       }
     });
   }
-
-  onSaveUtilisateur(utilisateurFormValue: any) {
-    // console.log(utilisateurFormValue.value);
-    // return;
-    if (utilisateurFormValue.valid) {
-      this.tresorerieService.addUser(utilisateurFormValue.value).subscribe(
-        {
-          next: (response: any) => {
-            this.notification.showSuccess('Enregistré  avec succès');
-            this.loading = false;
-            //console.log(response);
-            this.users = [];
-            this.loadUsers();
-          },
-          error: (error) => {
-            console.log(error);
-            this.loading = false;
-            this.notification.showError('Erreur serveur');
-          }
-        }
-      );
-    } else {
-      this.notification.showWarning('formulaire invalide');
-    }
-
-  }
-
-  // loadUsers() {
-  //   this.formsArr = [];
-  //   // this.tresorerieService.allUtilisateurs().subscribe({
-  //   this.utilisateurService.getAllPageable().subscribe({
-  //     next: (usersData) => {
-  //       const role = sessionStorage.getItem('role');
-  //       this.admin = role === 'a';
-  //       this.users = usersData;
-
-  //       for (let user of usersData) {
-  //         let selected = [];
-  //         let isAdmin = false;
-
-  //         for (let role of user.roles) {
-  //           selected.push({ id: role.id, itemName: role.libelle });
-  //           if (role.libelle === 'ADMIN') {
-  //             this.idAdmin = user.id;
-  //             isAdmin = true;
-  //           }
-  //         }
-
-  //         this.formsArr.push(this.fb.group({
-  //           id: [user.id],
-  //           username: [user.username, [Validators.required, Validators.minLength(2)]],
-  //           email: [user.email],
-  //           nom: [user.nom, Validators.required],
-  //           prenom: [user.prenom, Validators.required],
-  //           enabled: [user.enabled],
-  //           idRole: [user.idRole],
-  //           adm: [isAdmin],
-  //           modelRoles: [selected],
-  //           cabinetId: [user?.cabinet?.id],
-  //           superviseurId: []
-  //         }));
-  //       }
-
-  //       this.result = true;
-  //     },
-  //     error: (err) => {
-  //       this.result = true;
-  //       this.notification.showError("Erreur lors du chargement des utilisateurs.");
-  //     }
-  //   });
-  // }
 
   loadUsers(page: number = 0): void {
     this.result = false;
     this.isLoading = true;
     this.currentPage = page;
 
-    this.utilisateurService.getAllPageable(
-      page,
-      this.pageSize,
-      this.searchLibelle || undefined
-    ).subscribe({
-      next: (data) => {
-        this.users = data.content;
-        this.totalElements = data.totalElements;
-        this.result = true;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        this.result = true;
-        this.isLoading = false;
-        this.notification.showError("Erreur lors du chargement des utilisateurs.");
-      }
-    });
+    this.utilisateurService
+      .getAllPageable(
+        page,
+        this.pageSize,
+        this.searchUsername || undefined,
+        this.searchNom || undefined,
+        this.searchPrenom || undefined,
+        this.selectedRole || undefined
+      )
+      .subscribe({
+        next: (data) => {
+          this.users = data.content;
+          this.totalElements = data.totalElements;
+          this.result = true;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          this.result = true;
+          this.isLoading = false;
+          this.notification.showError(
+            "Erreur lors du chargement des utilisateurs."
+          );
+        },
+      });
   }
 
   onFilterChange(): void {
-    this.search$.next({ libelle: this.searchLibelle });
+    this.search$.next({
+      nom: this.searchNom,
+      prenom: this.searchPrenom,
+      username: this.searchUsername,
+      role: this.selectedRole,
+    });
   }
 
   private initSearchListener(): void {
     this.search$
       .pipe(
         debounceTime(300),
-        tap(() => this.isLoading = true),
-        switchMap(({ libelle }) => {
+        tap(() => (this.isLoading = true)),
+        switchMap(({ nom, prenom, username, role }) => {
           this.currentPage = 0;
-          return this.utilisateurService.getAllPageable(0, this.pageSize, libelle || undefined);
+          return this.utilisateurService.getAllPageable(
+            0,
+            this.pageSize,
+            username || undefined,
+            nom || undefined,
+            prenom || undefined,
+            role || undefined
+          );
         })
       )
       .subscribe({
@@ -242,14 +255,16 @@ export class UtilisateursComponent implements OnInit {
           this.isLoading = false;
         },
         error: (err) => {
-          console.error('Erreur lors de la recherche', err);
+          console.error("Erreur lors de la recherche", err);
           this.isLoading = false;
-        }
+        },
       });
   }
 
   pages(): number[] {
-    return Array(this.totalPages()).fill(0).map((_, i) => i);
+    return Array(this.totalPages())
+      .fill(0)
+      .map((_, i) => i);
   }
 
   goToPage(page: number = 0) {
@@ -260,144 +275,136 @@ export class UtilisateursComponent implements OnInit {
     return Math.ceil(this.totalElements / this.pageSize);
   }
 
-  showConfirmationSwal(title: string, text: string, confirmText: string, onConfirm: () => void) {
+  showConfirmationSwal(
+    title: string,
+    text: string,
+    confirmText: string,
+    onConfirm: () => void
+  ) {
     Swal.fire({
       title,
       text,
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      cancelButtonColor: '#d33',
+      cancelButtonColor: "#d33",
       confirmButtonText: confirmText,
-      cancelButtonText: 'Non'
+      cancelButtonText: "Non",
     }).then((result: any) => {
       if (result.value) {
         onConfirm();
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
-        Swal.fire('Abandonné', `${title.toLowerCase()} annulée`, 'error');
-      }
-    });
-  }
-
-  onAdd(data: any) {
-    this.isOpen = false;
-    this.tresorerieService.addData(data).subscribe(() => {
-      this.loading = false;
-    });
-  }
-
-  onAddUser(data: any) {
-    this.isOpen = false;
-    this.tresorerieService.addUser(data).subscribe(() => {
-      this.loading = false;
-      this.loadUsers();
-    });
-  }
-
-  onUpdateUser(user: any) {
-    this.tresorerieService.updateUtilisateur(user.id, user).subscribe(() => {
-      this.saveSuccess = true;
-      this.loading = false;
-      this.notification.showSuccess('Modification effectuée avec succès');
-      setTimeout(() => (this.saveSuccess = false), 3000);
-      this.loadUsers();
-    }, error => {
-      this.saveFail = true;
-      this.loading = false;
-      this.notification.showError('Échec de la modification');
-      setTimeout(() => (this.saveFail = false), 3000);
+      } 
+      // else if (result.dismiss === Swal.DismissReason.cancel) {
+      //   Swal.fire("Abandonné", `${title.toLowerCase()} annulée`, "error");
+      // }
     });
   }
 
   deleteUser(id: number) {
     this.showConfirmationSwal(
-      'Etes-vous sûr ?',
-      'Cette action est irréversible !',
-      'Oui, Supprimer !',
+      "Etes-vous sûr ?",
+      "Cette action est irréversible !",
+      "Oui, Supprimer !",
       () => {
-        this.tresorerieService.deleteUser(id).subscribe(res => {
-          if (res != null) {
-            this.loadUsers();
-            Swal.fire('Supprimé!', 'Utilisateur supprimé.', 'success');
-          } else {
-            Swal.fire('Erreur', 'Utilisateur non supprimé.', 'error');
-          }
-        }, () => Swal.fire('Erreur', 'Utilisateur non supprimé.', 'error'));
+        this.utilisateurService.deleteUser(id).subscribe(
+          (res) => {
+            if (res != null) {
+              this.loadUsers();
+              Swal.fire("Supprimé!", "Utilisateur supprimé.", "success");
+            } else {
+              Swal.fire("Erreur", "Utilisateur non supprimé.", "error");
+            }
+          },
+          () => Swal.fire("Erreur", "Utilisateur non supprimé.", "error")
+        );
       }
     );
-  }
-
-  addAdmin(id: number) {
-    this.showConfirmationSwal(
-      'Etes-vous sûr ?',
-      'Cette action est irréversible !',
-      'Oui, activer !',
-      () => {
-        this.tresorerieService.addAdmin(id).subscribe(res => {
-          if (res != null) {
-            this.loadUsers();
-            Swal.fire('Activé!', 'Administrateur activé.', 'success');
-          } else {
-            Swal.fire('Erreur', 'Administrateur non activé.', 'error');
-          }
-        }, () => Swal.fire('Erreur', 'Administrateur non activé.', 'error'));
-      }
-    );
-  }
-
-  suppAdmin(id: number) {
-    this.showConfirmationSwal(
-      'Etes-vous sûr ?',
-      'Cette action est irréversible !',
-      'Oui, désactiver !',
-      () => {
-        this.tresorerieService.removeAdmin(id).subscribe(res => {
-          if (res != null) {
-            this.loadUsers();
-            Swal.fire('Désactivé!', 'Administrateur désactivé.', 'success');
-          } else {
-            Swal.fire('Erreur', 'Administrateur non désactivé.', 'error');
-          }
-        }, () => Swal.fire('Erreur', 'Administrateur non désactivé.', 'error'));
-      }
-    );
-  }
-
-  activateUser(id: number, value: any) {
-    this.tresorerieService.activateUser(id, value).subscribe(() => this.loadUsers());
-  }
-
-  desactivateUser(id: number, value: any) {
-    this.tresorerieService.desactivateUser(id, value).subscribe(() => this.loadUsers());
   }
 
   openScrollableModal(content: TemplateRef<NgbModal>): void {
-    this.modalService.open(content,
-      {
-        size: 'lg', // set modal size
-        centered: true, scrollable: true,
-        backdrop: 'static', // disable modal from closing on click outside
+    this.modalService
+      .open(content, {
+        size: "lg", // set modal size
+        centered: true,
+        scrollable: true,
+        backdrop: "static", // disable modal from closing on click outside
         keyboard: false,
-        ariaLabelledBy: 'modal-basic-title'
-      }).result.then((result) => {
-        this.closeResult = `Closed with: ${result}`;
-      }, (reason) => {
-        this.closeResult =
-          `Dismissed ${this.getDismissReason(reason)}`;
-      });
+        ariaLabelledBy: "modal-basic-title",
+      })
+      .result.then(
+        (result) => {
+          this.closeResult = `Closed with: ${result}`;
+        },
+        (reason) => {
+          this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
+        }
+      );
   }
 
-  openModal(): void {
-    this.modalService.open(this.content, { size: 'lg', centered: true });
+  openModal(user?: Utilisateur): void {
+    this.modifUser = false;
+    this.selectedUser = user || null;
+    this.utilisateurForm.reset();
+    this.selectedRoleForModal = ''; 
+
+    if (user) {
+      this.utilisateurForm.patchValue(user);
+      if (user.role) {
+        const roleObject = this.roles.find(r => r === user.role);
+        if (roleObject) {
+          this.utilisateurForm.get('idRole')?.patchValue(roleObject.id);
+          this.onRoleChangeForModal(roleObject);
+        }
+      }
+      if (user.societeId) this.utilisateurForm.get('societeId')?.patchValue(user.societeId);
+      if (user.clientNumexisId) this.utilisateurForm.get('clientNumexisId')?.patchValue(user.clientNumexisId);
+      if (user.bailleurId) this.utilisateurForm.get('bailleurId')?.patchValue(user.bailleurId);
+      if (user.telephone) this.utilisateurForm.get('telephone')?.patchValue(user.telephone);
+      if (user.civilite) this.utilisateurForm.get('civilite')?.patchValue(user.civilite);
+    } else {
+      this.modifUser = true;
+      this.onRoleChangeForModal(null);
+    }
+    this.modalService.open(this.content, { size: "lg", centered: true });
+  }
+
+  onRoleChangeForModal(role: any): void {
+    this.selectedRoleForModal = role ? role : '';
+
+    this.utilisateurForm.get('societeId')?.disable();
+    this.utilisateurForm.get('clientNumexisId')?.disable();
+    this.utilisateurForm.get('bailleurId')?.disable();
+    this.utilisateurForm.get('societeId')?.patchValue(null);
+    this.utilisateurForm.get('clientNumexisId')?.patchValue(null);
+    this.utilisateurForm.get('bailleurId')?.patchValue(null);
+
+    // Enable fields based on selected role
+    switch (this.selectedRoleForModal) {
+      case 'ENTREPRISE_USER':
+      case 'ENTREPRISE_ADMIN':
+        this.utilisateurForm.get('societeId')?.enable();
+        break;
+      case 'CLIENT_COMPTABLE':
+      case 'CLIENT_ADMIN':
+        this.utilisateurForm.get('clientNumexisId')?.enable();
+        break;
+      case 'BAILLEUR':
+        this.utilisateurForm.get('bailleurId')?.enable();
+        break;
+      // case 'ADMIN':
+      //   this.utilisateurForm.get('societeId')?.enable();
+      //   this.utilisateurForm.get('clientNumexisId')?.enable();
+      //   this.utilisateurForm.get('bailleurId')?.enable();
+      //   break;
+    }
   }
 
   private getDismissReason(reason: any): string {
     if (reason === ModalDismissReasons.ESC) {
-      return 'by pressing ESC';
+      return "by pressing ESC";
     } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
-      return 'by clicking on a backdrop';
+      return "by clicking on a backdrop";
     } else {
-      return 'with: ${reason}';
+      return "with: ${reason}";
     }
   }
-
 }

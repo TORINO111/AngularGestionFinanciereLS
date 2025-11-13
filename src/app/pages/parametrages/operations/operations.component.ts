@@ -10,7 +10,6 @@ import Swal from 'sweetalert2';
 import { Select2Data } from 'ng-select2-component';
 import { CodeJournal } from 'src/app/models/code-journal.model';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
-import { TypeCategorieService } from 'src/app/services/type-categorie/type-categorie.service';
 import { SectionAnalytique } from 'src/app/models/section-analytique';
 import { SectionAnalytiqueService } from 'src/app/services/section-analytique/section-analytique.service';
 import { Categorie } from 'src/app/models/categorie.model';

@@ -1,3 +1,12 @@
+export enum Role {
+  ENTREPRISE_USER = 'ENTREPRISE_USER',
+  ENTREPRISE_ADMIN = 'ENTREPRISE_ADMIN',
+  CLIENT_COMPTABLE = 'CLIENT_COMPTABLE',
+  CLIENT_ADMIN = 'CLIENT_ADMIN',
+  BAILLEUR = 'BAILLEUR',
+  ADMIN = 'ADMIN',
+}
+
 export interface Utilisateur {
     id?: number;
     nom: string;
@@ -10,6 +19,8 @@ export interface Utilisateur {
     civilite?: string;
     enabled?: boolean;
     societeId?: number;
-    roles: string[];
+    clientNumexisId?: number;
+    bailleurId?: number;
+    role: Role;
   }
   

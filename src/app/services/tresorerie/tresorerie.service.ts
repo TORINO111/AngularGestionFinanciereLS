@@ -89,20 +89,11 @@ creerCategorie(categorie: any): Observable<any> {
   }
 
   // Fonctions pour Roles & Utilisateurs
-  allRoles(): Observable<any> {
-    const headers = new HttpHeaders().set('Accept', 'application/json');
-    return this._http.get(`${environment.apiUrl}/api/roles`, { headers });
-  }
+
 
   allSuperviseurs(): Observable<any[]> {
     const headers = new HttpHeaders().set('Accept', 'application/json');
     return this._http.get<any[]>(`${environment.apiUrl}/api/superviseurs`, { headers });
-  }
-
-  updateUtilisateur(id: number, value: any): Observable<any> {
-    return this._http.put(`${environment.apiUrl}/api/utilisateur/${id}`, value, {
-      headers: new HttpHeaders().set('Content-Type', 'application/json')
-    });
   }
 
   updateUtilisateurr(value: any): Observable<any> {
@@ -111,31 +102,8 @@ creerCategorie(categorie: any): Observable<any> {
     });
   }
 
-  addUser(data: any): Observable<any> {
-    return this._http.post(`${environment.apiUrl}/api/utilisateur`, data, {
-      headers: new HttpHeaders().set('Content-Type', 'application/json')
-    });
-  }
-
-  allUtilisateurs(): Observable<any[]> {
-    const headers = new HttpHeaders().set('Accept', 'application/json');
-    return this._http.get<any[]>(`${environment.apiUrl}/api/utilisateurs`, { headers });
-  }
-
   addData(data: any): Observable<any> {
     return this._http.post(`${environment.apiUrl}/api/donnees`, data, {
-      headers: new HttpHeaders().set('Content-Type', 'application/json')
-    });
-  }
-
-  activateUser(id: number, value: any): Observable<any> {
-    return this._http.put(`${environment.apiUrl}/api/autilisateur/${id}`, value, {
-      headers: new HttpHeaders().set('Content-Type', 'application/json')
-    });
-  }
-
-  desactivateUser(id: number, value: any): Observable<any> {
-    return this._http.put(`${environment.apiUrl}/api/dutilisateur/${id}`, value, {
       headers: new HttpHeaders().set('Content-Type', 'application/json')
     });
   }
@@ -148,12 +116,6 @@ creerCategorie(categorie: any): Observable<any> {
 
   removeAdmin(id: number): Observable<any> {
     return this._http.get(`${environment.apiUrl}/api/remove-admin/${id}`, {
-      headers: new HttpHeaders().set('Content-Type', 'application/json')
-    });
-  }
-
-  deleteUser(id: number): Observable<any> {
-    return this._http.delete(`${environment.apiUrl}/api/utilisateur/${id}`, {
       headers: new HttpHeaders().set('Content-Type', 'application/json')
     });
   }

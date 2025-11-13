@@ -126,33 +126,33 @@ formatPhoneNumber(phoneNumber: string): string {
     )
   }
 
-  onUpdateUser(userForm: any) {
-    this.userLoading=true;
-    //console.log(userForm.value)
-    const tel = this.userForm.get('telephone')?.value;
+  // onUpdateUser(userForm: any) {
+  //   this.userLoading=true;
+  //   //console.log(userForm.value)
+  //   const tel = this.userForm.get('telephone')?.value;
 
-    if (tel && this.userForm.get('telephone')?.invalid) {
-      //console.log('Téléphone invalide');
-      this.showWarning('Téléphone invalide');
-      this.userLoading = false;
-      return;
-    }
-    if(userForm.valid){
-      console.log(userForm.value)
-      this.tresorerieService.updateUtilisateur(userForm.value.id, userForm.value).subscribe(() => {
-        this.userLoading = false;
-        this.showSuccess('Modification effectuée avec succès');
-        this.loadCurrentUser(userForm.value.id);
-      }, error => {
-        this.userLoading = false;
-        this.showError('Échec de la modification');
-      });
-    }else{
-      this.userLoading = false;
-      this.showWarning('Formulaire invalide');
-    }
+  //   if (tel && this.userForm.get('telephone')?.invalid) {
+  //     //console.log('Téléphone invalide');
+  //     this.showWarning('Téléphone invalide');
+  //     this.userLoading = false;
+  //     return;
+  //   }
+  //   if(userForm.valid){
+  //     console.log(userForm.value)
+  //     this.tresorerieService.updateUtilisateur(userForm.value.id, userForm.value).subscribe(() => {
+  //       this.userLoading = false;
+  //       this.showSuccess('Modification effectuée avec succès');
+  //       this.loadCurrentUser(userForm.value.id);
+  //     }, error => {
+  //       this.userLoading = false;
+  //       this.showError('Échec de la modification');
+  //     });
+  //   }else{
+  //     this.userLoading = false;
+  //     this.showWarning('Formulaire invalide');
+  //   }
     
-  }
+  // }
 
   sendPassword(passwordForm:any){
     if(passwordForm.valid){

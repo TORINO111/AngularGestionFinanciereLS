@@ -82,10 +82,10 @@ export class AuthenticationService {
   isClientAdmin() { return sessionStorage.getItem('role') === 'CLIENT_ADMIN'; }
   isClientComptable() { return sessionStorage.getItem('role') === 'CLIENT_COMPTABLE'; }
   isBailleur() { return sessionStorage.getItem('role') === 'BAILLEUR'; }
-  isCohorteComptable() { return sessionStorage.getItem('role') === 'COHORTE_COMPTABLE'; }
   isEntrepriseUser() { return sessionStorage.getItem('role') === 'ENTREPRISE_USER'; }
+  isEntrepriseAdmin() { return sessionStorage.getItem('role') === 'ENTREPRISE_ADMIN'; }
 
-  isComptable() { return sessionStorage.getItem('role') === 'ENTREPRISE_USER'; }
+  isComptable() { return sessionStorage.getItem('role') === 'ENTREPRISE_ADMIN'; }
 
   logout(): void {
     sessionStorage.clear();
@@ -128,7 +128,7 @@ export class AuthenticationService {
     const token = this.getToken();
     if (!token) throw new Error('Token manquant');
 
-    return this._http.get(`${this.host}/utilisateur-username?username=${username}`, {
+    return this._http.get(`${this.host}/utilisateurs/utilisateur-username?username=${username}`, {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`

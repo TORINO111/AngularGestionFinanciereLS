@@ -83,30 +83,32 @@ export class LoginComponent implements OnInit {
             this.authenticationService
               .getUserByUsername(this.loginForm.value.username)
               .subscribe((data: any) => {
-                if (!data.enabled) {
-                  this.error =
-                    "Compte inactif, Merci de contacter l'administrateur";
-                  this.loading = false;
-                  this.router.navigate(["/auth/signin"]);
+                if (this.authenticationService.isAdmin()) {
+                  localStorage.setItem("user", JSON.stringify(data));
+                  sessionStorage.setItem("currentUser", JSON.stringify(data));
+                  this.returnUrl = "/parametrages/cohortes";
+                  this.router.navigate([this.returnUrl]);
                 } else {
-                  if (this.authenticationService.isAdmin()) {
-                    localStorage.setItem("user", JSON.stringify(data));
-                    sessionStorage.setItem("currentUser", JSON.stringify(data));
-                    this.returnUrl = "/parametrages/cohortes";
-                    this.router.navigate([this.returnUrl]);
-                  } else {
-                    console.log(sessionStorage.getItem("role"));
-
-                    console.log("Doxoul");
-                  }
+                  console.log(sessionStorage.getItem("role"));
                 }
               });
           },
           error: (error: any) => {
-            //this.error = error;
-            this.error = "Username ou mot de passe incorrect";
-            this.loading = false;
-          },
+    console.log("--- error ---", error);          // toute l’info de la requête
+    console.log("--- error.error ---", error.error);  // le corps JSON
+
+    const details = error.error?.details;       // récupère ton "Compte inactif..."
+    const message = error.error?.message;
+
+    if (details?.includes("Compte inactif")) {
+        this.error = "Compte inactif, merci de contacter l'administrateur.";
+    } else {
+        this.error = details || message || "Erreur inconnue.";
+    }
+
+    this.loading = false;
+}
+,
         });
     } else {
       this.loading = false;
