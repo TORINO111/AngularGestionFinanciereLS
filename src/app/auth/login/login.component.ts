@@ -88,27 +88,22 @@ export class LoginComponent implements OnInit {
                   sessionStorage.setItem("currentUser", JSON.stringify(data));
                   this.returnUrl = "/parametrages/cohortes";
                   this.router.navigate([this.returnUrl]);
-                } else {
-                  console.log(sessionStorage.getItem("role"));
                 }
               });
           },
           error: (error: any) => {
-    console.log("--- error ---", error);          // toute l’info de la requête
-    console.log("--- error.error ---", error.error);  // le corps JSON
+            const details = error.error?.details;
+            const message = error.error?.message;
 
-    const details = error.error?.details;       // récupère ton "Compte inactif..."
-    const message = error.error?.message;
+            if (details?.includes("Compte inactif")) {
+              this.error =
+                "Compte inactif, merci de contacter l'administrateur.";
+            } else {
+              this.error = details || message || "Erreur inconnue.";
+            }
 
-    if (details?.includes("Compte inactif")) {
-        this.error = "Compte inactif, merci de contacter l'administrateur.";
-    } else {
-        this.error = details || message || "Erreur inconnue.";
-    }
-
-    this.loading = false;
-}
-,
+            this.loading = false; 
+          },
         });
     } else {
       this.loading = false;
