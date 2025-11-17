@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { ParametragesRoutingModule } from './parametrages-routing.module';
 import { FormsModule } from '@angular/forms';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @NgModule({
   declarations: [
@@ -11,7 +12,8 @@ import { FormsModule } from '@angular/forms';
   imports: [
     CommonModule,
     ParametragesRoutingModule,
-    FormsModule 
+    FormsModule,
+    DashboardModule
   ]
 })
 export class ParametragesModule { }

@@ -45,7 +45,7 @@ const routes: Routes = [
     path: 'mon-compte',
     loadChildren: () => import('./compte/compte.module').then(m => m.CompteModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN', 'SUPERVISEUR', 'COMPTABLE', 'CLIENT_ADMIN'] }
+    data: { roles: ['ADMIN', 'SUPERVISEUR', 'COMPTABLE', 'CLIENT_ADMIN', 'CLIENT_AGENT'] }
   },
   {
     path: 'tiers',
@@ -57,13 +57,13 @@ const routes: Routes = [
     path: 'bailleurs',
     loadChildren: () => import('./bailleurs/bailleurs.module').then(m => m.BailleursModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN', 'CLIENT_ADMIN'] }
+    data: { roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT'] }
   },
   {
     path: 'cohortes',
     loadChildren: () => import('./cohortes/cohortes.module').then(m => m.CohortesModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN', 'CLIENT_ADMIN'] }
+    data: { roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT'] }
   },
   {
     path: 'clients-numexis',
@@ -112,6 +112,12 @@ const routes: Routes = [
     loadChildren: () => import('./gestion-exercice/gestion-exercice.module').then(m => m.GestionExerciceModule),
     canActivate: [AuthGuard],
     data: { roles: ['COMPTABLE'] }
+  },
+  {
+    path: 'dashboard',
+    loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule),
+    canActivate: [AuthGuard],
+    data: { roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT'] }
   }
 
 ];

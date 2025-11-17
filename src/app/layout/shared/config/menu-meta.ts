@@ -92,7 +92,7 @@ const MENU_ITEMS: MenuItem[] = [
         roles: ['SUPERVISEUR','COMPTABLE']
     },
     
-    { key: 'parametrages', label: 'PARAMETRAGES', isTitle: true , roles: ['ADMIN','SUPERVISEUR','COMPTABLE', 'CLIENT_ADMIN']},
+    { key: 'parametrages', label: 'PARAMETRAGES', isTitle: true , roles: ['ADMIN','SUPERVISEUR','COMPTABLE', 'CLIENT_ADMIN', 'CLIENT_AGENT']},
     
     {
         key: 'exercice-comptable',
@@ -196,7 +196,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/bailleurs',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN', 'CLIENT_ADMIN']
+        roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT']
     },
     {
         key: 'cohortes',
@@ -204,7 +204,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/cohortes',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN', 'CLIENT_ADMIN']
+        roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT']
     },
     {
         key: 'clients-numexis',
@@ -236,7 +236,15 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/mon-compte',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN','SUPERVISEUR','COMPTABLE']
+        roles: ['ADMIN','SUPERVISEUR','COMPTABLE', 'CLIENT_ADMIN', 'CLIENT_AGENT']
+    },
+    {
+        key: 'dashboard',
+        label: 'Dashboard',
+        link: '/parametrages/dashboard',
+        icon: 'package',
+        isTitle: false,
+        roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT']
     }
 
 ];

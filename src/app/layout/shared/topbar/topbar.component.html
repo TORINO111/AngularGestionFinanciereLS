@@ -25,12 +25,6 @@
         </a>
       </li>
 
-      <li class="nav-item dropdown me-2" *ngIf="!authService.isAdmin() && !authService.isClientAdmin()"  >
-        <a class="nav-link dropdown-toggle d-flex align-items-center" >
-          <i class="bi bi-building me-2"></i>
-          <span class="fw-bold">{{ selectedSociete.nom || 'Aucune société assignée' }}</span>
-        </a>
-
         <!-- <div class="dropdown-menu dropdown-menu-end p-2 shadow-lg" ngbDropdownMenu
           style="width: 300px;background-color: #783dbe;">
           <div class="mb-2">
@@ -57,11 +51,30 @@
             }
           </div>
         </div> -->
-        
-      </li>
 
+      @if (!authService.isAdmin() && !authService.isClientAdmin() && !authService.isClientAgent()) {
+      <li class="nav-item dropdown me-2"  >
+        <a class="nav-link dropdown-toggle d-flex align-items-center" >
+          <i class="bi bi-building me-2"></i>
+          <span class="fw-bold">{{ loggedInUser.client || 'Aucune société assignée' }}</span>
+        </a>
+      } 
 
+      @if (authService.isClientAdmin() || authService.isClientAgent()) {
+      <li class="nav-item dropdown me-2"  >
+        <a class="nav-link dropdown-toggle d-flex align-items-center" >
+          <i class="bi bi-building me-2"></i>
+          <span class="fw-bold">{{ loggedInUser.clientNumexisNom }}</span>
+        </a>
+      }
 
+      @if (authService.isAdmin()) {
+      <li class="nav-item dropdown me-2"  >
+        <a class="nav-link dropdown-toggle d-flex align-items-center" >
+          <i class="bi bi-building me-2"></i>
+          <span class="fw-bold">{{ "ADMIN NUMEXIS" }}</span>
+        </a>
+      }
       <li class="notification-list topbar-dropdown" ngbDropdown>
         <a class="nav-link dropdown-toggle nav-user me-0" href="javascript:void(0)" role="button" ngbDropdownToggle>
           <!-- <img src="assets/images/users/avatar-1.jpg" alt="user-image" class="rounded-circle"> -->

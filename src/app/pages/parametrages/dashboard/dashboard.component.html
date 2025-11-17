@@ -1,0 +1,16 @@
+<app-page-title title="Dashboard"></app-page-title>
+
+@if (loading) {
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
+}
+
+@if (!loading) {
+<div class="card">
+  <div class="card-body">
+    <h4 class="header-title mb-3">Bienvenue sur le Dashboard</h4>
+    <p>Contenu du dashboard ici.</p>
+  </div>
+</div>
+}

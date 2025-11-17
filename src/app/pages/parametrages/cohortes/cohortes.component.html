@@ -10,7 +10,7 @@
 <div class="card">
   <div class="card-body">
     <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
-      <button class="btn btn-success" (click)="openModal()">Nouvelle Cohorte</button>
+      <button class="btn btn-success" (click)="openModal()" *ngIf="canAlter">Nouvelle Cohorte</button>
 
       <div class="d-flex gap-2 ms-auto">
         <input
@@ -40,14 +40,14 @@
         <tr>
           <th style="background-color: #37a6de; color: white;">Nom</th>
           <th style="background-color: #37a6de; color: white;">Bailleur</th>
-          <th style="width:120px; background-color: #37a6de; color: white;">Actions</th>
+          <th *ngIf="canAlter" style="width:120px; background-color: #37a6de; color: white;">Actions</th>
         </tr>
       </thead>
       <tbody *ngIf="!isLoading && cohortes.length > 0"> 
         <tr *ngFor="let cohorte of cohortes">
           <td>{{ cohorte.nom }}</td>
           <td>{{ cohorte.bailleurNom }}</td>
-          <td>
+          <td *ngIf="canAlter">
             <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="openModal(cohorte)"></span>
             <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x" (click)="deleteCohorte(cohorte)"></span>
           </td>
@@ -55,14 +55,14 @@
       </tbody>
       <tbody *ngIf="!isLoading && cohortes.length == 0">
         <tr>
-          <td colspan="3" class="text-center">
+          <td [attr.colspan]="canAlter ? 3 : 2" class="text-center">
             <h5>AUCUNE COHORTE TROUVÉE</h5>
           </td>
         </tr>
       </tbody>
       <tbody *ngIf="isLoading">
         <tr>
-          <td colspan="3" class="text-center">
+          <td [attr.colspan]="canAlter ? 3 : 2" class="text-center">
             <div class="spinner-border text-secondary" role="status">
               <span class="visually-hidden">Chargement...</span>
             </div>

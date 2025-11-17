@@ -9,7 +9,7 @@
 <div class="card">
   <div class="card-body">
     <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
-      <button class="btn btn-success" (click)="openModal()">
+      <button class="btn btn-success" (click)="openModal()" *ngIf="canAlter">
         Nouveau Bailleur
       </button>
 
@@ -80,7 +80,7 @@
           <th style="background-color: #37a6de; color: white">
             Client Numexis Affilié
           </th>
-          <th style="width: 120px; background-color: #37a6de; color: white">
+          <th *ngIf="canAlter" style="width: 120px; background-color: #37a6de; color: white">
             Actions
           </th>
         </tr>
@@ -94,7 +94,7 @@
           <td>{{ bailleur.ville }}</td>
           <td>{{ bailleur.pays }}</td>
           <td>{{ bailleur.clientNumexisNom }}</td>
-          <td>
+          <td *ngIf="canAlter">
             <span
               style="color: blue; cursor: pointer"
               class="fa fa-edit fa-2x me-3"
@@ -110,14 +110,14 @@
       </tbody>
       <tbody *ngIf="!isLoading && bailleurs.length == 0">
         <tr>
-          <td colspan="8" class="text-center">
+          <td [attr.colspan]="canAlter ? 8 : 7" class="text-center">
             <h5>AUCUN BAILLEUR TROUVÉ</h5>
           </td>
         </tr>
       </tbody>
       <tbody *ngIf="isLoading">
         <tr>
-          <td colspan="8" class="text-center">
+          <td [attr.colspan]="canAlter ? 8 : 7" class="text-center">
             <div class="spinner-border text-secondary" role="status">
               <span class="visually-hidden">Chargement...</span>
             </div>

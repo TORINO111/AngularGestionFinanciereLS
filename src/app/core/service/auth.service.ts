@@ -70,6 +70,7 @@ export class AuthenticationService {
     const rolePriority: { [key: string]: string } = {
       'ADMIN': 'ADMIN',
       'CLIENT_ADMIN': 'CLIENT_ADMIN',
+      'CLIENT_AGENT': 'CLIENT_AGENT',
       'CLIENT_COMPTABLE': 'CLIENT_COMPTABLE',
       'BAILLEUR': 'BAILLEUR',
       'COHORTE_COMPTABLE': 'COHORTE_COMPTABLE',
@@ -81,6 +82,7 @@ export class AuthenticationService {
   isAdmin() { return sessionStorage.getItem('role') === 'ADMIN'; }
   isClientAdmin() { return sessionStorage.getItem('role') === 'CLIENT_ADMIN'; }
   isClientComptable() { return sessionStorage.getItem('role') === 'CLIENT_COMPTABLE'; }
+  isClientAgent() { return sessionStorage.getItem('role') === 'CLIENT_AGENT'; }
   isBailleur() { return sessionStorage.getItem('role') === 'BAILLEUR'; }
   isEntrepriseUser() { return sessionStorage.getItem('role') === 'ENTREPRISE_USER'; }
   isEntrepriseAdmin() { return sessionStorage.getItem('role') === 'ENTREPRISE_ADMIN'; }

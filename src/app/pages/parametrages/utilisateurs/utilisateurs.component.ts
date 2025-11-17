@@ -385,6 +385,7 @@ export class UtilisateursComponent implements OnInit {
         break;
       case 'CLIENT_COMPTABLE':
       case 'CLIENT_ADMIN':
+      case 'CLIENT_AGENT':
         this.utilisateurForm.get('clientNumexisId')?.enable();
         break;
       case 'BAILLEUR':

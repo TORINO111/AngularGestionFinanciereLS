@@ -41,6 +41,8 @@ export class BailleursComponent implements OnInit {
   countries: any[];
   cities: string[];
   private search$ = new Subject<void>();
+  user: any;
+  canAlter: boolean = false;
 
   constructor(
     private bailleurService: BailleurService,
@@ -60,10 +62,15 @@ export class BailleursComponent implements OnInit {
       pays: ["", Validators.required],
       clientNumexisId: [null, Validators.required],
     });
+    const userJson = localStorage.getItem('user');
+    this.user = userJson ? JSON.parse(userJson) : null;
   }
 
   ngOnInit(): void {
     this.pageTitle = [{ label: "Bailleurs", path: "/", active: true }];
+    if (this.user && (this.user.role === 'ADMIN' || this.user.role === 'CLIENT_ADMIN' || this.user.role === 'CLIENT_COMPTABLE')) {
+      this.canAlter = true;
+    }
     this.loadBailleurs();
     this.loadCountries();
     this.clientNumexisService.getAll().subscribe({

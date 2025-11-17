@@ -27,6 +27,8 @@ export class CohortesComponent implements OnInit {
   selectedCohorte: Cohorte | null = null;
   isLoading = false;
   result = false;
+  user:any;
+  canAlter: boolean = false;
 
   searchTerm: string = '';
   selectedBailleurId?: number;
@@ -49,10 +51,15 @@ export class CohortesComponent implements OnInit {
       nom: ['', Validators.required],
       bailleurId: [null, Validators.required]
     });
+    const userJson = localStorage.getItem('user');
+    this.user = userJson ? JSON.parse(userJson) : null;
   }
 
   ngOnInit(): void {
     this.pageTitle = [{ label: 'Cohortes', path: '/', active: true }];
+    if(this.user && (this.user.role === 'ADMIN' || this.user.role === 'CLIENT_ADMIN' || this.user.role === 'CLIENT_COMPTABLE')) {
+      this.canAlter = true;
+    }
     this.loadCohortes();
     this.loadBailleurs();
     this.initSearchListener();
