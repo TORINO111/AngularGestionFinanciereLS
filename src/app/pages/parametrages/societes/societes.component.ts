@@ -1,12 +1,16 @@
-import { Component, OnInit ,ViewChild,TemplateRef } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SocieteService } from 'src/app/services/societe/societe.service';
-import { NgbModal,ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
 import { Societe } from 'src/app/models/societe.model';
 import { UtilisateurService } from 'src/app/services/utilisateurs/utilisateur.service';
+import { NotificationService } from 'src/app/services/notifications/notifications-service';
+import { LocationService } from 'src/app/services/composite/locations/location.service';
+import { Subject } from 'rxjs';
+import { debounceTime, switchMap, tap } from 'rxjs/operators';
 
 @Component({
     selector: 'app-societes',
@@ -16,281 +20,251 @@ import { UtilisateurService } from 'src/app/services/utilisateurs/utilisateur.se
 })
 export class SocietesComponent implements OnInit {
 
-  @ViewChild('content', { static: true }) content: any;
-  @ViewChild('editcontent', { static: true }) editcontent: any;
-  closeResult:string='';
-  societesList: Societe[] = [];
-  selected: Societe | undefined;
+  @ViewChild('modalContent', { static: true }) modalContent: TemplateRef<any>;
 
-  // Utilisation de FormGroup[] avec typage clair
-  societes: UntypedFormGroup[] = [];
-  lignes: UntypedFormGroup[] = [];
-
-  selectedIndex: number | null = null;
-  societeForm!: UntypedFormGroup;
+  societeForm!: FormGroup;
   pageTitle: BreadcrumbItem[] = [];
 
-  loading = false;
+  societesList: Societe[] = [];
+  selectedSociete: Societe | null = null;
+
   isLoading = false;
   result = false;
-  formVisible = false;
+  
+  user: any;
+  canAlter: boolean = false;
 
-  pays:any[]=[];
-  comptables:any[]=[];
+  searchTerm: string = '';
+  searchTelephone: string = '';
+  selectedPays?: string;
+  selectedVille?: string;
+
+  totalElements = 0;
+  pageSize = 10;
+  currentPage = 0;
+  
+  countries: any[] = [];
+  cities: string[] = [];
+  
+  private search$ = new Subject<void>();
 
   constructor(
     private societeService: SocieteService,
-    private fb: UntypedFormBuilder,
+    private fb: FormBuilder,
     private modalService: NgbModal,
-    private toastr: ToastrService,
-    private utilisateurService:UtilisateurService
+    private notification: NotificationService,
+    private locationService: LocationService
   ) {
     this.societeForm = this.fb.group({
       id: [''],
       nom: ['', Validators.required],
       telephone: [],
-      email: [],
+      email: ['', Validators.email],
       adresse:[],
       numeroIFU: [],
-      paysId: [4],
-      paysNom:[''],
+      pays: ['', Validators.required],
+      ville: [{ value: '', disabled: true }, Validators.required],
       comptableId: [],
-      comptableNom:['']
     });
-    this.chargerSocietes();
-    this.chargerPays();
+    const userJson = localStorage.getItem('user');
+    this.user = userJson ? JSON.parse(userJson) : null;
   }
 
   ngOnInit(): void {
-    this.pageTitle = [{ label: 'sociétés', path: '/', active: true }];
-    
-  }
-
-  ajouter(): void {
-    this.societeForm.reset();
-    this.formVisible = true;
-    this.selectedIndex = null;
-  }
-
-  modifier(): void {
-    if (this.selectedIndex !== null) {
-      this.formVisible = true;
+    this.pageTitle = [{ label: 'Sociétés', path: '/', active: true }];
+    if (this.user && (this.user.role === 'SUPERVISEUR' || this.user.role === 'BAILLEUR' || this.user.role === 'ADMIN' || this.user.role === 'CLIENT_ADMIN' || this.user.role === 'CLIENT_COMPTABLE')) {
+      this.canAlter = true;
     }
+    this.loadSocietes();
+    this.loadCountries();
+    this.initSearchListener();
   }
 
-  supprimer(): void {
-    if (this.selectedIndex !== null) {
-      const currentData = this.lignes[this.selectedIndex].value as Societe;
-      this.societeForm.setValue(currentData);
-      this.lignes.splice(this.selectedIndex, 1);
-      this.selectedIndex = null;
-      this.deleteSociete(currentData);
+  loadSocietes(page: number = 0): void {
+    this.isLoading = true;
+    this.result = false;
+    this.currentPage = page;
+    // Assuming a paginated service method exists, similar to other components
+    this.societeService.getAllSocietePageable(
+      page,
+      this.pageSize,
+      this.searchTerm || undefined,
+      this.searchTelephone || undefined,
+      this.selectedVille || undefined,
+      this.selectedPays || undefined
+    ).subscribe({
+      next: (data) => {
+        this.societesList = data.content;
+        this.totalElements = data.totalElements;
+        this.isLoading = false;
+        this.result = true;
+      },
+      error: (err) => {
+        this.notification.showError("Erreur de chargement des sociétés");
+        this.isLoading = false;
+        this.result = true;
+      },
+    });
+  }
+
+  private initSearchListener(): void {
+    this.search$
+      .pipe(
+        debounceTime(300),
+        tap(() => {
+          this.isLoading = true;
+        }),
+        switchMap(() => {
+          this.currentPage = 0;
+          return this.societeService.getAllSocietePageable(
+            0,
+            this.pageSize,
+            this.searchTerm || undefined,
+            this.searchTelephone || undefined,
+            this.selectedVille || undefined,
+            this.selectedPays || undefined
+          );
+        })
+      )
+      .subscribe({
+        next: (data) => {
+          this.societesList = data.content;
+          this.totalElements = data.totalElements;
+          this.currentPage = 0;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          this.isLoading = false;
+          console.error("Erreur lors de la recherche", err);
+        },
+      });
+  }
+
+  onFilterChange(): void {
+    this.search$.next();
+  }
+
+  loadCountries(): void {
+    this.locationService.getCountries().subscribe((countries) => {
+      this.countries = countries;
+    });
+  }
+
+  onCountryChange(selectedCountry: any): void {
+    this.selectedVille = undefined;
+    const countryName = selectedCountry?.name || this.selectedPays;
+    const villeControl = this.societeForm.get('ville');
+
+    if (countryName) {
+      this.locationService.getCitiesByCountry(countryName).subscribe((cities) => {
+        this.cities = cities || [];
+        if (this.cities.length > 0) {
+          villeControl?.enable();
+        } else {
+          villeControl?.disable();
+        }
+      });
+    } else {
+      this.cities = [];
+      villeControl?.disable();
     }
+    this.onFilterChange();
   }
 
+  onFilterCountryChange(): void {
+    this.selectedVille = undefined;
+    if (this.selectedPays) {
+      this.locationService
+        .getCitiesByCountry(this.selectedPays)
+        .subscribe((cities) => {
+          this.cities = cities;
+        });
+    } else {
+      this.cities = [];
+    }
+    this.onFilterChange();
+  }
 
-  fermer(): void {
-    this.formVisible = false;
-    this.selectedIndex = null;
+  openModal(societe?: Societe): void {
+    this.selectedSociete = societe || null;
     this.societeForm.reset();
+    if (societe) {
+      this.societeForm.patchValue(societe);
+      if (societe.paysNom) {
+        this.locationService
+          .getCitiesByCountry(societe.paysNom)
+          .subscribe((cities) => {
+            this.cities = cities;
+            this.societeForm.get("ville")?.enable();
+            this.societeForm.get("ville")?.setValue(societe.ville);
+          });
+      }
+    }
+    this.modalService.open(this.modalContent, { centered: true, size: 'lg' });
   }
 
-  selectLigne(index: number): void {
-    this.selectedIndex = index;
-    const currentData = this.lignes[this.selectedIndex].value as Societe;
-    this.societeForm.setValue(currentData);
-    console.log(currentData)
-    this.selected = currentData;
+  closeModal(): void {
+    this.modalService.dismissAll();
   }
 
   enregistrer(): void {
     if (this.societeForm.invalid) {
-      this.showWarning('Formulaire invalide');
+      this.notification.showWarning('Formulaire invalide');
       return;
     }
 
-    this.isLoading = true;
-
-    const societe = this.societeForm.value as Societe;
-
-    let action$;
-
-    if (this.selected && societe.id !== undefined) {
-      // id existe : update
-      action$ = this.societeService.updateSociete(societe.id, societe);
-    } else {
-      // sinon : création
-      action$ = this.societeService.createSociete(societe);
-    }
+    const societeData = this.societeForm.getRawValue();
+    const action$ = societeData.id
+      ? this.societeService.updateSociete(societeData.id, societeData)
+      : this.societeService.createSociete(societeData);
 
     action$.subscribe({
       next: () => {
-        const msg = this.selected ? 'Modifié' : 'Enregistré';
-        this.showSuccess(`${msg} avec succès`);
-        this.formVisible = false;
-        this.societeForm.reset();
-        this.isLoading = false;
-        this.loading = false;
-        this.selectedIndex = null;
-        this.selected = undefined;
-        this.lignes = [];
-        this.chargerSocietes();
+        const msg = societeData.id ? 'Modifiée' : 'Enregistrée';
+        this.notification.showSuccess(`Société ${msg} avec succès`);
+        this.loadSocietes();
+        this.closeModal();
       },
-      error: () => {
-        this.isLoading = false;
-        this.loading = false;
-        this.showError('Erreur serveur !!!');
+      error: (err) => {
+        this.notification.showError(err.error.message || 'Une erreur est survenue');
       }
     });
-  }
-
-  chargerSocietes(): void {
-    this.societes = [];
-    this.societeService.getAllSociete().subscribe({
-      next: (data: Societe[]) => {
-        console.log(data)
-        this.societes = data.map(d =>
-          this.fb.group({
-            id: [d.id],
-            nom: [d.nom, Validators.required],
-            telephone: [d.telephone],
-            email: [d.email],
-            adresse:[d.adresse],
-            numeroIFU: [d.numeroIFU],
-            paysId: [d.paysId],
-            paysNom:[d.paysNom],
-            comptableId: [d.comptableId],
-            comptableNom:[d.comptableNom]
-          })
-        );
-        this.lignes = this.societes;
-        this.result = true;
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Erreur lors du chargement des societes', error);
-        this.result = true;
-        this.loading = false;
-        this.showError('Erreur de chargement');
-      }
-    });
-  }
-
-  chargerPays() {
-    this.societeService.getAllPays().subscribe(
-      {
-        next:(data:any) => {
-          this.pays=data;
-          this.result=true;
-        },
-        error:(error:any) => {
-          this.result=true;
-          console.log('Erreur lors du chargement des pays', error);
-          this.showError("erreur lors du chargement des pays");
-        }
-      }
-    );
   }
 
   deleteSociete(societe: Societe): void {
     Swal.fire({
-      title: 'Supprimer le compte',
-      html: `
-        <p><strong>Societe : </strong><span style="color: #009879; font-size: 1.2em;">${societe.nom}</span></p>
-      `,
+      title: 'Supprimer la société',
+      text: `Êtes-vous sûr de vouloir supprimer la société ${societe.nom} ?`,
+      icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: '<i class="fa fa-trash-alt"></i> Supprimer',
-      cancelButtonText: '<i class="fa fa-ban"></i> Annuler',
-      customClass: {
-        popup: 'swal2-custom-popup',
-        confirmButton: 'btn btn-danger',
-        cancelButton: 'btn btn-secondary'
-      },
-      buttonsStyling: false
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Oui, supprimer !',
+      cancelButtonText: 'Annuler'
     }).then((result) => {
-      if (result.value) {
+      if (result.isConfirmed) {
         this.societeService.deleteSociete(societe.id!).subscribe({
           next: () => {
-            this.societes = [];
-            this.chargerSocietes();
-            Swal.fire('Succès', 'Societe supprimé avec succès.', 'success');
+            this.notification.showSuccess('Société supprimée avec succès');
+            this.loadSocietes();
           },
-          error: () => {
-            Swal.fire('Erreur', 'Une erreur s\'est produite.', 'error');
+          error: (err) => {
+            this.notification.showError(err.error.message || 'Une erreur est survenue');
           }
         });
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
-        Swal.fire('Abandonné', 'Suppression annulée', 'info');
       }
     });
   }
 
-  
-
-  openScrollableModal(content: TemplateRef<NgbModal>): void {
-    //this.codeBudgetaireForm.reset();
-    this.modalService.open(content,
-       {size: 'lg', // set modal size
-        centered: true ,scrollable: true ,
-        backdrop: 'static', // disable modal from closing on click outside
-        keyboard: false,
-        ariaLabelledBy: 'modal-basic-title'}).result.then((result)=> { 
-           this.closeResult = `Closed with: ${result}`; 
-         }, (reason) => { 
-           this.closeResult =  
-              `Dismissed ${this.getDismissReason(reason)}`; 
-         });
-    }
-
-    openEditModal(editcontent: TemplateRef<NgbModal>): void {
-      this.modalService.open(editcontent,
-         {size: 'lg', // set modal size
-          centered: true ,scrollable: true ,
-          backdrop: 'static', // disable modal from closing on click outside
-          keyboard: false,
-          ariaLabelledBy: 'modal-basic-title'}).result.then((result)=> { 
-             this.closeResult = `Closed with: ${result}`; 
-           }, (reason) => { 
-             this.closeResult =  
-                `Dismissed ${this.getDismissReason(reason)}`; 
-           });
-      }
-
-  private getDismissReason(reason: any): string { 
-    if (reason === ModalDismissReasons.ESC) { 
-      return 'by pressing ESC'; 
-    } else if (reason === ModalDismissReasons.BACKDROP_CLICK) { 
-      return 'by clicking on a backdrop'; 
-    } else { 
-      return 'with: ${reason}'; 
-    } 
-  } 
-
-  showSuccess(message: string): void {
-    this.toastr.success(message, 'Succès', {
-      timeOut: 5000,
-      positionClass: 'toast-top-right',
-      progressBar: true,
-      closeButton: true
-    });
+  pages(): number[] {
+    return Array(this.totalPages()).fill(0).map((_, i) => i);
   }
 
-  showError(message: string): void {
-    this.toastr.error(message, 'Erreur', {
-      timeOut: 5000,
-      positionClass: 'toast-top-right',
-      progressBar: true,
-      closeButton: true
-    });
+  goToPage(page: number) {
+    this.loadSocietes(page);
   }
 
-  showWarning(message: string): void {
-    this.toastr.warning(message, 'Attention', {
-      timeOut: 5000,
-      positionClass: 'toast-top-right',
-      progressBar: true,
-      closeButton: true
-    });
+  totalPages(): number {
+    return Math.ceil(this.totalElements / this.pageSize);
   }
 }
-

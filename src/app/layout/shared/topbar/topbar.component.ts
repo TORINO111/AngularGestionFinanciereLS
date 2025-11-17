@@ -69,7 +69,7 @@ export class TopbarComponent implements OnInit {
 
   ngOnInit(): void {
     this.loggedInUser = this.authService.currentUser();
-    if (!this.authService.isAdmin() && !this.authService.isClientAdmin() && !this.authService.isClientAgent()) {
+    if (!this.authService.isAdmin() && !this.authService.isClientAdmin() && !this.authService.isClientAgent() && !this.authService.isBailleur()) {
       this.loadSocieteForuser();
     }
 

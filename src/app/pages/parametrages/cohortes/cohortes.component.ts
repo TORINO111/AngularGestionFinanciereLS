@@ -57,7 +57,7 @@ export class CohortesComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageTitle = [{ label: 'Cohortes', path: '/', active: true }];
-    if(this.user && (this.user.role === 'ADMIN' || this.user.role === 'CLIENT_ADMIN' || this.user.role === 'CLIENT_COMPTABLE')) {
+    if(this.user && (this.user.role === 'ADMIN' || this.user.role === 'CLIENT_ADMIN' || this.user.role === 'CLIENT_COMPTABLE' || this.user.role === 'BAILLEUR')) {
       this.canAlter = true;
     }
     this.loadCohortes();

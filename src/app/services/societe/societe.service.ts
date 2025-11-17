@@ -18,6 +18,27 @@ export class SocieteService {
     return this.http.get<Societe[]>(`${this.baseUrlSociete}/all`);
   }
 
+  getAllSocietePageable(
+    page: number = 0,
+    size: number = 10,
+    nom?: string,
+    tel?: string,
+    ville?: string,
+    pays?: string
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    if (nom) params = params.set('nom', nom);
+    if (tel) params = params.set('tel', tel);
+    if (ville) params = params.set('ville', ville);
+    if (pays) params = params.set('pays', pays);
+
+    return this.http.get<any>(`${this.baseUrlSociete}/pageable`, { params });
+  }
+
+
   getSocietePourUserConnecte(userId: number): Observable<Societe> {
     return this.http.get<Societe>(`${this.baseUrlSociete}/user/${userId}`);
   }

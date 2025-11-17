@@ -95,6 +95,14 @@ const MENU_ITEMS: MenuItem[] = [
     { key: 'parametrages', label: 'PARAMETRAGES', isTitle: true , roles: ['ADMIN','SUPERVISEUR','COMPTABLE', 'CLIENT_ADMIN', 'CLIENT_AGENT']},
     
     {
+        key: 'dashboard',
+        label: 'Dashboard',
+        link: '/parametrages/dashboard',
+        icon: 'home',
+        isTitle: false,
+        roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT', 'BAILLEUR']
+    },
+    {
         key: 'exercice-comptable',
         label: 'Exercice',
         link: '/parametrages/exercice-comptable',
@@ -116,7 +124,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/societes',
         icon: 'package',
         isTitle: false,
-        roles: ['SUPERVISEUR']
+        roles: ['BAILLEUR']
     },
     {
         key: 'operations',
@@ -194,7 +202,7 @@ const MENU_ITEMS: MenuItem[] = [
         key: 'bailleurs',
         label: 'Bailleurs',
         link: '/parametrages/bailleurs',
-        icon: 'package',
+        icon: 'users',
         isTitle: false,
         roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT']
     },
@@ -204,7 +212,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/cohortes',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT']
+        roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT', 'BAILLEUR']
     },
     {
         key: 'clients-numexis',
@@ -226,7 +234,7 @@ const MENU_ITEMS: MenuItem[] = [
         key: 'utilisateurs',
         label: 'Utilisateurs',
         link: '/parametrages/utilisateurs',
-        icon: 'package',
+        icon: 'users',
         isTitle: false,
         roles: ['ADMIN','SUPERVISEUR']
     },
@@ -237,14 +245,6 @@ const MENU_ITEMS: MenuItem[] = [
         icon: 'package',
         isTitle: false,
         roles: ['ADMIN','SUPERVISEUR','COMPTABLE', 'CLIENT_ADMIN', 'CLIENT_AGENT']
-    },
-    {
-        key: 'dashboard',
-        label: 'Dashboard',
-        link: '/parametrages/dashboard',
-        icon: 'package',
-        isTitle: false,
-        roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT']
     }
 
 ];

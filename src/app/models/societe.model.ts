@@ -1,8 +1,6 @@
 export interface Societe {
     id?: number;
     nom: string;
-    paysId: number;
-    paysNom: string;
     telephone: string;
     email: string;
     adresse: string;
@@ -10,6 +8,8 @@ export interface Societe {
     numeroRccm: string;
     comptableId?: string;
     comptableNom?:string;
-
+    paysId?: number;
+    paysNom?: string;
+    ville?: string;
 }
   

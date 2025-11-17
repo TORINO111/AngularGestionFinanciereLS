@@ -99,6 +99,10 @@ export class LoginComponent implements OnInit {
                     this.returnUrl = "/parametrages/cohortes";
                     this.router.navigate([this.returnUrl]);
                     break;
+                  case "BAILLEUR":
+                    this.returnUrl = "/parametrages/cohortes";
+                    this.router.navigate([this.returnUrl]);
+                    break;
                   default:
                     this.returnUrl = "/";
                     this.router.navigate([this.returnUrl]);

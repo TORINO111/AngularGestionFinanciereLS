@@ -1,179 +1,152 @@
-<!-- end page title -->
-<app-page-title [breadcrumbItems]="pageTitle" title="Les sociétés"></app-page-title>
+<app-page-title [breadcrumbItems]="pageTitle" title="Sociétés"></app-page-title>
 
 @if (!result) {
-  <div class="loader-container">
-    <div class="lds-dual-ring"></div>
-  </div>
-}
-<!-- start page title -->
-@if (result) {
-  <div class="mt-2 card">
-    <div class="card-body">
-      <form [formGroup]="societeForm">
-        <!-- Toolbar responsive -->
-        <div class="toolbar d-flex flex-wrap gap-2 mb-3">
-          <button type="button" class="btn btn-success" (click)="ajouter()">Nouveau</button>
-          <button type="button" class="btn btn-success" (click)="modifier()" [disabled]="selectedIndex === null">Modifier</button>
-          <button type="button" class="btn btn-danger" (click)="supprimer()" [disabled]="selectedIndex === null">Supprimer</button>
-          <button type="button" class="btn btn-success" (click)="enregistrer()" [disabled]="!formVisible">Enregistrer</button>
-          <button type="button" class="btn btn-success" (click)="fermer()" [disabled]="!formVisible">Fermer</button>
-        </div>
-        <div class="container-fluid">
-          <!-- Formulaire principal -->
-          @if (formVisible) {
-            <div class="row mb-3">
-              <div class="row" >
-                <div class="col-12 col-md-2 mb-2">
-                  <div class="form-group">
-                    <label for="">Nom</label>
-                    <input type="text" id="nom" name="nom" formControlName="nom" class="form-control" placeholder="Nom">
-                    @if (societeForm.get('nom')?.hasError('required') && societeForm.get('nom')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-                <div class="col-12 col-md-2 mb-2">
-                  <div class="form-group">
-                    <label for="">Adresse</label>
-                    <input type="text" id="adresse" name="adresse" formControlName="adresse" class="form-control" placeholder="Adresse">
-                    @if (societeForm.get('adresse')?.hasError('required') && societeForm.get('adresse')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-                <div class="col-12 col-md-2 mb-2">
-                  <div class="form-group">
-                    <label for="">Telephone</label>
-                    <input type="text" id="nom" name="telephone" formControlName="telephone" class="form-control" placeholder="Telephone">
-                    @if (societeForm.get('telephone')?.hasError('required') && societeForm.get('telephone')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-                <div class="col-12 col-md-2 mb-2">
-                  <div class="form-group">
-                    <label for="">Email</label>
-                    <input type="text" id="email" name="email" formControlName="email" class="form-control" placeholder="Email">
-                    @if (societeForm.get('email')?.hasError('required') && societeForm.get('email')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-                <div class="col-12 col-md-2 mb-2">
-                  <div class="form-group">
-                    <label for="">IFU</label>
-                    <input type="text" id="numeroIFU" name="numeroIFU" formControlName="numeroIFU" class="form-control" placeholder="IFU">
-                    @if (societeForm.get('numeroIFU')?.hasError('required') && societeForm.get('numeroIFU')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-                <div class="col-12 col-md-4 mb-2">
-                  <div class="form-group">
-                    <label for="">Pays</label>
-                    <select required name="paysId"
-                      formControlName="paysId"
-                      class="form-select"
-                      id="paysId">
-                      <option [value]="null" disabled>---Select Pays---</option>
-                      @for (p of pays; track p) {
-                        <option [value]="p.id">
-                          {{ p.libelle }}
-                        </option>
-                      }
-                    </select>
-                    @if (societeForm.get('paysId')?.hasError('required') && societeForm.get('paysId')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-                <div class="col-12 col-md-4 mb-2">
-                  <div class="form-group">
-                    <label for="">Comptable</label>
-                    <select required name="comptableId"
-                      formControlName="comptableId"
-                      class="form-select"
-                      id="comptableId">
-                      <option [value]="null" disabled>---Select Comptable---</option>
-                      @for (comptable of comptables; track comptable) {
-                        <option [value]="comptable.id">
-                          {{ comptable.prenom +" "+ comptable.nom}}
-                        </option>
-                      }
-                    </select>
-                    @if (societeForm.get('comptableId')?.hasError('required') && societeForm.get('comptableId')?.touched) {
-                      <strong class="text-danger">
-                        Champ obligatoire !
-                      </strong>
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-      </form>
-      <div class="table-container">
-        <table class="table table-bordered table-sm custom-table">
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Adresse</th>
-              <th>Telephone</th>
-              <th>Email</th>
-              <th>IFU</th>
-              <th>Pays</th>
-              <th>Comptable</th>
-            </tr>
-          </thead>
-          @if (!isLoading) {
-            <tbody>
-              @for (societe of societes; track societe; let i = $index) {
-                <tr
-                  (click)="selectLigne(i)"
-                  [class.selected]="i === selectedIndex">
-                  <td>{{ societe.value.nom }}</td>
-                  <td>{{ societe.value.adresse }}</td>
-                  <td>{{ societe.value.telephone }}</td>
-                  <td>{{ societe.value.email }}</td>
-                  <td>{{ societe.value.numeroIFU }}</td>
-                  <td>{{ societe.value.paysNom }}</td>
-                  <td>{{ societe.value.comptableNom }}</td>
-                </tr>
-              }
-              @if (societes.length == 0) {
-                <tr >
-                  <td  colspan="7"><h3 style="text-align: center;">Aucune donnée trouvée</h3></td>
-                </tr>
-              }
-            </tbody>
-          }
-          @if (isLoading) {
-            <tbody>
-              <tr>
-                <td colspan="7" class="text-center">
-                  <div class="spinner-border text-secondary" role="status">
-                    <span class="visually-hidden">Chargement...</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          }
-        </table>
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
+} @if (result) {
+<div class="card">
+  <div class="card-body">
+    <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
+      <button class="btn btn-success" (click)="openModal()" *ngIf="canAlter">
+        Nouvelle Société
+      </button>
+
+      <div class="d-flex gap-2 ms-auto">
+        <input type="text" class="form-control" placeholder="Rechercher par nom" [(ngModel)]="searchTerm"
+          (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+        <input type="text" class="form-control" placeholder="Rechercher par téléphone" [(ngModel)]="searchTelephone"
+          (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+        <ng-select class="mt-1" [items]="countries" bindLabel="name" bindValue="name" placeholder="Filtrer par pays"
+          [(ngModel)]="selectedPays" (ngModelChange)="onFilterCountryChange()">
+          <ng-template ng-option-tmp let-item="item">
+            {{ item.name }}
+          </ng-template>
+          <ng-template ng-notfound-tmp>Aucun pays disponible</ng-template>
+        </ng-select>
+        <ng-select class="mt-1" [items]="cities" placeholder="Filtrer par ville" [(ngModel)]="selectedVille"
+          (ngModelChange)="onFilterChange()" [disabled]="!selectedPays">
+          <ng-template ng-notfound-tmp>Aucune ville disponible</ng-template>
+        </ng-select>
       </div>
     </div>
+
+    <table class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th style="background-color: #37a6de; color: white">Nom</th>
+          <th style="background-color: #37a6de; color: white">Téléphone</th>
+          <th style="background-color: #37a6de; color: white">Email</th>
+          <th style="background-color: #37a6de; color: white">Adresse</th>
+          <th style="background-color: #37a6de; color: white">Ville</th>
+          <th style="background-color: #37a6de; color: white">Pays</th>
+          <th *ngIf="canAlter" style="width: 120px; background-color: #37a6de; color: white">
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody *ngIf="!isLoading && societesList.length > 0">
+        <tr *ngFor="let societe of societesList">
+          <td>{{ societe.nom }}</td>
+          <td>{{ societe.telephone }}</td>
+          <td>{{ societe.email }}</td>
+          <td>{{ societe.adresse }}</td>
+          <td>{{ societe.ville }}</td>
+          <td>{{ societe.paysNom }}</td>
+          <td *ngIf="canAlter">
+            <span style="color: blue; cursor: pointer" class="fa fa-edit fa-2x me-3" (click)="openModal(societe)"></span>
+            <span style="color: red; cursor: pointer" class="fa fa-trash fa-2x"
+              (click)="deleteSociete(societe)"></span>
+          </td>
+        </tr>
+      </tbody>
+      <tbody *ngIf="!isLoading && societesList.length == 0">
+        <tr>
+          <td [attr.colspan]="canAlter ? 7 : 6" class="text-center">
+            <h5>AUCUNE SOCIÉTÉ TROUVÉE</h5>
+          </td>
+        </tr>
+      </tbody>
+      <tbody *ngIf="isLoading">
+        <tr>
+          <td [attr.colspan]="canAlter ? 7 : 6" class="text-center">
+            <div class="spinner-border text-secondary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav aria-label="Pagination">
+      <ul class="pagination mt-3">
+        <li class="page-item" [class.disabled]="currentPage === 0">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)">Précédent</a>
+        </li>
+        <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)">{{ page + 1 }}</a>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage + 1)">Suivant</a>
+        </li>
+      </ul>
+    </nav>
   </div>
+</div>
 }
+
+<!-- Modal création || Modification-->
+<ng-template #modalContent>
+  <div class="modal-header " style="background-color: #37a6de">
+    <h4 class="modal-title text-white">
+      {{ selectedSociete ? "Modifier Société" : "Nouvelle Société" }}
+    </h4>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="societeForm">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="nom" class="form-label">Nom</label>
+          <input type="text" id="nom" formControlName="nom" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="telephone" class="form-label">Téléphone</label>
+          <input type="text" id="telephone" formControlName="telephone" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" id="email" formControlName="email" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="adresse" class="form-label">Adresse</label>
+          <input type="text" id="adresse" formControlName="adresse" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="numeroIFU" class="form-label">Numéro IFU</label>
+          <input type="text" id="numeroIFU" formControlName="numeroIFU" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="pays" class="form-label">Pays</label>
+          <ng-select formControlName="pays" [items]="countries" bindLabel="name" bindValue="name"
+            placeholder="Sélectionner un pays" (change)="onCountryChange($event)">
+          </ng-select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="ville" class="form-label">Ville</label>
+          <ng-select formControlName="ville" [items]="cities" placeholder="Sélectionner une ville"
+            [disabled]="cities.length === 0">
+          </ng-select>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeModal()">
+      Fermer
+    </button>
+    <button type="button" class="btn btn-success" (click)="enregistrer()">
+      Enregistrer
+    </button>
+  </div>
+</ng-template>

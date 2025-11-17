@@ -20,7 +20,7 @@ const routes: Routes = [
     path: 'societes',
     loadChildren: () => import('./societes/societes.module').then(m => m.SocietesModule),
     canActivate: [AuthGuard],
-    data: { roles: ['SUPERVISEUR'] }
+    data: { roles: ['SUPERVISEUR', 'BAILLEUR'] }
   },
 
   // {
@@ -63,7 +63,7 @@ const routes: Routes = [
     path: 'cohortes',
     loadChildren: () => import('./cohortes/cohortes.module').then(m => m.CohortesModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT'] }
+    data: { roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT', 'BAILLEUR'] }
   },
   {
     path: 'clients-numexis',

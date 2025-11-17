@@ -52,7 +52,7 @@
           </div>
         </div> -->
 
-      @if (!authService.isAdmin() && !authService.isClientAdmin() && !authService.isClientAgent()) {
+      @if (!authService.isAdmin() && !authService.isClientAdmin() && !authService.isClientAgent() && !authService.isBailleur()) {
       <li class="nav-item dropdown me-2"  >
         <a class="nav-link dropdown-toggle d-flex align-items-center" >
           <i class="bi bi-building me-2"></i>
@@ -73,6 +73,14 @@
         <a class="nav-link dropdown-toggle d-flex align-items-center" >
           <i class="bi bi-building me-2"></i>
           <span class="fw-bold">{{ "ADMIN NUMEXIS" }}</span>
+        </a>
+      }
+
+      @if (authService.isBailleur()) {
+      <li class="nav-item dropdown me-2"  >
+        <a class="nav-link dropdown-toggle d-flex align-items-center" >
+          <i class="bi bi-building me-2"></i>
+          <span class="fw-bold">{{ "BAILLEUR" }}</span>
         </a>
       }
       <li class="notification-list topbar-dropdown" ngbDropdown>
