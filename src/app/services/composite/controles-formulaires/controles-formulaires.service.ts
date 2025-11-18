@@ -80,7 +80,7 @@ export class ControlesFormulairesService {
     }
 
     const char = event.key;
-    const regex = /^[a-zA-Z0-9\s\-\:\'éèêëàâäîïôöùûüçÉÈÊËÀÂÄÎÏÔÖÙÛÜÇ]$/;
+    const regex = /^[a-zA-Z0-9\s\-\:\'éèêëàâäîïôöùûüçÉÈÊËÀÂÄÎÏÔÖÙÛÜÇ&]$/;
 
     if (!regex.test(char)) {
       event.preventDefault();

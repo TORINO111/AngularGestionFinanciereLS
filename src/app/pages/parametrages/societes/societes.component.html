@@ -38,8 +38,8 @@
           <th style="background-color: #37a6de; color: white">Téléphone</th>
           <th style="background-color: #37a6de; color: white">Email</th>
           <th style="background-color: #37a6de; color: white">Adresse</th>
-          <th style="background-color: #37a6de; color: white">Ville</th>
           <th style="background-color: #37a6de; color: white">Pays</th>
+          <th style="background-color: #37a6de; color: white">Ville</th>
           <th *ngIf="canAlter" style="width: 120px; background-color: #37a6de; color: white">
             Actions
           </th>
@@ -51,8 +51,8 @@
           <td>{{ societe.telephone }}</td>
           <td>{{ societe.email }}</td>
           <td>{{ societe.adresse }}</td>
+          <td>{{ societe.pays}}</td>
           <td>{{ societe.ville }}</td>
-          <td>{{ societe.paysNom }}</td>
           <td *ngIf="canAlter">
             <span style="color: blue; cursor: pointer" class="fa fa-edit fa-2x me-3" (click)="openModal(societe)"></span>
             <span style="color: red; cursor: pointer" class="fa fa-trash fa-2x"
@@ -108,11 +108,11 @@
       <div class="row">
         <div class="col-md-6 mb-3">
           <label for="nom" class="form-label">Nom</label>
-          <input type="text" id="nom" formControlName="nom" class="form-control" />
+          <input type="text" id="nom" formControlName="nom" class="form-control" (keydown)="controlesFormulairesService.allowAlphanumericWithAccents($event)" />
         </div>
         <div class="col-md-6 mb-3">
           <label for="telephone" class="form-label">Téléphone</label>
-          <input type="text" id="telephone" formControlName="telephone" class="form-control" />
+          <input type="text" id="telephone" formControlName="telephone" class="form-control" (keydown)="controlesFormulairesService.allowNumbersOnly($event)" />
         </div>
         <div class="col-md-6 mb-3">
           <label for="email" class="form-label">Email</label>
@@ -136,6 +136,12 @@
           <label for="ville" class="form-label">Ville</label>
           <ng-select formControlName="ville" [items]="cities" placeholder="Sélectionner une ville"
             [disabled]="cities.length === 0">
+          </ng-select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="cohorteId" class="form-label">Cohorte</label>
+          <ng-select formControlName="cohorteId" [items]="cohortes" bindLabel="nom" bindValue="id"
+            placeholder="Sélectionner une cohorte">
           </ng-select>
         </div>
       </div>

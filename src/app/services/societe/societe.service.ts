@@ -10,7 +10,7 @@ import { environment } from 'src/environments/environment';
 })
 export class SocieteService {
 
-  private baseUrlSociete = `${environment.apiUrl}/api/societe`;
+  private baseUrlSociete = `${environment.apiUrl}/api/societes`;
 
   constructor(private http: HttpClient) { }
 
@@ -18,7 +18,7 @@ export class SocieteService {
     return this.http.get<Societe[]>(`${this.baseUrlSociete}/all`);
   }
 
-  getAllSocietePageable(
+    getAllSocietePageable(
     page: number = 0,
     size: number = 10,
     nom?: string,
@@ -31,7 +31,7 @@ export class SocieteService {
       .set('size', size.toString());
 
     if (nom) params = params.set('nom', nom);
-    if (tel) params = params.set('tel', tel);
+    if (tel) params = params.set('telephone', tel);
     if (ville) params = params.set('ville', ville);
     if (pays) params = params.set('pays', pays);
 

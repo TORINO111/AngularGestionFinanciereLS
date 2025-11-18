@@ -29,6 +29,7 @@ export class CohortesComponent implements OnInit {
   result = false;
   user:any;
   canAlter: boolean = false;
+  canFilter: boolean = false;
 
   searchTerm: string = '';
   selectedBailleurId?: number;
@@ -59,6 +60,9 @@ export class CohortesComponent implements OnInit {
     this.pageTitle = [{ label: 'Cohortes', path: '/', active: true }];
     if(this.user && (this.user.role === 'ADMIN' || this.user.role === 'CLIENT_ADMIN' || this.user.role === 'CLIENT_COMPTABLE' || this.user.role === 'BAILLEUR')) {
       this.canAlter = true;
+    }
+    if(this.user && (this.user.role === 'ADMIN' || this.user.role === 'CLIENT_ADMIN' || this.user.role === 'CLIENT_COMPTABLE' || this.user.role === 'CLIENT_AGENT' )) {
+      this.canFilter = true;
     }
     this.loadCohortes();
     this.loadBailleurs();

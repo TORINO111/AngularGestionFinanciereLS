@@ -9,6 +9,9 @@ import { Societe } from 'src/app/models/societe.model';
 import { UtilisateurService } from 'src/app/services/utilisateurs/utilisateur.service';
 import { NotificationService } from 'src/app/services/notifications/notifications-service';
 import { LocationService } from 'src/app/services/composite/locations/location.service';
+import { Cohorte } from 'src/app/models/cohorte.model';
+import { CohorteService } from 'src/app/services/cohortes/cohorte.service';
+import { ControlesFormulairesService } from 'src/app/services/composite/controles-formulaires/controles-formulaires.service';
 import { Subject } from 'rxjs';
 import { debounceTime, switchMap, tap } from 'rxjs/operators';
 
@@ -45,7 +48,8 @@ export class SocietesComponent implements OnInit {
   
   countries: any[] = [];
   cities: string[] = [];
-  
+  cohortes: Cohorte[] = [];
+
   private search$ = new Subject<void>();
 
   constructor(
@@ -53,9 +57,10 @@ export class SocietesComponent implements OnInit {
     private fb: FormBuilder,
     private modalService: NgbModal,
     private notification: NotificationService,
-    private locationService: LocationService
-  ) {
-    this.societeForm = this.fb.group({
+    private locationService: LocationService,
+    private cohorteService: CohorteService,
+    public controlesFormulairesService: ControlesFormulairesService
+  ) {    this.societeForm = this.fb.group({
       id: [''],
       nom: ['', Validators.required],
       telephone: [],
@@ -65,6 +70,7 @@ export class SocietesComponent implements OnInit {
       pays: ['', Validators.required],
       ville: [{ value: '', disabled: true }, Validators.required],
       comptableId: [],
+      cohorteId: [null, Validators.required],
     });
     const userJson = localStorage.getItem('user');
     this.user = userJson ? JSON.parse(userJson) : null;
@@ -72,11 +78,12 @@ export class SocietesComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageTitle = [{ label: 'Sociétés', path: '/', active: true }];
-    if (this.user && (this.user.role === 'SUPERVISEUR' || this.user.role === 'BAILLEUR' || this.user.role === 'ADMIN' || this.user.role === 'CLIENT_ADMIN' || this.user.role === 'CLIENT_COMPTABLE')) {
+    if (this.user && (this.user.role === 'BAILLEUR' || this.user.role === 'ADMIN' || this.user.role === 'CLIENT_ADMIN' || this.user.role === 'CLIENT_COMPTABLE')) {
       this.canAlter = true;
     }
     this.loadSocietes();
     this.loadCountries();
+    this.loadCohortes();
     this.initSearchListener();
   }
 
@@ -84,7 +91,6 @@ export class SocietesComponent implements OnInit {
     this.isLoading = true;
     this.result = false;
     this.currentPage = page;
-    // Assuming a paginated service method exists, similar to other components
     this.societeService.getAllSocietePageable(
       page,
       this.pageSize,
@@ -104,6 +110,17 @@ export class SocietesComponent implements OnInit {
         this.isLoading = false;
         this.result = true;
       },
+    });
+  }
+
+  loadCohortes(): void {
+    this.cohorteService.getAll().subscribe({
+      next: (data) => {
+        this.cohortes = data;
+      },
+      error: (err) => {
+        this.notification.showError('Erreur de chargement des cohortes');
+      }
     });
   }
 
@@ -190,9 +207,9 @@ export class SocietesComponent implements OnInit {
     this.societeForm.reset();
     if (societe) {
       this.societeForm.patchValue(societe);
-      if (societe.paysNom) {
+      if (societe.pays) {
         this.locationService
-          .getCitiesByCountry(societe.paysNom)
+          .getCitiesByCountry(societe.pays)
           .subscribe((cities) => {
             this.cities = cities;
             this.societeForm.get("ville")?.enable();

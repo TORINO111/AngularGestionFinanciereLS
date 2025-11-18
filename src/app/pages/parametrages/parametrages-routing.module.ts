@@ -20,7 +20,7 @@ const routes: Routes = [
     path: 'societes',
     loadChildren: () => import('./societes/societes.module').then(m => m.SocietesModule),
     canActivate: [AuthGuard],
-    data: { roles: ['SUPERVISEUR', 'BAILLEUR'] }
+    data: { roles: ['ADMIN', 'BAILLEUR', 'CLIENT_ADMIN'] }
   },
 
   // {
@@ -117,7 +117,7 @@ const routes: Routes = [
     path: 'dashboard',
     loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT'] }
+    data: { roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT', 'BAILLEUR'] }
   }
 
 ];

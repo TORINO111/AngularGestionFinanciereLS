@@ -122,9 +122,9 @@ const MENU_ITEMS: MenuItem[] = [
         key: 'societes',
         label: 'Sociétés',
         link: '/parametrages/societes',
-        icon: 'package',
+        icon: 'folder',
         isTitle: false,
-        roles: ['BAILLEUR']
+        roles: ['BAILLEUR', 'ADMIN', 'CLIENT_ADMIN']
     },
     {
         key: 'operations',

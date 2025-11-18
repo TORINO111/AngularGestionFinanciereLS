@@ -21,7 +21,8 @@
           (keyup)="onFilterChange()"
           (ngModelChange)="onFilterChange()"
         />
-        <ng-select
+        @if (canFilter) {
+          <ng-select
           class="mt-1"
           [items]="bailleurs"
           bindLabel="nom"
@@ -32,6 +33,8 @@
         >
           <ng-template ng-notfound-tmp>Aucun bailleur disponible</ng-template>
         </ng-select>
+        }
+        
       </div>
     </div>
     

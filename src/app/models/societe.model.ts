@@ -8,8 +8,7 @@ export interface Societe {
     numeroRccm: string;
     comptableId?: string;
     comptableNom?:string;
-    paysId?: number;
-    paysNom?: string;
+    pays?: string;
     ville?: string;
 }
   
