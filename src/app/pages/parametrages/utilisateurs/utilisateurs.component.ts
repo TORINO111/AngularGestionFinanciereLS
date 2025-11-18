@@ -159,9 +159,6 @@ export class UtilisateursComponent implements OnInit {
   }
 
   enregistrer(): void {
-    this.modalService.dismissAll();
-    this.isLoading = true;
-    this.result = false;
 
     if (this.utilisateurForm.invalid) {
       this.notification.showWarning('Formulaire invalide');
@@ -175,17 +172,17 @@ export class UtilisateursComponent implements OnInit {
 
     action$.subscribe({
       next: () => {
+        this.loading = true;
         this.loadUsers();
+        this.modalService.dismissAll();
+        this.loading = false;
+        
         const msg = utilisateur?.id ? 'Modifié' : 'Enregistré';
         this.notification.showSuccess(`${msg} avec succès`);
-        this.loading = false;
-        this.result = true;
         this.selectedUser = null;
       },
-      error: () => {
-        this.loading = false;
-        this.result = true;
-        this.notification.showError('Erreur serveur !!!');
+      error: (err) => {
+        this.notification.showError(err.error.message || 'Une erreur est survenue');
       }
     });
   }
