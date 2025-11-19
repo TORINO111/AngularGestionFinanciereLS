@@ -39,19 +39,19 @@ const routes: Routes = [
     path: 'utilisateurs',
     loadChildren: () => import('./utilisateurs/utilisateurs.module').then(m => m.UtilisateursModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN', 'SUPERVISEUR'] }
+    data: { roles: ['ADMIN', 'SUPERVISEUR', 'ENTREPRISE_ADMIN'] }
   },
   {
     path: 'mon-compte',
     loadChildren: () => import('./compte/compte.module').then(m => m.CompteModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN', 'SUPERVISEUR', 'COMPTABLE', 'CLIENT_ADMIN', 'CLIENT_AGENT'] }
+    data: { roles: ['ADMIN', 'SUPERVISEUR', 'COMPTABLE', 'CLIENT_ADMIN', 'CLIENT_AGENT', 'ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
   },
   {
     path: 'tiers',
     loadChildren: () => import('./tiers/tiers.module').then(m => m.TiersModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
   },
   {
     path: 'bailleurs',
@@ -75,49 +75,49 @@ const routes: Routes = [
     path: 'articles',
     loadChildren: () => import('./articles/articles.module').then(m => m.ArticlesModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
   },
   {
     path: 'plan-comptable',
     loadChildren: () => import('./plan-comptable/plan-comptable.module').then(m => m.PlanComptableModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
   },
   {
     path: 'comptes-comptables',
     loadChildren: () => import('./comptes-comptables/comptes-comptables.module').then(m => m.CompteComptableModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
   },
   {
     path: 'plan-analytique',
     loadChildren: () => import('./plan-analytique/plan-analytique.module').then(m => m.PlanAnalytiqueModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
   },
   {
     path: 'sections-analytiques',
     loadChildren: () => import('./sections-analytiques/sections-analytiques.module').then(m => m.SectionsAnalytiquesModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
   },
   {
     path: 'journaux',
     loadChildren: () => import('./code-journal/code-journal.module').then(m => m.CodeJournalModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
   },
   {
     path: 'exercice-comptable',
     loadChildren: () => import('./gestion-exercice/gestion-exercice.module').then(m => m.GestionExerciceModule),
     canActivate: [AuthGuard],
-    data: { roles: ['COMPTABLE'] }
+    data: { roles: ['ENTREPRISE_ADMIN'] }
   },
   {
     path: 'dashboard',
     loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT', 'BAILLEUR'] }
+    data: { roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT', 'BAILLEUR', 'ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
   }
 
 ];

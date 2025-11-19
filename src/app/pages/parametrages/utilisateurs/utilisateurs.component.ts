@@ -55,8 +55,10 @@ export class UtilisateursComponent implements OnInit {
 
   selectedRoleForModal: string | null = null;
   selectedUser: Utilisateur | null = null;
-  civiliteOptions: string[] = ['HOMME', 'FEMME'];
-  
+  civiliteOptions: string[] = ["HOMME", "FEMME"];
+
+  roleUser: string = "";
+
   private search$ = new Subject<{
     nom: string;
     prenom: string;
@@ -68,6 +70,9 @@ export class UtilisateursComponent implements OnInit {
   pageSize = 10;
   currentPage = 0;
   modifUser: boolean = false;
+  userBi: any;
+  societeBi: any;
+  isEntrepriseAdmin: boolean = false;
 
   constructor(
     private societeService: SocieteService,
@@ -90,22 +95,40 @@ export class UtilisateursComponent implements OnInit {
       email: ["", [Validators.email]],
       password: [""],
       enabled: [],
-      role: ['', Validators.required],
+      role: ["", Validators.required],
       societeId: [null],
       clientNumexisId: [null],
       bailleurId: [null],
-      telephone: ['', Validators.required],
-      civilite: ['', Validators.required],
+      telephone: ["", Validators.required],
+      civilite: ["", Validators.required],
     });
   }
 
   ngOnInit(): void {
     this.pageTitle = [{ label: "utilisateurs", path: "/", active: true }];
+
+    const userActive = localStorage.getItem("user");
+
+    if (userActive) {
+      this.userBi = JSON.parse(userActive);
+      this.roleUser = this.userBi.role;
+    }
+
+    switch (this.roleUser) {
+      case "ENTREPRISE_ADMIN":
+        this.isEntrepriseAdmin = true;
+        this.loadUsersForEntrepriseAdmin();
+        break;
+      case "ADMIN":
+        this.loadUsers();
+        this.loadClientsNumexis();
+        this.loadBailleurs();
+        break;
+    }
+
     this.loadSocietes();
     this.chargerRoles();
-    this.loadClientsNumexis();
-    this.loadBailleurs();
-    this.loadUsers();
+
     this.initSearchListener();
   }
 
@@ -144,24 +167,29 @@ export class UtilisateursComponent implements OnInit {
 
   chargerRoles() {
     this.utilisateurService.allRoles().subscribe(
-      (data: any) => {
-        // <== utiliser 'any' ici
+      (data: any[]) => {
         let roles: any[] = data as any[];
 
+        if (this.isEntrepriseAdmin) {
+          roles = roles.filter((r) =>
+            ["ENTREPRISE_ADMIN", "ENTREPRISE_USER"].includes(r)
+          );
+        }
         this.roles = roles;
         this.result = true;
       },
-      (error) => {
+      (err) => {
         this.result = true;
-        this.notification.showError("Erreur lors du chargement des rôles.");
+        this.notification.showError(
+          err.error.message || "Erreur lors du chargement des rôles."
+        );
       }
     );
   }
 
   enregistrer(): void {
-
     if (this.utilisateurForm.invalid) {
-      this.notification.showWarning('Formulaire invalide');
+      this.notification.showWarning("Formulaire invalide");
       return;
     }
 
@@ -176,14 +204,16 @@ export class UtilisateursComponent implements OnInit {
         this.loadUsers();
         this.modalService.dismissAll();
         this.loading = false;
-        
-        const msg = utilisateur?.id ? 'Modifié' : 'Enregistré';
+
+        const msg = utilisateur?.id ? "Modifié" : "Enregistré";
         this.notification.showSuccess(`${msg} avec succès`);
         this.selectedUser = null;
       },
       error: (err) => {
-        this.notification.showError(err.error.message || 'Une erreur est survenue');
-      }
+        this.notification.showError(
+          err.error.message || "Une erreur est survenue"
+        );
+      },
     });
   }
 
@@ -212,7 +242,39 @@ export class UtilisateursComponent implements OnInit {
           this.result = true;
           this.isLoading = false;
           this.notification.showError(
-            "Erreur lors du chargement des utilisateurs."
+            err.error.message || "Erreur lors du chargement des utilisateurs."
+          );
+        },
+      });
+  }
+
+  loadUsersForEntrepriseAdmin(page: number = 0): void {
+    this.result = false;
+    this.isLoading = true;
+    this.currentPage = page;
+
+    this.utilisateurService
+      .getUsersBySocieteIdPageable(
+        this.userBi.societeId,
+        page,
+        this.pageSize,
+        this.searchUsername || undefined,
+        this.searchNom || undefined,
+        this.searchPrenom || undefined,
+        this.selectedRole || undefined
+      )
+      .subscribe({
+        next: (data: any) => {
+          this.users = data.content;
+          this.totalElements = data.totalElements;
+          this.result = true;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          this.result = true;
+          this.isLoading = false;
+          this.notification.showError(
+            err.error?.message || "Erreur lors du chargement des utilisateurs."
           );
         },
       });
@@ -289,7 +351,7 @@ export class UtilisateursComponent implements OnInit {
     }).then((result: any) => {
       if (result.value) {
         onConfirm();
-      } 
+      }
       // else if (result.dismiss === Swal.DismissReason.cancel) {
       //   Swal.fire("Abandonné", `${title.toLowerCase()} annulée`, "error");
       // }
@@ -341,22 +403,29 @@ export class UtilisateursComponent implements OnInit {
     this.modifUser = false;
     this.selectedUser = user || null;
     this.utilisateurForm.reset();
-    this.selectedRoleForModal = ''; 
+    this.selectedRoleForModal = "";
 
     if (user) {
       this.utilisateurForm.patchValue(user);
       if (user.role) {
-        const roleObject = this.roles.find(r => r === user.role);
+        const roleObject = this.roles.find((r) => r === user.role);
         if (roleObject) {
-          this.utilisateurForm.get('idRole')?.patchValue(roleObject.id);
+          this.utilisateurForm.get("idRole")?.patchValue(roleObject.id);
           this.onRoleChangeForModal(roleObject);
         }
       }
-      if (user.societeId) this.utilisateurForm.get('societeId')?.patchValue(user.societeId);
-      if (user.clientNumexisId) this.utilisateurForm.get('clientNumexisId')?.patchValue(user.clientNumexisId);
-      if (user.bailleurId) this.utilisateurForm.get('bailleurId')?.patchValue(user.bailleurId);
-      if (user.telephone) this.utilisateurForm.get('telephone')?.patchValue(user.telephone);
-      if (user.civilite) this.utilisateurForm.get('civilite')?.patchValue(user.civilite);
+      if (user.societeId)
+        this.utilisateurForm.get("societeId")?.patchValue(user.societeId);
+      if (user.clientNumexisId)
+        this.utilisateurForm
+          .get("clientNumexisId")
+          ?.patchValue(user.clientNumexisId);
+      if (user.bailleurId)
+        this.utilisateurForm.get("bailleurId")?.patchValue(user.bailleurId);
+      if (user.telephone)
+        this.utilisateurForm.get("telephone")?.patchValue(user.telephone);
+      if (user.civilite)
+        this.utilisateurForm.get("civilite")?.patchValue(user.civilite);
     } else {
       this.modifUser = true;
       this.onRoleChangeForModal(null);
@@ -365,28 +434,28 @@ export class UtilisateursComponent implements OnInit {
   }
 
   onRoleChangeForModal(role: any): void {
-    this.selectedRoleForModal = role ? role : '';
+    this.selectedRoleForModal = role ? role : "";
 
-    this.utilisateurForm.get('societeId')?.disable();
-    this.utilisateurForm.get('clientNumexisId')?.disable();
-    this.utilisateurForm.get('bailleurId')?.disable();
-    this.utilisateurForm.get('societeId')?.patchValue(null);
-    this.utilisateurForm.get('clientNumexisId')?.patchValue(null);
-    this.utilisateurForm.get('bailleurId')?.patchValue(null);
+    this.utilisateurForm.get("societeId")?.disable();
+    this.utilisateurForm.get("clientNumexisId")?.disable();
+    this.utilisateurForm.get("bailleurId")?.disable();
+    this.utilisateurForm.get("societeId")?.patchValue(null);
+    this.utilisateurForm.get("clientNumexisId")?.patchValue(null);
+    this.utilisateurForm.get("bailleurId")?.patchValue(null);
 
     // Enable fields based on selected role
     switch (this.selectedRoleForModal) {
-      case 'ENTREPRISE_USER':
-      case 'ENTREPRISE_ADMIN':
-        this.utilisateurForm.get('societeId')?.enable();
+      case "ENTREPRISE_USER":
+      case "ENTREPRISE_ADMIN":
+        this.utilisateurForm.get("societeId")?.enable();
         break;
-      case 'CLIENT_COMPTABLE':
-      case 'CLIENT_ADMIN':
-      case 'CLIENT_AGENT':
-        this.utilisateurForm.get('clientNumexisId')?.enable();
+      case "CLIENT_COMPTABLE":
+      case "CLIENT_ADMIN":
+      case "CLIENT_AGENT":
+        this.utilisateurForm.get("clientNumexisId")?.enable();
         break;
-      case 'BAILLEUR':
-        this.utilisateurForm.get('bailleurId')?.enable();
+      case "BAILLEUR":
+        this.utilisateurForm.get("bailleurId")?.enable();
         break;
       // case 'ADMIN':
       //   this.utilisateurForm.get('societeId')?.enable();

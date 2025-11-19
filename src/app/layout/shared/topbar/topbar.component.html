@@ -8,7 +8,7 @@
         <i data-feather="maximize" appFeatherIcon></i>
       </a>
     </li> -->
-      <li class="nav-item dropdown me-2" *ngIf="!authService.isAdmin() || !authService.isClientAdmin()"  >
+      <li class="nav-item dropdown me-2" *ngIf="!authService.isAdmin() || !authService.isClientAdmin() || !authService.isBailleur() || !authService.isEntrepriseAdmin()"  >
         <a class="nav-link dropdown-toggle d-flex align-items-center" >
           @if (exerciceEnCours) {
           <span class="fw-bold">
@@ -56,7 +56,7 @@
       <li class="nav-item dropdown me-2"  >
         <a class="nav-link dropdown-toggle d-flex align-items-center" >
           <i class="bi bi-building me-2"></i>
-          <span class="fw-bold">{{ loggedInUser.client || 'Aucune société assignée' }}</span>
+          <span class="fw-bold">{{ loggedInUser.client || loggedInUser.societeNom }}</span>
         </a>
       } 
 

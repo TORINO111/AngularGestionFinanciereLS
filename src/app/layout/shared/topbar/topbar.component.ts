@@ -69,7 +69,12 @@ export class TopbarComponent implements OnInit {
 
   ngOnInit(): void {
     this.loggedInUser = this.authService.currentUser();
-    if (!this.authService.isAdmin() && !this.authService.isClientAdmin() && !this.authService.isClientAgent() && !this.authService.isBailleur()) {
+    if (
+      !this.authService.isAdmin() &&
+      !this.authService.isClientAdmin() &&
+      !this.authService.isClientAgent() &&
+      !this.authService.isBailleur()
+    ) {
       this.loadSocieteForuser();
     }
 
@@ -97,8 +102,9 @@ export class TopbarComponent implements OnInit {
           JSON.stringify(this.selectedSociete)
         );
 
-        // Charger l'exercice après avoir récupéré la société
-        this.loadExercice();
+        if (this.loggedInUser.role === Role.ENTREPRISE_USER) {
+          this.loadExercice();
+        }
       });
   }
 

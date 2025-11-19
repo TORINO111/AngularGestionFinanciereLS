@@ -92,7 +92,7 @@ const MENU_ITEMS: MenuItem[] = [
         roles: ['SUPERVISEUR','COMPTABLE']
     },
     
-    { key: 'parametrages', label: 'PARAMETRAGES', isTitle: true , roles: ['ADMIN','SUPERVISEUR','COMPTABLE', 'CLIENT_ADMIN', 'CLIENT_AGENT']},
+    { key: 'parametrages', label: 'PARAMETRAGES', isTitle: true , roles: ['ADMIN','SUPERVISEUR','COMPTABLE', 'CLIENT_ADMIN', 'CLIENT_AGENT', 'ENTREPRISE_ADMIN', 'ENTREPRISE_USER', 'BAILLEUR']},
     
     {
         key: 'dashboard',
@@ -110,14 +110,14 @@ const MENU_ITEMS: MenuItem[] = [
         isTitle: false,
         roles: ['SUPERVISEUR','COMPTABLE']
     },
-    {
-        key: 'cabinet',
-        label: 'Cabinets',
-        link: '/parametrages/informations-cabinet',
-        icon: 'package',
-        isTitle: false,
-        roles: ['SUPERVISEUR',]
-    },
+    // {
+    //     key: 'cabinet',
+    //     label: 'Cabinets',
+    //     link: '/parametrages/informations-cabinet',
+    //     icon: 'package',
+    //     isTitle: false,
+    //     roles: ['SUPERVISEUR',]
+    // },
     {
         key: 'societes',
         label: 'Sociétés',
@@ -132,7 +132,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/operations',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN']
+        roles: ['CLIENT_ADMIN']
     },
     {
         key: 'comptescomptables',
@@ -140,7 +140,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/comptes-comptables',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN']
+        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
     },
     {
         key: 'plancomptable',
@@ -148,7 +148,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/plan-comptable',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN']
+        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
     },
     {
         key: 'sectionnalytique',
@@ -156,7 +156,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/sections-analytiques',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN']
+        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
     },
     {
         key: 'plananalytique',
@@ -164,23 +164,23 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/plan-analytique',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN']
+        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
     },
-    {
-        key: 'cabinets',
-        label: 'Cabinets',
-        link: '/parametrages/cabinets',
-        icon: 'package',
-        isTitle: false,
-        roles: ['ADMIN', 'SUPERVISEUR']
-    },
+    // {
+    //     key: 'cabinets',
+    //     label: 'Cabinets',
+    //     link: '/parametrages/cabinets',
+    //     icon: 'package',
+    //     isTitle: false,
+    //     roles: ['ADMIN', 'SUPERVISEUR']
+    // },
     {
         key: 'categories',
         label: 'Categories',
         link: '/parametrages/categories',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN']
+        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
     },
     {
         key: 'journaux',
@@ -188,7 +188,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/journaux',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN']
+        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
     },
     {
         key: 'tiers',
@@ -196,7 +196,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/tiers',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN']
+        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
     },
     {
         key: 'bailleurs',
@@ -228,7 +228,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/articles',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN']
+        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
     },
     {
         key: 'utilisateurs',
@@ -236,7 +236,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/utilisateurs',
         icon: 'users',
         isTitle: false,
-        roles: ['ADMIN','SUPERVISEUR']
+        roles: ['ADMIN','ENTREPRISE_ADMIN']
     },
     {
         key: 'moncompte',
@@ -244,7 +244,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/mon-compte',
         icon: 'package',
         isTitle: false,
-        roles: ['ADMIN','SUPERVISEUR','COMPTABLE', 'CLIENT_ADMIN', 'CLIENT_AGENT']
+        roles: ['ADMIN','SUPERVISEUR','COMPTABLE', 'CLIENT_ADMIN', 'CLIENT_AGENT', 'ENTREPRISE_ADMIN', 'ENTREPRISE_USER', 'BAILLEUR']
     }
 
 ];

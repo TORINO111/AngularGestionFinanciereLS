@@ -211,7 +211,6 @@ export class OperationsComponent implements OnInit {
     );
   }
 
-
   onJournalChange(journalId: number) {
     this.selectedJournalId = journalId;
 
@@ -249,53 +248,6 @@ export class OperationsComponent implements OnInit {
     }
   }
 
-  // onArticleChange(articleId: number | null) {
-  //   if (!articleId) {
-  //     this.resetArticleSelection();
-  //     return;
-  //   }
-
-  //   const article = this.articles.find(a => a.id === articleId);
-  //   if (!article) {
-  //     this.resetArticleSelection();
-  //     return;
-  //   }
-
-  //   this.selectedArticle = article;
-
-  //   // assignation de validators pour gérer le stock dispo lors de l'enregistrement d'une vente
-  //   this.assignerValidatorsQuantiteArticle();
-
-  //   // Charger comptes et règles de l'article
-  //   this.loadComptesForArticle(article);
-  //   this.filterJournauxForArticle(article);
-
-  //   this.applyArticleRules({
-  //     typesCategorie: article.comptesParCategorie?.map((c: { typeCategorie: any; }) => c.typeCategorie) ?? [],
-  //     typesMouvement: article.comptesParCategorie?.map((c: { typeMouvement: any; }) => c.typeMouvement) ?? []
-  //   });
-
-  //   // Récupérer le compte lié au type de catégorie autorisé par le journal
-  //   if (this.selectedJournalId) {
-  //     const journal = this.journaux.find(j => j.id === this.selectedJournalId);
-
-  //     if (journal?.allowedCategoryTypes?.length) {
-  //       // On cherche le compte correspondant au premier type autorisé du journal
-  //       const matchedCompte = article.comptesParCategorie?.find((c: { typeCategorie: string; }) =>
-  //         journal?.allowedCategoryTypes?.includes(c.typeCategorie)
-  //       );
-  //       console.log(matchedCompte);
-  //       this.operationForm.patchValue({ compteComptableId: matchedCompte.compteId })
-  //       console.log(this.operationForm.value);
-
-  //       if (matchedCompte) {
-  //         this.selectedCompte = matchedCompte;
-  //       } else {
-  //         this.selectedCompte = null;
-  //       }
-  //     }
-  //   }
-  // }
   onArticleChange(articleId: number | null) {
     if (!articleId) {
       this.resetArticleSelection();

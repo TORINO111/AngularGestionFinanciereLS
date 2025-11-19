@@ -32,6 +32,38 @@ export class UtilisateurService {
     });
   }
 
+  getUsersBySocieteIdPageable(
+    societeId: number,
+    page: number = 0,
+    size: number = 20,
+    username?: string,
+    nom?: string,
+    prenom?: string,
+    role?: string
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set("page", page)
+      .set("size", size)
+      .set("societeId", societeId);
+
+    if (username) params = params.set("username", username);
+    if (nom) params = params.set("nom", nom);
+    if (prenom) params = params.set("prenom", prenom);
+    if (role) params = params.set("role", role);
+
+    return this._http.get<any>(`${this.baseUrl}/pageable-by-societe`, {
+      headers: new HttpHeaders().set("Content-Type", "application/json"),
+      params,
+    });
+  }
+
+  getUsersBySocieteId(societeId: number): Observable<any[]> {
+    const headers = new HttpHeaders().set("Accept", "application/json");
+    return this._http.get<any[]>(`${this.baseUrl}/societe/${societeId}`, {
+      headers,
+    });
+  }
+
   allRoles(): Observable<any> {
     const headers = new HttpHeaders().set("Accept", "application/json");
     return this._http.get(`${this.baseUrl}/roles`, { headers });
@@ -58,5 +90,11 @@ export class UtilisateurService {
   allUsers(): Observable<any[]> {
     const headers = new HttpHeaders().set("Accept", "application/json");
     return this._http.get<any[]>(`${this.baseUrl}`, { headers });
+  }
+
+  getUserById(id: number): Observable<any> {
+    return this._http.get(`${this.baseUrl}/${id}`, {
+      headers: new HttpHeaders().set("Content-Type", "application/json"),
+    });
   }
 }

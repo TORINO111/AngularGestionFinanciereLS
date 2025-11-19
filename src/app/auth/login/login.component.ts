@@ -86,9 +86,10 @@ export class LoginComponent implements OnInit {
                 localStorage.setItem("user", JSON.stringify(data));
                 sessionStorage.setItem("currentUser", JSON.stringify(data));
                 const userRole = data.role;
+                sessionStorage.setItem('role', userRole);
                 switch (userRole) {
                   case "ADMIN":
-                    this.returnUrl = "/parametrages/cohortes";
+                    this.returnUrl = "/parametrages/utilisateurs";
                     this.router.navigate([this.returnUrl]);
                     break;
                   case "CLIENT_ADMIN":
@@ -101,6 +102,14 @@ export class LoginComponent implements OnInit {
                     break;
                   case "BAILLEUR":
                     this.returnUrl = "/parametrages/cohortes";
+                    this.router.navigate([this.returnUrl]);
+                    break;
+                  case "ENTREPRISE_ADMIN":
+                    this.returnUrl = "/parametrages/utilisateurs";
+                    this.router.navigate([this.returnUrl]);
+                    break;
+                  case "ENTREPRISE_USER":
+                    this.returnUrl = "/parametrages/operations";
                     this.router.navigate([this.returnUrl]);
                     break;
                   default:

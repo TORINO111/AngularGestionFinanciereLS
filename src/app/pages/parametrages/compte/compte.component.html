@@ -1,103 +1,118 @@
 <app-page-title [breadcrumbItems]="pageTitle" title="Informations Utilisateur"></app-page-title>
 @if (!result) {
-  <div class="loader-container">
-    <div class="lds-dual-ring"></div>
-  </div>
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
 }
 @if (result) {
-  <div class="mt-2 card">
-    <h4>Vos informations</h4>
-    <div class="card-body">
-      <!-- (ngSubmit)="onUpdateUser(userForm)"" -->
-      <form   [formGroup]="userForm" >
-        <div class="row mb-1">
-          <!-- Nom -->
-          <div class="col-md-4">
-            <div class="form-group">
-              <input type="text" class="form-control" name="nom" formControlName="nom" placeholder="Nom">
-            </div>
-          </div>
-          <!-- Sigle -->
-          <div class="col-md-4">
-            <div class="form-group">
-              <input type="text" class="form-control" name="prenom" formControlName="prenom" placeholder="Prenom">
-            </div>
-          </div>
-          <!-- Logo -->
-          <!-- Champ Logo amélioré avec aperçu -->
-          <div class="col-md-4">
-            <div class="form-group">
-              <input type="text" class="form-control" name="username" formControlName="username" placeholder="Username">
-            </div>
+<div class="mt-2 card">
+  <h4 style="margin-left: 1%;">Mes informations</h4>
+
+  <div class="card-body">
+    <!-- (ngSubmit)="onUpdateUser(userForm)"" -->
+    <form [formGroup]="userForm">
+      <div class="row ">
+        <!-- Nom -->
+        <div class="col-md-4 mb-3">
+          <div class="form-group">
+            <label for="nom">Nom</label>
+            <input type="text" class="form-control" id="nom" name="nom" formControlName="nom" placeholder="Nom">
           </div>
         </div>
-        <div class="row mb-1">
-          <!-- Téléphone -->
-          <div class="col-md-4">
-            <div class="form-group">
-              <input type="text" class="form-control" name="telephone" formControlName="telephone" placeholder="Ex: xxxxxxxx ou 226xxxxxxxx">
-            </div>
-            <!-- Messages d'erreur -->
-            @if (userForm.get('telephone')?.errors?.['invalidPhoneNumber']) {
-              <div class="error">
-                Format invalide.
-              </div>
-            }
-          </div>
-          <!-- Email -->
-          <div class="col-md-4">
-            <div class="form-group">
-              <input type="email" class="form-control" name="email" formControlName="email" placeholder="Email">
-            </div>
+
+        <!-- Prénom -->
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="prenom">Prénom</label>
+            <input type="text" class="form-control" id="prenom" name="prenom" formControlName="prenom"
+              placeholder="Prénom">
           </div>
         </div>
+
+        <!-- Username -->
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="username">Nom d'utilisateur</label>
+            <input type="text" class="form-control" id="username" name="username" formControlName="username"
+              placeholder="Username">
+          </div>
+        </div>
+
+      <!-- <div class="row mb-1"> -->
+        <!-- Téléphone -->
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="telephone">Téléphone</label>
+            <input type="text" class="form-control" id="telephone" name="telephone" formControlName="telephone"
+              placeholder="Ex: xxxxxxxx ou 226xxxxxxxx">
+          </div>
+          <!-- Messages d'erreur -->
+          @if (userForm.get('telephone')?.errors?.['invalidPhoneNumber']) {
+          <div class="error">
+            Format invalide.
+          </div>
+          }
+        </div>
+
+        <!-- Email -->
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" class="form-control" id="email" name="email" formControlName="email"
+              placeholder="Email">
+          </div>
+        </div>
+      </div>
+
         <!-- Bouton de soumission -->
         <div class="text-end mt-3">
           <button class="btn btn-primary" type="submit" [disabled]="userLoading">
             @if (userLoading) {
-              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
             }
             {{ userLoading ? 'Enregistrement...' : 'Modifier' }}
           </button>
         </div>
-      </form>
-    </div>
+    </form>
   </div>
+</div>
 }
 
 @if (result) {
-  <div class="mt-2 card">
-    <h4>Changer votre mot de passe </h4>
-    <div class="card-body">
-      <form   [formGroup]="passwordForm" (ngSubmit)="sendPassword(passwordForm)">
-        <div class="row mb-1">
-          <div class="col-md-4">
-            <div class="form-group">
-              <input type="password" class="form-control" name="ancien" formControlName="ancien" placeholder="Ancien mot de passe">
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              <input type="password" class="form-control" name="password" formControlName="password" placeholder="Mot de passe">
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              <input type="password" class="form-control" name="confirmation" formControlName="confirmation" placeholder="Confirmation">
-            </div>
+<div class="mt-2 card">
+  <h4>Changer votre mot de passe </h4>
+  <div class="card-body">
+    <form [formGroup]="passwordForm" (ngSubmit)="sendPassword(passwordForm)">
+      <div class="row mb-1">
+        <div class="col-md-4">
+          <div class="form-group">
+            <input type="password" class="form-control" name="ancien" formControlName="ancien"
+              placeholder="Ancien mot de passe">
           </div>
         </div>
-        <!-- Bouton de soumission -->
-        <div class="text-end mt-3">
-          <button class="btn btn-primary" type="submit" [disabled]="loading">
-            @if (loading) {
-              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            }
-            {{ loading ? 'Enregistrement...' : 'Valider' }}
-          </button>
+        <div class="col-md-4">
+          <div class="form-group">
+            <input type="password" class="form-control" name="password" formControlName="password"
+              placeholder="Mot de passe">
+          </div>
         </div>
-      </form>
-    </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <input type="password" class="form-control" name="confirmation" formControlName="confirmation"
+              placeholder="Confirmation">
+          </div>
+        </div>
+      </div>
+      <!-- Bouton de soumission -->
+      <div class="text-end mt-3">
+        <button class="btn btn-primary" type="submit" [disabled]="loading">
+          @if (loading) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          }
+          {{ loading ? 'Enregistrement...' : 'Valider' }}
+        </button>
+      </div>
+    </form>
   </div>
+</div>
 }
-

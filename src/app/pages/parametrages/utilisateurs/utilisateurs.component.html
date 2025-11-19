@@ -19,10 +19,12 @@
           (keydown)="controleForm.allowAlphanumericWithAccents($event)" />
         <input class="form-control" placeholder="Rechercher par username" [(ngModel)]="searchUsername"
           (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+
         <ng-select class="w-100" [items]="roles" bindLabel="libelle" bindValue="libelle" placeholder="Filtrer par rôle"
           [(ngModel)]="selectedRole" (change)="onFilterChange()">
           <ng-template ng-notfound-tmp>Aucun rôle disponible</ng-template>
         </ng-select>
+
       </div>
     </div>
 
@@ -112,8 +114,7 @@
   </div>
 
   <div class="modal-body">
-    <form (ngSubmit)="enregistrer()" [formGroup]="utilisateurForm"
-      class="p-2">
+    <form (ngSubmit)="enregistrer()" [formGroup]="utilisateurForm" class="p-2">
 
       <div class="row ">
         <div class="col-md-6 mb-3">
@@ -196,7 +197,8 @@
         </div>
         }
 
-        @if (selectedRoleForModal === 'CLIENT_COMPTABLE' || selectedRoleForModal === 'CLIENT_ADMIN' || selectedRoleForModal === 'CLIENT_AGENT' ) {
+        @if (selectedRoleForModal === 'CLIENT_COMPTABLE' || selectedRoleForModal === 'CLIENT_ADMIN' ||
+        selectedRoleForModal === 'CLIENT_AGENT' ) {
         <div class="col-md-6 mb-3">
           <div class="form-group">
             <label for="clientNumexisId">Client Numexis</label>
@@ -225,8 +227,9 @@
 
       <div class="modal-footer">
         <button type="button" class="btn btn-danger" (click)="modal.close('Close click')">FERMER</button>
-        <button type="submit" [disabled]="utilisateurForm.invalid" class="btn btn-primary"> <span>ENREGISTRER</span> </button>
-          <!-- @if (!loading) {
+        <button type="submit" [disabled]="utilisateurForm.invalid" class="btn btn-primary"> <span>ENREGISTRER</span>
+        </button>
+        <!-- @if (!loading) {
           
           }
           @if (loading) {

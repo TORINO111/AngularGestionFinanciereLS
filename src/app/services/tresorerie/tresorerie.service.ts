@@ -120,10 +120,5 @@ creerCategorie(categorie: any): Observable<any> {
     });
   }
 
-  getUserById(id: number): Observable<any> {
-    return this._http.get(`${environment.apiUrl}/api/utilisateur/${id}`, {
-      headers: new HttpHeaders().set('Content-Type', 'application/json')
-    });
-  }
 
 }

@@ -27,8 +27,9 @@ export class AuthGuard implements CanActivate {
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
         const expectedRoles: string[] = route.data['roles'];
+        console.log('Expected Roles:', expectedRoles);
         const userRole: string | null = sessionStorage.getItem('role');
-
+        console.log('User Role:', userRole);
         const hasAccess = expectedRoles.includes(userRole || '');
 
         if (!hasAccess) {
