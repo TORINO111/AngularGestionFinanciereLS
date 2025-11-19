@@ -22,7 +22,6 @@ export class CompteComponent implements OnInit {
   userForm: UntypedFormGroup;
   result = false;
   loading = false;
-  userLoading = false;
   isConfirme = false;
   user: any;
   pageTitle: BreadcrumbItem[] = [];

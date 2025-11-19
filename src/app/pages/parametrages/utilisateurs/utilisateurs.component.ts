@@ -117,15 +117,14 @@ export class UtilisateursComponent implements OnInit {
     switch (this.roleUser) {
       case "ENTREPRISE_ADMIN":
         this.isEntrepriseAdmin = true;
-        this.loadUsersForEntrepriseAdmin();
         break;
       case "ADMIN":
-        this.loadUsers();
         this.loadClientsNumexis();
         this.loadBailleurs();
         break;
     }
 
+    this.loadUsersByRole();
     this.loadSocietes();
     this.chargerRoles();
 
@@ -201,7 +200,7 @@ export class UtilisateursComponent implements OnInit {
     action$.subscribe({
       next: () => {
         this.loading = true;
-        this.loadUsers();
+        this.loadUsersByRole();
         this.modalService.dismissAll();
         this.loading = false;
 
@@ -217,67 +216,54 @@ export class UtilisateursComponent implements OnInit {
     });
   }
 
-  loadUsers(page: number = 0): void {
+  loadUsersByRole(page: number = 0): void {
     this.result = false;
     this.isLoading = true;
     this.currentPage = page;
 
-    this.utilisateurService
-      .getAllPageable(
-        page,
-        this.pageSize,
-        this.searchUsername || undefined,
-        this.searchNom || undefined,
-        this.searchPrenom || undefined,
-        this.selectedRole || undefined
-      )
-      .subscribe({
-        next: (data) => {
-          this.users = data.content;
-          this.totalElements = data.totalElements;
-          this.result = true;
-          this.isLoading = false;
-        },
-        error: (err) => {
-          this.result = true;
-          this.isLoading = false;
-          this.notification.showError(
-            err.error.message || "Erreur lors du chargement des utilisateurs."
-          );
-        },
-      });
-  }
+    const obs$ =
+      this.roleUser === "ADMIN"
+        ? this.utilisateurService.getAllPageable(
+            page,
+            this.pageSize,
+            this.searchUsername || undefined,
+            this.searchNom || undefined,
+            this.searchPrenom || undefined,
+            this.selectedRole || undefined
+          )
+        : ["ENTREPRISE_ADMIN", "ENTREPRISE_USER"].includes(this.roleUser)
+        ? this.utilisateurService.getUsersBySocieteIdPageable(
+            this.userBi.societeId,
+            page,
+            this.pageSize,
+            this.searchUsername || undefined,
+            this.searchNom || undefined,
+            this.searchPrenom || undefined,
+            this.selectedRole || undefined
+          )
+        : null;
 
-  loadUsersForEntrepriseAdmin(page: number = 0): void {
-    this.result = false;
-    this.isLoading = true;
-    this.currentPage = page;
+    if (!obs$) {
+      this.result = true;
+      this.isLoading = false;
+      return;
+    }
 
-    this.utilisateurService
-      .getUsersBySocieteIdPageable(
-        this.userBi.societeId,
-        page,
-        this.pageSize,
-        this.searchUsername || undefined,
-        this.searchNom || undefined,
-        this.searchPrenom || undefined,
-        this.selectedRole || undefined
-      )
-      .subscribe({
-        next: (data: any) => {
-          this.users = data.content;
-          this.totalElements = data.totalElements;
-          this.result = true;
-          this.isLoading = false;
-        },
-        error: (err) => {
-          this.result = true;
-          this.isLoading = false;
-          this.notification.showError(
-            err.error?.message || "Erreur lors du chargement des utilisateurs."
-          );
-        },
-      });
+    obs$.subscribe({
+      next: (data: any) => {
+        this.users = data.content;
+        this.totalElements = data.totalElements;
+        this.result = true;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.result = true;
+        this.isLoading = false;
+        this.notification.showError(
+          err.error?.message || "Erreur lors du chargement des utilisateurs."
+        );
+      },
+    });
   }
 
   onFilterChange(): void {
@@ -296,14 +282,33 @@ export class UtilisateursComponent implements OnInit {
         tap(() => (this.isLoading = true)),
         switchMap(({ nom, prenom, username, role }) => {
           this.currentPage = 0;
-          return this.utilisateurService.getAllPageable(
-            0,
-            this.pageSize,
-            username || undefined,
-            nom || undefined,
-            prenom || undefined,
-            role || undefined
-          );
+
+          // ADMIN → recherche globale
+          if (this.roleUser === "ADMIN") {
+            return this.utilisateurService.getAllPageable(
+              0,
+              this.pageSize,
+              username || undefined,
+              nom || undefined,
+              prenom || undefined,
+              role || undefined
+            );
+          }
+
+          // ENTREPRISE_ADMIN → recherche dans la société
+          if (this.roleUser === "ENTREPRISE_ADMIN") {
+            return this.utilisateurService.getUsersBySocieteIdPageable(
+              this.userBi.societeId,
+              0,
+              this.pageSize,
+              username || undefined,
+              nom || undefined,
+              prenom || undefined,
+              role || undefined
+            );
+          }
+
+          return this.utilisateurService.getAllPageable(0, this.pageSize);
         })
       )
       .subscribe({
@@ -327,7 +332,7 @@ export class UtilisateursComponent implements OnInit {
   }
 
   goToPage(page: number = 0) {
-    this.loadUsers(page);
+    this.loadUsersByRole(page);
   }
 
   totalPages(): number {
@@ -367,7 +372,7 @@ export class UtilisateursComponent implements OnInit {
         this.utilisateurService.deleteUser(id).subscribe(
           (res) => {
             if (res != null) {
-              this.loadUsers();
+              this.loadUsersByRole();
               Swal.fire("Supprimé!", "Utilisateur supprimé.", "success");
             } else {
               Swal.fire("Erreur", "Utilisateur non supprimé.", "error");
@@ -447,7 +452,13 @@ export class UtilisateursComponent implements OnInit {
     switch (this.selectedRoleForModal) {
       case "ENTREPRISE_USER":
       case "ENTREPRISE_ADMIN":
-        this.utilisateurForm.get("societeId")?.enable();
+          // L'utilisateur ne peut créer que des users liés à SA société si il est ENTREPRISE_ADMIN
+          if(this.roleUser === "ENTREPRISE_ADMIN") {
+            this.utilisateurForm.get("societeId")?.patchValue(this.userBi.societeId);
+            this.utilisateurForm.get("societeId")?.disable(); 
+          } else {
+            this.utilisateurForm.get("societeId")?.enable();
+          }
         break;
       case "CLIENT_COMPTABLE":
       case "CLIENT_ADMIN":

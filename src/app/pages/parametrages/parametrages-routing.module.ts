@@ -8,7 +8,7 @@ const routes: Routes = [
     path: 'operations',   
     loadChildren: () => import('./operations/operations.module').then(m => m.OperationsModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['ADMIN', 'ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
   },
   {
     path: 'categories',

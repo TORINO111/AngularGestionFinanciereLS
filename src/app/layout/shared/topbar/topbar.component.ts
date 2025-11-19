@@ -344,7 +344,7 @@ export class TopbarComponent implements OnInit {
         redirectTo: "/parametrages/mon-compte",
       },
       {
-        label: "Logout",
+        label: "Se déconnecter",
         icon: "log-out",
         redirectTo: "/auth/login",
       },

@@ -132,7 +132,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/operations',
         icon: 'package',
         isTitle: false,
-        roles: ['CLIENT_ADMIN']
+        roles: ['ADMIN', 'ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
     },
     {
         key: 'comptescomptables',
