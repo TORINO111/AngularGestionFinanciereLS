@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Router, ActivatedRouteSnapshot, RouterStateSnapshot, CanActivate } from '@angular/router';
-import { AuthenticationService } from '../service/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
     constructor(
         private router: Router,
-        private authenticationService: AuthenticationService
     ) { }
 
     // canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
@@ -27,9 +25,7 @@ export class AuthGuard implements CanActivate {
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
         const expectedRoles: string[] = route.data['roles'];
-        console.log('Expected Roles:', expectedRoles);
         const userRole: string | null = sessionStorage.getItem('role');
-        console.log('User Role:', userRole);
         const hasAccess = expectedRoles.includes(userRole || '');
 
         if (!hasAccess) {

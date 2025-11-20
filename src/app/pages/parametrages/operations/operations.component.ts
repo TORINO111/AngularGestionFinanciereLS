@@ -195,7 +195,7 @@ export class OperationsComponent implements OnInit {
     if (userActive) {
       this.userBi = JSON.parse(userActive);
       if (this.userBi.role === "ADMIN") {
-        this.isAdminNumexis = true;
+        this.isAdminNumexis = true; 
         this.chargerSocietes();
       } else if (this.userBi.role === "ENTREPRISE_ADMIN") {
         this.isAdminEntreprise = true;

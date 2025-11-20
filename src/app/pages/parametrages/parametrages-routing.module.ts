@@ -14,7 +14,7 @@ const routes: Routes = [
     path: 'categories',
     loadChildren: () => import('./categorie/categorie.module').then(m => m.CategorieModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['ADMIN', 'ENTREPRISE_ADMIN'] }
   },
   {
     path: 'societes',

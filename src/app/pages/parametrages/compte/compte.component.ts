@@ -4,6 +4,7 @@ import {
   Validators,
   UntypedFormBuilder,
   UntypedFormControl,
+  FormGroup,
 } from "@angular/forms";
 import { ToastrService } from "ngx-toastr";
 import { Router, ActivatedRoute } from "@angular/router";
@@ -39,16 +40,16 @@ export class CompteComponent implements OnInit {
     this.loadAndInitUserForm();
 
     this.passwordForm = this.fb.group({
-      id: this.user.id,
-      ancien: ["", [Validators.required]],
+      userId: this.user.id,
+      oldPassword: ["", [Validators.required]],
       password: ["", [Validators.required]],
-      confirmation: ["", [Validators.required]],
+      confirmPassword: ["", [Validators.required]],
       // password: ['', [Validators.required, Validators.pattern(this.passwordRegex), Validators.minLength(8)]],
       // confirmation: ['', [Validators.required, Validators.pattern(this.passwordRegex), Validators.minLength(8)]],
     });
   }
 
-  ngOnInit(): void {  
+  ngOnInit(): void {
     this.pageTitle = [{ label: "Vos infos", path: "/", active: true }];
   }
 
@@ -209,6 +210,37 @@ export class CompteComponent implements OnInit {
     } else {
       this.showWarning("Merci de remplir les champs");
     }
+  }
+
+  submitNewPassword(passwordForm: UntypedFormGroup) {
+    if (!passwordForm.valid) {
+      this.showWarning("Merci de remplir les champs manquants correctement");
+
+      return;
+    }
+    const { password, confirmPassword } = passwordForm.value;
+    if (password !== confirmPassword) {
+      this.showWarning(
+        "Le mot de passe et la confirmation ne sont pas identiques"
+      );
+      return;
+    }
+
+    this.loading = true;
+
+    this.authenticationService.sendPassword(passwordForm.value).subscribe({
+      next: () => {
+        this.loading = false;
+        this.showSuccess("Mot de passe modifié avec succès");
+      },
+      error: (error: any) => {
+        console.log("Error: ", error);
+        this.loading = false;
+        
+        const message = error?.error?.message || "Modification échouée";
+        this.showError(message);
+      },
+    });
   }
 
   showSuccess(message: string) {
