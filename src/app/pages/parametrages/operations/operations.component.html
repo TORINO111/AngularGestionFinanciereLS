@@ -12,8 +12,10 @@
     <!-- Boutons et filtres -->
     <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
 
-      <!-- Bouton Nouvelle Écriture -->
+      <!-- Bouton Nouvelle Opération -->
+      @if (!isAdminNumexis && !isAdminEntreprise) {
       <button class="btn btn-success" (click)="openModal()">Nouvelle Opération</button>
+      }
 
       <!-- Barre de recherche + filtres -->
       <div class="d-flex gap-2 ms-auto">
@@ -21,6 +23,14 @@
         <!-- Recherche par libellé -->
         <input #searchInput class="p-2" placeholder="Rechercher par libellé" [(ngModel)]="searchTerm"
           (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+
+        <!-- Filtre par societe -->
+        @if (isAdminNumexis) {
+        <ng-select class="mt-1" [items]="societes" placeholder="Filtrer par société" bindLabel="nom" bindValue="id"
+          [(ngModel)]="selectedSocieteId" (ngModelChange)="onFilterChange()">
+          <ng-template ng-notfound-tmp>Aucune société disponible</ng-template>
+        </ng-select>
+        }
 
         <!-- Filtre par journal -->
         <ng-select class="mt-1" [items]="filteredJournaux" placeholder="Filtrer par journal" bindLabel="libelle"
@@ -226,11 +236,9 @@
         <div class="col-md-4">
           <label>Quantité</label>
           <div class="input-group">
-            <input type="text" class="form-control" formControlName="quantite"
-              [placeholder]="selectedArticle?.quantite != null
+            <input type="text" class="form-control" formControlName="quantite" [placeholder]="selectedArticle?.quantite != null
               ? selectedArticle.quantite + (operationForm.get('mouvement')?.value === 'ACHAT' ? ' en stock' : ' disponible')
-              : 'Quantité'"
-              (keypress)="controleForm.allowNumbersOnly($event)">
+              : 'Quantité'" (keypress)="controleForm.allowNumbersOnly($event)">
             <span class="input-group-text">pc(s)</span>
           </div>
           <div *ngIf="operationForm.get('quantite')?.hasError('quantiteMax')" class="text-danger mt-1">
@@ -269,7 +277,7 @@
         </div>
 
         <!-- Montant TTC (readonly) -->
-        <div class="col-md-4" >
+        <div class="col-md-4">
           <label>Montant TTC</label>
           <div class="input-group">
             <input type="number" class="form-control" formControlName="montantTtc" placeholder="Montant TTC" readonly>

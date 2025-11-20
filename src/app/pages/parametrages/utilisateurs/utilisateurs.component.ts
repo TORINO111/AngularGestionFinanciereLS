@@ -192,7 +192,8 @@ export class UtilisateursComponent implements OnInit {
       return;
     }
 
-    const utilisateur = this.utilisateurForm.value;
+    const utilisateur = this.utilisateurForm.getRawValue();
+    console.log("Utilisateur à enregistrer/modifier :", utilisateur);
     const action$ = utilisateur?.id
       ? this.utilisateurService.updateUtilisateur(utilisateur.id, utilisateur)
       : this.utilisateurService.addUser(utilisateur);
@@ -441,7 +442,6 @@ export class UtilisateursComponent implements OnInit {
   onRoleChangeForModal(role: any): void {
     this.selectedRoleForModal = role ? role : "";
 
-    this.utilisateurForm.get("societeId")?.disable();
     this.utilisateurForm.get("clientNumexisId")?.disable();
     this.utilisateurForm.get("bailleurId")?.disable();
     this.utilisateurForm.get("societeId")?.patchValue(null);
@@ -455,10 +455,7 @@ export class UtilisateursComponent implements OnInit {
           // L'utilisateur ne peut créer que des users liés à SA société si il est ENTREPRISE_ADMIN
           if(this.roleUser === "ENTREPRISE_ADMIN") {
             this.utilisateurForm.get("societeId")?.patchValue(this.userBi.societeId);
-            this.utilisateurForm.get("societeId")?.disable(); 
-          } else {
-            this.utilisateurForm.get("societeId")?.enable();
-          }
+          } 
         break;
       case "CLIENT_COMPTABLE":
       case "CLIENT_ADMIN":

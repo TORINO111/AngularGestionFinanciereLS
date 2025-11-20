@@ -41,7 +41,8 @@ export class NatureOperationService {
     codeJournalId?: number,
     categorieId?: number,
     tiersId?: number,
-    libelle?: string
+    libelle?: string,
+    societeId?: number
   ): Observable<any> {
     let params = new HttpParams()
       .set('page', page)
@@ -51,6 +52,7 @@ export class NatureOperationService {
     if (categorieId) params = params.set('categorieId', categorieId.toString());
     if (tiersId) params = params.set('tiersId', tiersId.toString());
     if (libelle) params = params.set('libelle', libelle);
+    if (societeId) params = params.set('societeId', societeId.toString());
 
     return this.http.get<any>(`${this.baseUrl}/by-filters`, { params });
   }
