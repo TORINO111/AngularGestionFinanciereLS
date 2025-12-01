@@ -120,7 +120,7 @@
       <tbody *ngIf="!isLoading && lignes.length === 0">
         <tr>
           <td colspan="8" class="text-center">
-            <h5>Aucun Exercice trouvé</h5>
+            <h5>Aucune opération trouvée</h5>
           </td>
         </tr>
       </tbody>
@@ -209,7 +209,7 @@
         <div class="col-md-4">
           <label>Mouvement</label>
           <ng-select [items]="mouvements" bindLabel="libelle" bindValue="id" formControlName="mouvement"
-            placeholder="Sélectionner le mouvement" (ngModelChange)="onMouvementChange()">
+            placeholder="Sélectionner le mouvement" (ngModelChange)="onMouvementChange()" [disabled]="operationForm.get('mouvement')?.disabled === true">
           </ng-select>
         </div>
 

@@ -1,0 +1,148 @@
+<app-page-title [breadcrumbItems]="pageTitle" title="Types de Journal"></app-page-title>
+
+@if (!result) {
+<div class="loader-container">
+    <div class="lds-dual-ring"></div>
+</div>
+}
+
+@if (result) {
+<div class="card">
+    <div class="card-body">
+
+        <!-- Boutons et filtres -->
+        <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
+            <!-- Bouton Nouveau -->
+            <button (click)="openModal()" type="button" class="btn btn-success">
+                Nouveau Type Journal
+            </button>
+
+            <!-- Barre de recherche -->
+            <div class="d-flex gap-2 ms-auto">
+                <input #searchInput class="p-2" placeholder="Rechercher par libellé" [(ngModel)]="searchLibelle"
+                    (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+            </div>
+        </div>
+
+        <!-- Tableau des types de journal -->
+        <table class="table table-bordered table-striped">
+            <thead class="table-custom">
+                <tr>
+                    <th style="width:120px;">
+                        <h5>Code</h5>
+                    </th>
+                    <th>
+                        <h5>Libellé</h5>
+                    </th>
+                    <th style="width:120px;">
+                        <h5>Actions</h5>
+                    </th>
+                </tr>
+            </thead>
+
+            <!-- Cas où les données existent -->
+            <tbody *ngIf="!isLoading && typeJournals.length > 0">
+                <tr *ngFor="let tj of typeJournals; let i = index">
+                    <td>{{ tj.code }}</td>
+                    <td>{{ tj.libelle }}</td>
+                    <td>
+                        <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3"
+                            (click)="editTypeJournal(i)"></span>
+                        <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x"
+                            (click)="deleteTypeJournal(tj.id)"></span>
+                    </td>
+                </tr>
+            </tbody>
+
+            <!-- Cas où aucune donnée n'existe -->
+            <tbody *ngIf="!isLoading && typeJournals.length === 0">
+                <tr>
+                    <td colspan="3" class="text-center">
+                        <h5>Aucune donnée trouvée</h5>
+                    </td>
+                </tr>
+            </tbody>
+
+            <!-- Loader -->
+            <tbody *ngIf="isLoading">
+                <tr>
+                    <td colspan="3" class="text-center">
+                        <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <nav aria-label="Pagination">
+            <ul class="pagination mt-3">
+
+                <!-- Bouton Précédent -->
+                <li class="page-item" [class.disabled]="currentPage === 0">
+                    <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)"
+                        [ngStyle]="{'background-color': currentPage === 0 ? '#ccc' : 'transparent'}">Précédent</a>
+                </li>
+
+                <!-- Pages dynamiques -->
+                <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
+                    <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)"
+                        [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">
+                        {{ page + 1 }}
+                        <span *ngIf="page === currentPage" class="visually-hidden">(current)</span>
+                    </a>
+                </li>
+
+                <!-- Bouton Suivant -->
+                <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
+                    <a class="page-link" href="javascript:void(0)"
+                        [ngStyle]="{'background-color': currentPage >= totalPages() - 1 ? '#ccc' : 'transparent'}"
+                        (click)="goToPage(currentPage + 1)">Suivant</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+}
+
+<!-- MODAL CREATION / MODIFICATION -->
+<ng-template #typeJournalModal>
+    <div class="modal-header text-white" style="background-color: #37a6de;">
+        <h4 class="modal-title" style="color: white;">{{ selectedIndex !== null ? 'Modifier Type Journal' : 'Nouveau Type Journal' }}</h4>
+    </div>
+
+    <!-- Champs Formulaire -->
+    <div class="modal-body">
+        <form [formGroup]="typeJournalForm" class="p-2">
+            <input type="hidden" formControlName="id">
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <!-- Code -->
+                    <label>Code</label>
+                    <input type="text" class="form-control" formControlName="code" placeholder="Code">
+                    <div *ngIf="typeJournalForm.get('code')?.hasError('required') && typeJournalForm.get('code')?.touched"
+                        class="text-danger">Champ obligatoire !</div>
+                    <div *ngIf="typeJournalForm.get('code')?.hasError('maxlength') && typeJournalForm.get('code')?.touched"
+                        class="text-danger">Maximum 50 caractères !</div>
+                </div>
+
+                <div class="col-md-6">
+                    <!-- Libellé -->
+                    <label>Libellé</label>
+                    <input type="text" class="form-control" formControlName="libelle" placeholder="Libellé">
+                    <div *ngIf="typeJournalForm.get('libelle')?.hasError('required') && typeJournalForm.get('libelle')?.touched"
+                        class="text-danger">Champ obligatoire !</div>
+                    <div *ngIf="typeJournalForm.get('libelle')?.hasError('maxlength') && typeJournalForm.get('libelle')?.touched"
+                        class="text-danger">Maximum 100 caractères !</div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
+        <button type="button" class="btn btn-success" (click)="enregistrer()">Enregistrer</button>
+    </div>
+</ng-template>

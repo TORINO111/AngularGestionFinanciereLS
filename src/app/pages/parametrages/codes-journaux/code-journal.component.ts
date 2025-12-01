@@ -227,7 +227,7 @@ export class CodeJournalComponent implements OnInit {
         this.modalService.dismissAll();
       },
       error: err => {
-        this.notification.showError(err);
+        this.notification.showError(err.error?.message || 'Erreur lors de l\'enregistrement');
         this.isLoading = false;
         this.result = true;
       }

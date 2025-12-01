@@ -15,12 +15,13 @@
     <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
       <div class="d-flex">
         <div>
-          <button class="btn btn-success" (click)="openModal()" >Nouveau
+          <button class="btn btn-success" (click)="openModal()">Nouveau
             Compte</button>
         </div>
 
         <div>
-          <button class="btn btn-success" style="margin-left: 10px;" (click)="openScrollableModal(importExcelModal)" >Importer</button>
+          <button class="btn btn-success" style="margin-left: 10px;"
+            (click)="openScrollableModal(importExcelModal)">Importer</button>
         </div>
       </div>
 
@@ -41,7 +42,7 @@
     </div>
 
     <!-- Tableau des comptes -->
-    <table class="table table-bordered table-striped">  
+    <table class="table table-bordered table-striped">
       <thead class="table-custom">
         <tr>
           <th>
@@ -170,8 +171,7 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
-    <button type="button" class="btn btn-success"
-      (click)="saveCompte()">Enregistrer</button>
+    <button type="button" class="btn btn-success" (click)="saveCompte()">Enregistrer</button>
   </div>
 </ng-template>
 
@@ -211,4 +211,5 @@
       </div>
     </form>
   </div>
+
 </ng-template>

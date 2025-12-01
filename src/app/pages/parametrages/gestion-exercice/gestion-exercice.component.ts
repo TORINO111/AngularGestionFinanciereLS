@@ -1,10 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { AuthenticationService } from 'src/app/core/service/auth.service';
 import { ExerciceComptableService } from 'src/app/services/exercices-comptables/exercice-comptable.service';
 import { SocieteSelectionService } from 'src/app/services/societe-selection/societe-selection.service';
 import { ExerciceComptable } from '../../../models/exercice-comptable.model';
 import { BreadcrumbItem } from '../../../shared/page-title/page-title/page-title.model';
+import { NotificationService } from 'src/app/services/notifications/notifications-service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import Swal from 'sweetalert2';
 
 @Component({
     selector: 'app-gestion-exercice',
@@ -13,7 +16,7 @@ import { BreadcrumbItem } from '../../../shared/page-title/page-title/page-title
     standalone: false
 })
 export class GestionExerciceComponent implements OnInit {
-
+  @ViewChild("modalContent", { static: true }) modalContent!: TemplateRef<any>;
   exercices: ExerciceComptable[] = [];
   societeId!: number;
   nouvelleAnnee: number = new Date().getFullYear();
@@ -22,49 +25,66 @@ export class GestionExerciceComponent implements OnInit {
   loading = false;
   pageTitle: BreadcrumbItem[] = [];
   result=false;
-  formVisible=false;
+  user: any;
+  selectedExercice: ExerciceComptable | null = null;
 
 
   constructor(
     private exerciceService: ExerciceComptableService,
     private societeSelectionService: SocieteSelectionService,
-    private fb: UntypedFormBuilder
+    private fb: UntypedFormBuilder,
+    private notif: NotificationService,
+    private modalService: NgbModal,
   ) {
     this.exerciceForm = this.fb.group({
+      id: [null],
       annee: [this.nouvelleAnnee, [Validators.required, Validators.min(2024)]],
       dateOuverture: [null, Validators.required],
       dateCloture: [null, Validators.required],
-      commentaire: ['']
+      userId: [null]
     });
   }
 
   ngOnInit(): void {
     this.pageTitle = [{ label: 'Vos exercices', path: '/', active: true }];
-    
-    this.societeSelectionService.selectedSociete$.subscribe(societe => {
-      
-      this.exercices =[];
-      if (societe) {
-        this.societeId=societe.id?? 0;
-        this.loadExercices();
-      }else{
-        this.result=true;
-        this.exercices =[];
-      }
-      
-    });
+    const userJson = sessionStorage.getItem('currentUser');
+    const societeJson = sessionStorage.getItem('societeActive');
+
+    this.societeId = societeJson ? JSON.parse(societeJson).id : null;
+    this.user = userJson ? JSON.parse(userJson) : null;
+
+    if (this.user && this.societeId) {
+      this.exerciceForm.patchValue({ userId: this.user.id });
+      this.exerciceForm.patchValue({ societeId: this.societeId });
+      this.loadExercices();
+    }
     
   }
 
-  nouvelExercice(){
-    this.formVisible=true;
+  openModal(exercice?: ExerciceComptable): void {
+    this.selectedExercice = exercice || null;
+    this.exerciceForm.reset();
+    if (exercice) {
+      this.exerciceForm.patchValue(exercice);
+      this.exerciceForm.patchValue({ id: exercice.id });
+    }
+    this.exerciceForm.patchValue({ userId: this.user.id });
+    this.exerciceForm.patchValue({ societeId: this.societeId });
+    this.modalService.open(this.modalContent, { centered: true });
+  }
+
+  closeModal(): void {
+    this.modalService.dismissAll();
   }
 
   loadExercices(): void {
     this.exerciceService.findAllBySociete(this.societeId).subscribe({
       next: (data) => {
         //console.log(data)
-        this.exercices = data;
+       this.exercices = Array.isArray(data.content) ? data.content : [];
+      console.log('exercices = ', this.exercices);
+
+
         this.exerciceEnCours = this.exercices.some(ex => !ex.cloture);
         this.result=true;
       } ,
@@ -75,34 +95,55 @@ export class GestionExerciceComponent implements OnInit {
     });
   }
 
-  creerExercice(): void {
-    if (this.exerciceForm.invalid) return;
-
-    if (this.exerciceEnCours) {
-      alert("Un exercice est déjà ouvert.");
+  enregistrer(): void {
+    if (this.exerciceForm.invalid) {
+      this.notif.showWarning("Formulaire invalide");
       return;
     }
 
-    const societeId = this.societeId;
-    const exercice = {
-      ...this.exerciceForm.value,
-      societeId
-    };
+    const exerciceData = this.exerciceForm.value;
+    const action$ = exerciceData.id
+      ? this.exerciceService.update(exerciceData.id, exerciceData)
+      : this.exerciceService.creerExercice({...exerciceData, societeId: this.societeId, userId: this.user.id});
 
-    // console.log(exercice);
-    // return;
-    this.loading = true;
-    this.exerciceService.creerExercice(exercice).subscribe({
+    action$.subscribe({
       next: () => {
-        this.loading = false;
-        this.exerciceForm.reset({ annee: new Date().getFullYear() });
+        const msg = exerciceData.id ? "Modifié" : "Enregistré";
+        this.notif.showSuccess(`Exercice ${msg} avec succès`);
         this.loadExercices();
-        alert('Exercice ouvert avec succès !');
-        this.formVisible=false;
+        this.closeModal();
       },
-      error: err => {
-        this.loading = false;
-        alert('Erreur : ' + (err.error?.message || 'Erreur inconnue'));
+      error: (err) => {
+        this.notif.showError(
+          err.error.message || "Une erreur est survenue"
+        );
+      },
+    });
+  }
+
+  deleteExercice(exercice: ExerciceComptable): void {
+    Swal.fire({
+      title: "Supprimer l'exercice",
+      text: `Êtes-vous sûr de vouloir supprimer l'exercice de l'année ${exercice.annee} ?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Oui, supprimer !",
+      cancelButtonText: "Annuler",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.exerciceService.delete(exercice.id).subscribe({
+          next: () => {
+            this.notif.showSuccess("Exercice supprimé avec succès");
+            this.loadExercices();
+          },
+          error: (err) => {
+            this.notif.showError(
+              err.error.message || "Une erreur est survenue"
+            );
+          },
+        });
       }
     });
   }
@@ -112,13 +153,11 @@ export class GestionExerciceComponent implements OnInit {
 
     this.exerciceService.cloturerExercice(exercice.id!).subscribe({
       next: () => {
-        alert('Exercice clôturé.');
+        this.notif.showSuccess('Exercice clôturé !');
         this.loadExercices();
       },
-      error: err => alert('Erreur lors de la clôture.')
+      error: err => this.notif.showError('Erreur lors de la clôture.')
     });
   }
-
-  
 
 }

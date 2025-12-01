@@ -14,7 +14,7 @@
     <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
 
       <div class="d-flex">
-        <button class="btn btn-success" (click)="openModal()">Nouveau
+        <button *ngIf="!isUserEntreprise" class="btn btn-success" (click)="openModal()">Nouveau
           Tiers</button>
       </div>
 
@@ -58,8 +58,8 @@
           <td>{{ tiers.telephoneTiers }}</td>
           <td>{{ tiers.type }}</td>
           <td>
-            <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="editTiers(i)"></span>
-            <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x" (click)="deleteTiersConfirm(i)"></span>
+            <span *ngIf="!isUserEntreprise" style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="editTiers(i)"></span>
+            <span *ngIf="!isUserEntreprise" style="color:red;cursor:pointer" class="fa fa-trash fa-2x" (click)="deleteTiersConfirm(i)"></span>
           </td>
         </tr>
       </tbody>

@@ -25,6 +25,14 @@ export class ExerciceComptableService {
     return this.http.post<ExerciceComptable>(`${environment.apiUrl}/api/exercice`, exercice);
   }
 
+  update(id: number, exercice: ExerciceComptable): Observable<ExerciceComptable> {
+    return this.http.put<ExerciceComptable>(`${this.baseUrlExercice}/${id}`, exercice);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrlExercice}/${id}`);
+  }
+
   getById(id: number): Observable<ExerciceComptable> {
     return this.http.get<ExerciceComptable>(`${environment.apiUrl}/api/exercice/${id}`);
   }
@@ -34,11 +42,11 @@ export class ExerciceComptableService {
   }
 
   cloturerExercice(id: number): Observable<ExerciceComptable> {
-    return this.http.put<ExerciceComptable>(`${environment.apiUrl}/cloturer/${id}`, {});
+    return this.http.put<ExerciceComptable>(`${environment.apiUrl}/api/exercice/cloturer/${id}`, {});
   }
 
-  findAllBySociete(societeId: number): Observable<ExerciceComptable[]> {
-    return this.http.get<ExerciceComptable[]>(`${environment.apiUrl}/api/exercices/societe/${societeId}`);
+  findAllBySociete(societeId: number): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/api/exercice/societe/${societeId}/pageable`);
   }
 
   getExerciceEnCoursBySociete(societeId: number): Observable<ExerciceComptable> {

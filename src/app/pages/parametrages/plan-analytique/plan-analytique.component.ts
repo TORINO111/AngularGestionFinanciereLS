@@ -49,7 +49,7 @@ export class PlanAnalytiqueComponent implements OnInit {
 
   searchLibelle: string = '';
   totalElements: number = 0;
-  pageSize: number = 1;
+  pageSize: number = 5;
   currentPage: number = 0;
   private search$ = new Subject<{ libelle: string }>();
 

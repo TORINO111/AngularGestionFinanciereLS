@@ -24,6 +24,9 @@
             <div class="d-flex gap-2 ms-auto">
                 <input #searchLibelleChamp class="p-2" placeholder="Rechercher par intitulé" [(ngModel)]="searchLibelle"
                     (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+                <ng-select [items]="plans" bindLabel="intitule" bindValue="id" [(ngModel)]="searchPlanId"
+                    (change)="onFilterChange()" placeholder="Filtrer par plan" [clearable]="true">
+                </ng-select>
             </div>
 
         </div>
@@ -123,8 +126,9 @@
 <ng-template #modalContent>
 
     <div class="modal-header text-white" style="background-color: #37a6de;">
-        <h4 class="modal-title" style="color: white;">{{ selectedIndex !== null ? 'Modifier Section' : 'Nouvelle
-            Section' }}</h4>
+        <h4 class="modal-title" style="color: white;">
+            {{ selectedIndex !== null ? 'Modifier Section' : 'Nouvelle Section' }}
+        </h4>
     </div>
 
     <div class="modal-body">
@@ -134,10 +138,14 @@
                 <input formControlName="libelle" class="form-control">
                 <div *ngIf="sectionForm.get('libelle')?.invalid && sectionForm.get('libelle')?.touched"
                     class="text-danger">
-                    <span *ngIf="sectionForm.get('libelle')?.hasError('required')">Libellé obligatoire</span>
-                    <span *ngIf="sectionForm.get('libelle')?.hasError('pattern')">Uniquement des lettres et
-                        espaces</span>
+                    <span *ngIf="sectionForm.get('libelle')?.hasError('required')">
+                        Libellé obligatoire
+                    </span>
+                    <span *ngIf="sectionForm.get('libelle')?.hasError('pattern')">
+                        Caractères non autorisés
+                    </span>
                 </div>
+
             </div>
             <div class="mb-3 col-md-12">
                 <label>Plan Analytique</label>

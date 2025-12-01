@@ -36,12 +36,14 @@ export class SectionAnalytiqueService {
     page: number = 0,
     size: number = 20,
     searchLibelle?: string,
+    planId?: number,
   ): Observable<any> {
     let params = new HttpParams()
       .set('page', page)
       .set('size', size);
 
     if (searchLibelle) params = params.set('searchLibelle', searchLibelle);
+    if (planId) params = params.set('planId', planId);
 
     return this._http.get<Observable<any>>(`${this.baseUrlSectionAnalytique}/pageable`, {
       headers: new HttpHeaders().set('Content-Type', 'application/json'),

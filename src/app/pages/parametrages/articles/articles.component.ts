@@ -15,6 +15,7 @@ import { CompteComptableDTO } from 'src/app/models/compte-comptable';
 import { TypeCategorie } from 'src/app/models/type-categorie.model';
 import { TypeMouvement } from 'src/app/models/type-mouvement.model';
 import { ControlesFormulairesService } from 'src/app/services/composite/controles-formulaires/controles-formulaires.service';
+import { AuthenticationService } from 'src/app/core/service/auth.service'; // Added import
 
 @Component({
   selector: 'app-articles-component',
@@ -55,6 +56,8 @@ export class ArticlesComponent implements OnInit {
   userBi: any;
   pageTitle: { label: string; path: string; active: boolean; }[];
 
+  isUserEntreprise: boolean = false; // Added property
+
   constructor(
     private articleService: ArticlesService,
     private societeService: SocieteService,
@@ -63,7 +66,8 @@ export class ArticlesComponent implements OnInit {
     private compteComptableService: CompteComptableService,
     private modalService: NgbModal,
     private typeCategorieService: TypeCategorieService,
-    public controleForm: ControlesFormulairesService
+    public controleForm: ControlesFormulairesService,
+    private authService: AuthenticationService // Added injection
   ) {
     this.articleForm = this.fb.group({
       id: [''],
@@ -85,6 +89,7 @@ export class ArticlesComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.isUserEntreprise = this.authService.isEntrepriseUser(); // Set property here
     this.pageTitle = [{ label: 'Vos articles', path: '/', active: true }];
 
     const societeActiveStr = localStorage.getItem("societeActive");

@@ -92,7 +92,7 @@ const MENU_ITEMS: MenuItem[] = [
         roles: ['SUPERVISEUR','COMPTABLE']
     },
     
-    { key: 'parametrages', label: 'PARAMETRAGES', isTitle: true , roles: ['ADMIN','SUPERVISEUR','COMPTABLE', 'CLIENT_ADMIN', 'CLIENT_AGENT', 'ENTREPRISE_ADMIN', 'ENTREPRISE_USER', 'BAILLEUR']},
+    { key: 'parametrages', label: 'PARAMETRAGES', isTitle: true , roles: ['ADMIN','SUPERVISEUR','COMPTABLE', 'CLIENT_ADMIN', 'CLIENT_AGENT', 'ENTREPRISE_ADMIN', 'BAILLEUR']},
     
     {
         key: 'dashboard',
@@ -140,7 +140,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/comptes-comptables',
         icon: 'package',
         isTitle: false,
-        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
+        roles: ['ENTREPRISE_ADMIN']
     },
     {
         key: 'plancomptable',
@@ -148,7 +148,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/plan-comptable',
         icon: 'package',
         isTitle: false,
-        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
+        roles: ['ENTREPRISE_ADMIN']
     },
     {
         key: 'sectionnalytique',
@@ -156,7 +156,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/sections-analytiques',
         icon: 'package',
         isTitle: false,
-        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
+        roles: ['ENTREPRISE_ADMIN']
     },
     {
         key: 'plananalytique',
@@ -164,7 +164,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/plan-analytique',
         icon: 'package',
         isTitle: false,
-        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
+        roles: ['ENTREPRISE_ADMIN']
     },
     // {
     //     key: 'cabinets',
@@ -180,7 +180,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/categories',
         icon: 'package',
         isTitle: false,
-        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
+        roles: ['ENTREPRISE_ADMIN']
     },
     {
         key: 'journaux',
@@ -188,7 +188,15 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/journaux',
         icon: 'package',
         isTitle: false,
-        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
+        roles: ['ENTREPRISE_ADMIN']
+    },
+    {
+        key: 'type-journal',
+        label: 'Types Journaux',
+        link: '/parametrages/type-journal',
+        icon: 'package',
+        isTitle: false,
+        roles: ['ENTREPRISE_ADMIN']
     },
     {
         key: 'tiers',
@@ -196,7 +204,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/tiers',
         icon: 'package',
         isTitle: false,
-        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
+        roles: ['ENTREPRISE_ADMIN',]
     },
     {
         key: 'bailleurs',
@@ -228,7 +236,7 @@ const MENU_ITEMS: MenuItem[] = [
         link: '/parametrages/articles',
         icon: 'package',
         isTitle: false,
-        roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
+        roles: ['ENTREPRISE_ADMIN',]
     },
     {
         key: 'utilisateurs',
@@ -237,6 +245,14 @@ const MENU_ITEMS: MenuItem[] = [
         icon: 'users',
         isTitle: false,
         roles: ['ADMIN','ENTREPRISE_ADMIN']
+    },
+    {
+        key: 'exercices',
+        label: 'Exercices Comptables',
+        link: '/parametrages/exercice-comptable',
+        icon: 'users',
+        isTitle: false,
+        roles: ['ENTREPRISE_ADMIN']
     },
     {
         key: 'moncompte',

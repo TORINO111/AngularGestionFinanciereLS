@@ -243,6 +243,10 @@ export class CategorieComponent implements OnInit {
   openModal(): void {
     this.selectedIndex = null;
     this.resetForm();
+    this.categorieForm.patchValue({
+      societeId: this.societeBi.id,
+      userId: this.userBi.id,
+    });
     this.modalService.open(this.categorieModal, { size: 'lg', centered: true });
 
   }

@@ -15,36 +15,13 @@
             Veuillez sélectionner une société pour afficher les exercices.
           </div>
         }
-        @if (!formVisible) {
-          <button (click)="nouvelExercice()"  class="btn btn-success mt-1">
+        @if (societeId) {
+          <button (click)="openModal()"  class="btn btn-success mt-1">
             NOUVEAU
           </button>
         }
-        @if (formVisible) {
-          <form [formGroup]="exerciceForm" (ngSubmit)="creerExercice()" class="border p-3 rounded mb-4 bg-light">
-            <div class="row">
-              <div class="form-group col-md-2">
-                <label>Année</label>
-                <input type="number" class="form-control" formControlName="annee" />
-              </div>
-              <div class="form-group col-md-3">
-                <label>Date début</label>
-                <input type="date" class="form-control" formControlName="dateOuverture" />
-              </div>
-              <div class="form-group col-md-3">
-                <label>Date fin</label>
-                <input type="date" class="form-control" formControlName="dateCloture" />
-              </div>
-            </div>
-            @if (!exerciceEnCours) {
-              <button type="submit" class="btn btn-success mt-1" [disabled]="loading || exerciceForm.invalid">
-                {{ loading ? 'Ouverture...' : 'Ouvrir exercice' }}
-              </button>
-            }
-          </form>
-        }
-        <table class="table table-bordered table-striped">
-          <thead class="thead-dark">
+        <table class="table table-bordered table-striped mt-3">
+          <thead class="table-custom">
             <tr>
               <th>Année</th>
               <th>Ouverture</th>
@@ -67,9 +44,11 @@
                     {{ !exercice.cloture ? 'Ouvert' : 'Clôturé' }}
                   </span>
                 </td>
-                <td>{{ exercice.createdDate | date: 'shortDate' }}</td>
+                <td>{{ exercice.creationDate | date: 'shortDate' }}</td>
                 <td>
                   @if (!exercice.cloture) {
+                    <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="openModal(exercice)"></span>
+                    <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x me-3" (click)="deleteExercice(exercice)"></span>
                     <button class="btn btn-danger btn-sm" (click)="cloturerExercice(exercice)">
                       Clôturer
                     </button>
@@ -88,3 +67,37 @@
     </div>
   </div>
 }
+
+<ng-template #modalContent>
+  <div class="modal-header text-white" style="background-color: #37a6de;">
+    <h4 class="modal-title text-white">
+      {{ selectedExercice ? "Modifier Exercice" : "Nouveau Exercice" }}
+    </h4>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="exerciceForm">
+      <div class="row">
+        <div class="form-group col-md-4">
+          <label>Année</label>
+          <input type="number" class="form-control" formControlName="annee" />
+        </div>
+        <div class="form-group col-md-4">
+          <label>Date début</label>
+          <input type="date" class="form-control" formControlName="dateOuverture" />
+        </div>
+        <div class="form-group col-md-4">
+          <label>Date fin</label>
+          <input type="date" class="form-control" formControlName="dateCloture" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeModal()">
+      Fermer
+    </button>
+    <button type="button" class="btn btn-success" (click)="enregistrer()">
+      Enregistrer
+    </button>
+  </div>
+</ng-template>

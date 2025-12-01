@@ -13,7 +13,7 @@
         <!-- Boutons -->
         <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
             <div class="d-flex">
-                <button class="btn btn-success" (click)="openModal()">Nouvel Article</button>
+                <button *ngIf="!isUserEntreprise" class="btn btn-success" (click)="openModal()">Nouvel Article</button>
             </div>
 
             <div class="d-flex gap-2 ms-auto" >
@@ -40,9 +40,9 @@
                     <td>{{ article.prixUnitaire | number:'1.2-2' }}</td>
                     <td>{{ article.quantite }}</td>
                     <td>
-                        <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3"
+                        <span *ngIf="!isUserEntreprise" style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3"
                             (click)="editArticle(i)"></span>
-                        <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x"
+                        <span *ngIf="!isUserEntreprise" style="color:red;cursor:pointer" class="fa fa-trash fa-2x"
                             (click)="deleteArticle(lignes[i])"></span>
                     </td>
                 </tr>

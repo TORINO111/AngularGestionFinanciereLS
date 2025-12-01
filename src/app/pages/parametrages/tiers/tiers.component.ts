@@ -12,6 +12,7 @@ import { NotificationService } from 'src/app/services/notifications/notification
 import { debounceTime, finalize, Subject, switchMap, tap } from 'rxjs';
 import { CompteComptableService } from 'src/app/services/comptes-comptables/comptes-comptables.service';
 import { CompteComptableDTO } from 'src/app/models/compte-comptable';
+import { AuthenticationService } from 'src/app/core/service/auth.service'; // Added import
 
 export interface TiersImportDTO {
   ligne: number;
@@ -77,6 +78,8 @@ export class TiersComponent implements OnInit {
   typesCategorie: { id: any; libelle: any; }[];
   userBi: any;
 
+  isUserEntreprise: boolean = false; // Added property
+
   constructor(
     private tiersService: TiersService,
     private societeService: SocieteService,
@@ -84,7 +87,8 @@ export class TiersComponent implements OnInit {
     private fb: UntypedFormBuilder,
     private compteComptableService: CompteComptableService,
     private modalService: NgbModal,
-    private typeCategorieService: TypeCategorieService
+    private typeCategorieService: TypeCategorieService,
+    private authService: AuthenticationService // Added injection
   ) {
     this.tiersForm = this.fb.group({
       id: [''],
@@ -105,6 +109,7 @@ export class TiersComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.isUserEntreprise = this.authService.isEntrepriseUser(); // Set property here
     this.pageTitle = [{ label: 'Vos tiers', path: '/', active: true }];
 
     const societeActiveStr = localStorage.getItem("societeActive");
@@ -279,7 +284,7 @@ export class TiersComponent implements OnInit {
           this.formVisible = false;
         },
         error: (err) => {
-          this.notification.showError(err);
+          this.notification.showError(err.error?.message || 'Erreur lors de l\'enregistrement');
         }
       });
   }

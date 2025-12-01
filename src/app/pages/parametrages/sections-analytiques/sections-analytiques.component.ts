@@ -1,26 +1,43 @@
-import { SectionAnalytiqueDTO, SectionAnalytiqueRequest } from 'src/app/models/section-analytique.model';
-import { NotificationService } from 'src/app/services/notifications/notifications-service';
-import { Component, OnInit, ViewChild, TemplateRef, ElementRef } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { SectionAnalytiqueService } from 'src/app/services/section-analytique/section-analytique.service';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import Swal from 'sweetalert2';
-import { BreadcrumbItem } from 'src/app/shared/page-title/page-title/page-title.model';
-import { PlansAnalytiquesService } from 'src/app/services/plans-analytiques/plans-analytiques.service';
-import { PlanAnalytique, PlanAnalytiqueDTO } from 'src/app/models/plan-analytique.model';
-import { debounceTime, Subject, switchMap, tap } from 'rxjs';
+import {
+  SectionAnalytiqueDTO,
+  SectionAnalytiqueRequest,
+} from "src/app/models/section-analytique.model";
+import { NotificationService } from "src/app/services/notifications/notifications-service";
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  TemplateRef,
+  ElementRef,
+} from "@angular/core";
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from "@angular/forms";
+import { SectionAnalytiqueService } from "src/app/services/section-analytique/section-analytique.service";
+import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
+import Swal from "sweetalert2";
+import { BreadcrumbItem } from "src/app/shared/page-title/page-title/page-title.model";
+import { PlansAnalytiquesService } from "src/app/services/plans-analytiques/plans-analytiques.service";
+import {
+  PlanAnalytique,
+  PlanAnalytiqueDTO,
+} from "src/app/models/plan-analytique.model";
+import { debounceTime, Subject, switchMap, tap } from "rxjs";
+import { ControlesFormulairesService } from "src/app/services/composite/controles-formulaires/controles-formulaires.service";
 
 @Component({
-  selector: 'app-sections-analytiques.component',
-  templateUrl: './sections-analytiques.component.html',
-  styleUrl: './sections-analytiques.component.scss',
-  standalone: false
+  selector: "app-sections-analytiques.component",
+  templateUrl: "./sections-analytiques.component.html",
+  styleUrl: "./sections-analytiques.component.scss",
+  standalone: false,
 })
 export class SectionsAnalytiquesComponent implements OnInit {
+  @ViewChild("modalContent") modalContent!: TemplateRef<any>;
 
-  @ViewChild('modalContent') modalContent!: TemplateRef<any>;
-
-  @ViewChild('searchLibelleChamp', { static: true }) searchLibelleChamp!: ElementRef<HTMLInputElement>;
+  @ViewChild("searchLibelleChamp", { static: true })
+  searchLibelleChamp!: ElementRef<HTMLInputElement>;
 
   sections: SectionAnalytiqueDTO[] = [];
   sectionForm!: UntypedFormGroup;
@@ -28,14 +45,15 @@ export class SectionsAnalytiquesComponent implements OnInit {
   plans: any[] = [];
   selectedIndex: number | null = null;
   formVisible = false;
-  closeResult = '';
+  closeResult = "";
   pageTitle: BreadcrumbItem[] = [];
 
   totalElements: number = 0;
   pageSize: number = 10;
   currentPage: number = 0;
-  private search$ = new Subject<{ libelle: string }>();
-  searchLibelle: string = '';
+  private search$ = new Subject<{ libelle: string, planId: number | undefined }>();
+  searchLibelle: string = "";
+  searchPlanId: number | undefined;
   lignes: any[] = [];
   societeBi: any;
 
@@ -43,24 +61,32 @@ export class SectionsAnalytiquesComponent implements OnInit {
   result = false;
   userBi: any;
 
-
   constructor(
     private fb: UntypedFormBuilder,
     private sectionService: SectionAnalytiqueService,
     private planAnalytiqueService: PlansAnalytiquesService,
     private notification: NotificationService,
+    public controle: ControlesFormulairesService,
     private modalService: NgbModal
   ) {
     this.sectionForm = this.fb.group({
       planAnalytiqueId: [null, Validators.required],
-      libelle: ['', [Validators.required, Validators.pattern(/^[\p{L}\p{M}\d\s\-']+$/u)]],
+      libelle: [
+        "",
+        [
+          Validators.required,
+          Validators.pattern(/^[\p{L}\p{M}\d\s\/\-'""]+$/u),
+        ],
+      ],
       societeId: [null],
       userId: [null],
     });
   }
 
   ngOnInit(): void {
-    this.pageTitle = [{ label: 'Vos sections analytiques', path: '/', active: true }];
+    this.pageTitle = [
+      { label: "Vos sections analytiques", path: "/", active: true },
+    ];
     this.chargerSectionsAnalytiques();
     this.chargerPlansAnalytiques();
     this.initSearchListener();
@@ -71,35 +97,40 @@ export class SectionsAnalytiquesComponent implements OnInit {
     if (societeActiveStr && userActive) {
       this.societeBi = JSON.parse(societeActiveStr);
       this.userBi = JSON.parse(userActive);
-    };
+    }
   }
 
   chargerPlansAnalytiques() {
-    this.planAnalytiqueService.getAllPlanAnalytique().subscribe(
-      {
-        next: (data: PlanAnalytiqueDTO[]) => {
-          this.plans = data.map(d => ({
-            id: d.id,
-            intitule: d.intitule,
-          }));
-        },
-        error: (error: any) => {
-          console.log('Erreur lors du chargement des plans analytiques', error);
-          this.notification.showError("erreur lors du chargement des plans analytiques");
-        }
-      }
-    );
+    this.planAnalytiqueService.getAllPlanAnalytique().subscribe({
+      next: (data: PlanAnalytiqueDTO[]) => {
+        this.plans = data.map((d) => ({
+          id: d.id,
+          intitule: d.intitule,
+        }));
+      },
+      error: (error: any) => {
+        console.log("Erreur lors du chargement des plans analytiques", error);
+        this.notification.showError(
+          "erreur lors du chargement des plans analytiques"
+        );
+      },
+    });
   }
 
   loadSections(): void {
     this.sectionService.getAllSectionAnalytiques().subscribe({
-      next: (data: SectionAnalytiqueDTO[]) => this.sections = data,
-      error: (err) => this.notification.showError('Erreur lors du chargement des sections')
+      next: (data: SectionAnalytiqueDTO[]) => (this.sections = data),
+      error: (err) =>
+        this.notification.showError("Erreur lors du chargement des sections"),
     });
   }
 
   openModal(): void {
     this.sectionForm.reset();
+    this.sectionForm.patchValue({
+      societeId: this.societeBi.id,
+      userId: this.userBi.id,
+    });
     this.formVisible = true;
     this.selectedIndex = null;
     this.modalService.open(this.modalContent, { centered: true });
@@ -113,7 +144,9 @@ export class SectionsAnalytiquesComponent implements OnInit {
     this.sectionForm.patchValue({
       id: section.id,
       libelle: section.libelle,
-      planAnalytiqueId: this.plans.find(p => p.intitule === section.planAnalytique)?.id || null,
+      planAnalytiqueId:
+        this.plans.find((p) => p.intitule === section.planAnalytique)?.id ||
+        null,
     });
     console.log(this.sectionForm.value);
 
@@ -122,34 +155,37 @@ export class SectionsAnalytiquesComponent implements OnInit {
   }
 
   patchForm() {
-    this.sectionForm.patchValue({ societeId: this.societeBi.id, userId: this.userBi.id });
+    this.sectionForm.patchValue({
+      societeId: this.societeBi.id,
+      userId: this.userBi.id,
+    });
   }
 
   deleteSection(index: number): void {
     const section = this.sections[index];
     Swal.fire({
-      title: 'Supprimer la section',
+      title: "Supprimer la section",
       text: `Voulez-vous vraiment supprimer ${section.libelle} ?`,
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonText: 'Supprimer',
-      cancelButtonText: 'Annuler',
-    }).then(result => {
+      confirmButtonText: "Supprimer",
+      cancelButtonText: "Annuler",
+    }).then((result) => {
       if (result.isConfirmed) {
         this.sectionService.supprimerSectionAnalytique(section.id!).subscribe({
           next: () => {
             this.sections.splice(index, 1);
-            this.notification.showSuccess('Section supprimée avec succès');
+            this.notification.showSuccess("Section supprimée avec succès");
           },
-          error: (error) => this.notification.showError(error)
+          error: (error) => this.notification.showError(error),
         });
       }
     });
   }
 
   saveSection(): void {
-    if (this.sectionForm.invalid) { 
-      this.notification.showWarning('Formulaire invalide');
+    if (this.sectionForm.invalid) {
+      this.notification.showWarning("Formulaire invalide");
       return;
     }
 
@@ -161,38 +197,50 @@ export class SectionsAnalytiquesComponent implements OnInit {
     if (this.selectedIndex !== null) {
       // Update
       const sectionId = this.sections[this.selectedIndex].id!;
-      this.sectionService.modifierSectionAnalytique(sectionId, payload as SectionAnalytiqueRequest).subscribe({
-        next: (updated) => {
-          this.sections[this.selectedIndex!] = updated;
-          this.notification.showSuccess('Section modifiée avec succès');
-          this.modalService.dismissAll();
-          this.chargerSectionsAnalytiques();
-          this.isLoading = false;
-          this.result = true;
-        },
-        error: (err) => {
-          this.isLoading = false;
-          this.result = true;
-          this.notification.showError(err)
-        }
-      });
+      this.sectionService
+        .modifierSectionAnalytique(
+          sectionId,
+          payload as SectionAnalytiqueRequest
+        )
+        .subscribe({
+          next: (updated) => {
+            this.sections[this.selectedIndex!] = updated;
+            this.notification.showSuccess("Section modifiée avec succès");
+            this.modalService.dismissAll();
+            this.chargerSectionsAnalytiques();
+            this.isLoading = false;
+            this.result = true;
+          },
+          error: (err) => {
+            this.isLoading = false;
+            this.result = true;
+            this.notification.showError(
+              err.error.message ||
+                "Erreur lors de la modification de la section"
+            );
+          },
+        });
     } else {
       // Create
-      this.sectionService.creerSectionAnalytique(payload as SectionAnalytiqueRequest).subscribe({
-        next: (created) => {
-          this.sections.push(created);
-          this.notification.showSuccess('Section créée avec succès');
-          this.modalService.dismissAll();
-          this.chargerSectionsAnalytiques();
-          this.result = true;
-          this.isLoading = false;
-        },
-        error: (err) => {
-          this.result = true;
-          this.isLoading = false;
-          this.notification.showError(err)
-        }
-      });
+      this.sectionService
+        .creerSectionAnalytique(payload as SectionAnalytiqueRequest)
+        .subscribe({
+          next: (created) => {
+            this.sections.push(created);
+            this.notification.showSuccess("Section créée avec succès");
+            this.modalService.dismissAll();
+            this.chargerSectionsAnalytiques();
+            this.result = true;
+            this.isLoading = false;
+          },
+          error: (err) => {
+            this.result = true;
+            this.isLoading = false;
+            this.notification.showError(
+              err.error.message || "Erreur lors de la création de la section"
+            );
+          },
+        });
     }
     this.closeModal();
   }
@@ -204,35 +252,35 @@ export class SectionsAnalytiquesComponent implements OnInit {
   }
 
   /**
-    * Charge la liste des sections analytiques avec pagination et filtres.
-    * @param page numéro de la page (optionnel)
-    */
+   * Charge la liste des sections analytiques avec pagination et filtres.
+   * @param page numéro de la page (optionnel)
+   */
   chargerSectionsAnalytiques(page: number = 0) {
     this.result = false;
     this.isLoading = true;
 
     this.currentPage = page;
 
-    this.sectionService.getAllPageable(
-      page,
-      this.pageSize,
-      this.searchLibelle || undefined,
-    ).subscribe({
-      next: (data) => {
-        this.sections = data.content;
-        this.lignes = [...this.sections];
-        this.totalElements = data.totalElements;
-        this.result = true;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        this.result = true;
-        this.isLoading = false;
-        console.error('Erreur lors du chargement des sections analytiques', error);
-        this.notification.showError('Erreur de chargement');
-
-      }
-    })
+    this.sectionService
+      .getAllPageable(page, this.pageSize, this.searchLibelle || undefined, this.searchPlanId)
+      .subscribe({
+        next: (data) => {
+          this.sections = data.content;
+          this.lignes = [...this.sections];
+          this.totalElements = data.totalElements;
+          this.result = true;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          this.result = true;
+          this.isLoading = false;
+          console.error(
+            "Erreur lors du chargement des sections analytiques",
+            error
+          );
+          this.notification.showError("Erreur de chargement");
+        },
+      });
   }
 
   /**
@@ -240,7 +288,9 @@ export class SectionsAnalytiquesComponent implements OnInit {
    * @returns tableau d’index de pages
    */
   pages(): number[] {
-    return Array(this.totalPages()).fill(0).map((_, i) => i);
+    return Array(this.totalPages())
+      .fill(0)
+      .map((_, i) => i);
   }
 
   /**
@@ -263,41 +313,40 @@ export class SectionsAnalytiquesComponent implements OnInit {
    * Déclenche la recherche dès que les filtres changent.
    */
   onFilterChange(): void {
-    this.search$.next({ libelle: this.searchLibelle });
+    this.search$.next({ libelle: this.searchLibelle, planId: this.searchPlanId });
   }
 
   /**
    * Initialise l’écoute des changements sur les filtres avec debounce.
    */
   private initSearchListener(): void {
-
     this.search$
       .pipe(
         debounceTime(300),
         tap(() => {
           this.isLoading = true;
         }),
-        switchMap(({ libelle }) => {
+        switchMap(({ libelle, planId }) => {
           this.currentPage = 0;
           return this.sectionService.getAllPageable(
             0,
             this.pageSize,
             libelle || undefined,
+            planId
           );
         })
       )
       .subscribe({
-        next: data => {
+        next: (data) => {
           this.lignes = data.content;
           this.totalElements = data.totalElements;
           this.currentPage = 0;
           this.isLoading = false;
         },
-        error: err => {
-          console.error('Erreur lors de la recherche', err);
+        error: (err) => {
+          console.error("Erreur lors de la recherche", err);
           this.isLoading = false;
-        }
+        },
       });
   }
-
 }

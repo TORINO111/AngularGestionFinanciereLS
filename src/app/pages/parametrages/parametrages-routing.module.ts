@@ -1,4 +1,4 @@
-import { CodeJournalModule } from './code-journal/code-journal.module';
+import { CodeJournalModule } from './codes-journaux/code-journal.module';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../../core/guards/auth.guard';
@@ -81,31 +81,31 @@ const routes: Routes = [
     path: 'plan-comptable',
     loadChildren: () => import('./plan-comptable/plan-comptable.module').then(m => m.PlanComptableModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
+    data: { roles: ['ENTREPRISE_ADMIN'] }
   },
   {
     path: 'comptes-comptables',
     loadChildren: () => import('./comptes-comptables/comptes-comptables.module').then(m => m.CompteComptableModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
+    data: { roles: ['ENTREPRISE_ADMIN'] }
   },
   {
     path: 'plan-analytique',
     loadChildren: () => import('./plan-analytique/plan-analytique.module').then(m => m.PlanAnalytiqueModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
+    data: { roles: ['ENTREPRISE_ADMIN'] }
   },
   {
     path: 'sections-analytiques',
     loadChildren: () => import('./sections-analytiques/sections-analytiques.module').then(m => m.SectionsAnalytiquesModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
+    data: { roles: ['ENTREPRISE_ADMIN'] }
   },
   {
     path: 'journaux',
-    loadChildren: () => import('./code-journal/code-journal.module').then(m => m.CodeJournalModule),
+    loadChildren: () => import('./codes-journaux/code-journal.module').then(m => m.CodeJournalModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
+    data: { roles: ['ENTREPRISE_ADMIN'] }
   },
   {
     path: 'exercice-comptable',
@@ -117,7 +117,14 @@ const routes: Routes = [
     path: 'dashboard',
     loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule),
     canActivate: [AuthGuard],
-    data: { roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT', 'BAILLEUR', 'ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
+    data: { roles: ['ADMIN', 'CLIENT_ADMIN', 'CLIENT_AGENT', 'BAILLEUR', 'ENTREPRISE_ADMIN'] }
+  },
+
+  {
+    path: 'type-journal',
+    loadChildren: () => import('./type-journal/type-journal.module').then(m => m.TypeJournalModule),
+    canActivate: [AuthGuard],
+    data: { roles: ['ENTREPRISE_ADMIN'] }
   }
 
 ];

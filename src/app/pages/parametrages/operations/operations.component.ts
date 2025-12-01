@@ -175,7 +175,7 @@ export class OperationsComponent implements OnInit {
       societeId: [null],
       userId: [null],
       exerciceId: [null],
-      typeNature: [null],
+      // typeNature: [null],
       sectionAnalytiqueId: [null],
       tiersId: [null],
       quantite: [0, Validators.required],
@@ -201,9 +201,13 @@ export class OperationsComponent implements OnInit {
         this.isAdminEntreprise = true;
       }
     }
-    if (societeActiveStr && exerciceActive) {
-      this.societeBi = JSON.parse(societeActiveStr);
+    if (exerciceActive) {
       this.exerciceBi = JSON.parse(exerciceActive);
+      console.log(this.exerciceBi, 'Exercice en cours');
+    }
+    if (societeActiveStr) {
+      this.societeBi = JSON.parse(societeActiveStr);
+      console.log(this.societeBi);
     }
     this.chargerOperationPageable();
 
@@ -270,13 +274,23 @@ export class OperationsComponent implements OnInit {
         this.filteredArticles = [...this.articles];
       }
 
+      if(journal.typeJournalLibelle == 'Recette'){
+        this.operationForm.patchValue({ mouvement: 'VENTE' });
+  this.operationForm.get('mouvement')?.disable();
+      } else if(journal.typeJournalLibelle == 'Dépense'){
+        this.operationForm.patchValue({ mouvement: this.mouvements[0].id })
+        this.operationForm.get('mouvement')?.disable();
+      } else {  
+        this.operationForm.get("mouvement")?.enable();
+      }
+
       // Reset de l'article sélectionné à chaque changement de journal
       this.selectedArticleId = null;
       this.selectedArticle = null;
       this.operationForm.patchValue({ articleId: null });
 
       // Activer le champ article
-      this.operationForm.get("mouvement")?.enable();
+      // this.operationForm.get("mouvement")?.enable();
       this.operationForm.get("articleId")?.enable();
     } else {
       // Aucun journal sélectionné : désactiver le champ article
@@ -322,7 +336,7 @@ export class OperationsComponent implements OnInit {
       return;
     }
 
-    // 🧠 On continue avec les comptes filtrés
+    //  On continue avec les comptes filtrés
     this.loadComptesForArticle({
       ...article,
       comptesParCategorie: comptesFiltres,
@@ -552,7 +566,10 @@ export class OperationsComponent implements OnInit {
   }
 
   enregistrer(): void {
-    this.closeModal();
+    // this.closeModal();
+    this.modalService.dismissAll();
+
+    console.log(this.operationForm.value);
     this.isLoading = true;
     this.result = false;
 
@@ -779,7 +796,7 @@ export class OperationsComponent implements OnInit {
     this.operationForm.patchValue({
       societeId: this.societeBi.id,
       userId: this.userBi.id,
-      exerciceId: this.exerciceBi.id,
+      // exerciceId: this.exerciceBi.id,
     });
   }
 

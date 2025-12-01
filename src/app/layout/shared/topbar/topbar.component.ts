@@ -97,14 +97,14 @@ export class TopbarComponent implements OnInit {
       .getSocietePourUserConnecte(this.loggedInUser!.id)
       .subscribe((data) => {
         this.selectedSociete = data;
-        localStorage.setItem(
+        sessionStorage.setItem(
           "societeActive",
           JSON.stringify(this.selectedSociete)
         );
 
-        if (this.loggedInUser.role === Role.ENTREPRISE_USER) {
-          this.loadExercice();
-        }
+        // if (this.loggedInUser.role === Role.ENTREPRISE_USER) {
+        //   this.loadExercice();
+        // }
       });
   }
 
