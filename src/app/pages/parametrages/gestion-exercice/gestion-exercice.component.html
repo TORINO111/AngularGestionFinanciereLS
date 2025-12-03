@@ -1,73 +1,76 @@
 <app-page-title [breadcrumbItems]="pageTitle" title="Gestion des Exercices"></app-page-title>
 
 @if (!result) {
-  <div class="loader-container">
-    <div class="lds-dual-ring"></div>
-  </div>
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
 }
 <!-- start page title -->
 @if (result) {
-  <div class="mt-2 card">
-    <div class="card-body">
-      <div class="container mt-1">
-        @if (!societeId) {
-          <div class="alert alert-warning animated-blink text-center" role="alert">
-            Veuillez sélectionner une société pour afficher les exercices.
-          </div>
-        }
-        @if (societeId) {
-          <button (click)="openModal()"  class="btn btn-success mt-1">
-            NOUVEAU
-          </button>
-        }
-        <table class="table table-bordered table-striped mt-3">
-          <thead class="table-custom">
-            <tr>
-              <th>Année</th>
-              <th>Ouverture</th>
-              <th>Clôture</th>
-              <th>Statut</th>
-              <th>Création</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (exercice of exercices; track exercice) {
-              <tr>
-                <td>{{ exercice.annee }}</td>
-                <td>{{ exercice.dateOuverture | date: 'dd/MM/yyyy' }}</td>
-                <td>{{ exercice.dateCloture ? (exercice.dateCloture | date: 'dd/MM/yyyy') : '-' }}</td>
-                <td>
-                  <span
-                    class="badge text-white"
-                    [ngClass]="!exercice.cloture ? 'bg-success' : 'bg-secondary'">
-                    {{ !exercice.cloture ? 'Ouvert' : 'Clôturé' }}
-                  </span>
-                </td>
-                <td>{{ exercice.creationDate | date: 'shortDate' }}</td>
-                <td>
-                  @if (!exercice.cloture) {
-                    <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="openModal(exercice)"></span>
-                    <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x me-3" (click)="deleteExercice(exercice)"></span>
-                    <button class="btn btn-danger btn-sm" (click)="cloturerExercice(exercice)">
-                      Clôturer
-                    </button>
-                  }
-                </td>
-              </tr>
-            }
-            @if (exercices.length == 0) {
-              <tr >
-                <td  colspan="6"><h3 style="text-align: center;">Aucune donnée trouvée</h3></td>
-              </tr>
-            }
-          </tbody>
-        </table>
+<div class="mt-2 card">
+  <div class="card-body">
+    <div class="container mt-1">
+      @if (!societeId) {
+      <div class="alert alert-warning animated-blink text-center" role="alert">
+        Veuillez sélectionner une société pour afficher les exercices.
       </div>
+      }
+      @if (societeId) {
+      <button (click)="openModal()" class="btn btn-success mt-1">
+        Nouvel Exercice
+      </button>
+      }
+      <table class="table table-bordered table-striped mt-3">
+        <thead class="table-custom">
+          <tr>
+            <th>Année</th>
+            <th>Ouverture</th>
+            <th>Clôture</th>
+            <th>Statut</th>
+            <th>Création</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (exercice of exercices; track exercice) {
+          <tr>
+            <td>{{ exercice.annee }}</td>
+            <td>{{ exercice.dateOuverture | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ exercice.dateCloture ? (exercice.dateCloture | date: 'dd/MM/yyyy') : '-' }}</td>
+            <td>
+              <span class="badge text-white" [ngClass]="!exercice.cloture ? 'bg-success' : 'bg-secondary'">
+                {{ !exercice.cloture ? 'Ouvert' : 'Clôturé' }}
+              </span>
+            </td>
+            <td>{{ exercice.creationDate | date: 'shortDate' }}</td>
+            <td>
+              @if (!exercice.cloture) {
+              <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3"
+                (click)="openModal(exercice)"></span>
+              <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x me-3"
+                (click)="deleteExercice(exercice)"></span>
+              <button class="btn btn-danger btn-sm" (click)="cloturerExercice(exercice)">
+                Clôturer
+              </button>
+              }
+            </td>
+          </tr>
+          }
+          @if (exercices.length == 0) {
+          <tr>
+            <td colspan="6">
+              <h3 style="text-align: center;">Aucune donnée trouvée</h3>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
   </div>
+</div>
 }
 
+<!-- Modal Création/Modification -->
 <ng-template #modalContent>
   <div class="modal-header text-white" style="background-color: #37a6de;">
     <h4 class="modal-title text-white">
@@ -89,6 +92,16 @@
           <label>Date fin</label>
           <input type="date" class="form-control" formControlName="dateCloture" />
         </div>
+
+        @if (this.exerciceForm.value.id != null ) {
+        <div class="form-check col-md-12 mt-3" style="margin-left: 2.5%;">
+          <input class="form-check-input" type="checkbox" id="cloture" formControlName="cloture">
+          <label class="form-check-label " style="margin-top: 3px " for="cloture">
+            Clôturer cet exercice
+          </label>
+        </div>
+        }
+
       </div>
     </form>
   </div>
