@@ -102,9 +102,9 @@ export class TopbarComponent implements OnInit {
           JSON.stringify(this.selectedSociete)
         );
 
-        // if (this.loggedInUser.role === Role.ENTREPRISE_USER) {
-        //   this.loadExercice();
-        // }
+        if (this.loggedInUser.role === Role.ENTREPRISE_USER || this.loggedInUser.role === Role.ENTREPRISE_ADMIN) {
+          this.loadExercice();
+        }
       });
   }
 
@@ -115,17 +115,18 @@ export class TopbarComponent implements OnInit {
         .subscribe({
           next: (data) => {
             this.exerciceEnCours = data;
+            // console.log("Exercice en cours chargé :", data);
             if (data) {
-              localStorage.setItem("exerciceEnCours", JSON.stringify(data));
+              sessionStorage.setItem("exerciceEnCours", JSON.stringify(data));
             } else {
-              localStorage.removeItem("exerciceEnCours");
+              sessionStorage.removeItem("exerciceEnCours");
               console.log("Aucun exercice trouvé pour cette société");
             }
           },
-          error: () => {
+          error: (err) => {
             this.exerciceEnCours = undefined;
             localStorage.removeItem("exerciceEnCours");
-            console.log("Erreur lors du chargement de l'exercice");
+            console.log( err.error.message || "Erreur lors du chargement de l'exercice");
           },
         });
     } else {

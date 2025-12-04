@@ -35,7 +35,7 @@ export class CompteComponent implements OnInit {
     private fb: UntypedFormBuilder,
     private toastr: ToastrService
   ) {
-    const userJson = localStorage.getItem("user");
+    const userJson = sessionStorage.getItem("user");
     this.user = userJson ? JSON.parse(userJson) : null;
     this.loadAndInitUserForm();
 

@@ -88,7 +88,7 @@ export class TiersComponent implements OnInit {
     private compteComptableService: CompteComptableService,
     private modalService: NgbModal,
     private typeCategorieService: TypeCategorieService,
-    private authService: AuthenticationService // Added injection
+    private authService: AuthenticationService 
   ) {
     this.tiersForm = this.fb.group({
       id: [''],
@@ -104,7 +104,8 @@ export class TiersComponent implements OnInit {
 
     this.modelImportForm = this.fb.group({
       societeId: [null],
-      fichierExcel: [null, Validators.required]
+      fichierExcel: [null, Validators.required],
+      userId: [null]
     });
   }
 
@@ -112,8 +113,8 @@ export class TiersComponent implements OnInit {
     this.isUserEntreprise = this.authService.isEntrepriseUser(); // Set property here
     this.pageTitle = [{ label: 'Vos tiers', path: '/', active: true }];
 
-    const societeActiveStr = localStorage.getItem("societeActive");
-    const userActive = localStorage.getItem("user");
+    const societeActiveStr = sessionStorage.getItem("societeActive");
+    const userActive = sessionStorage.getItem("user");
 
     if (societeActiveStr && userActive) {
       this.societeBi = JSON.parse(societeActiveStr);
@@ -391,6 +392,7 @@ export class TiersComponent implements OnInit {
     const formData = new FormData();
     formData.append('societeId', this.modelImportForm.value.societeId);
     formData.append('fichierExcel', file);
+    formData.append('userId', this.userBi.id);
 
     this.isLoading = true;
     this.importResult = null;

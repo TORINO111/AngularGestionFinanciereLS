@@ -62,7 +62,7 @@ export class BailleursComponent implements OnInit {
       pays: ["", Validators.required],
       clientNumexisId: [null, Validators.required],
     });
-    const userJson = localStorage.getItem('user');
+    const userJson = sessionStorage.getItem('user');
     this.user = userJson ? JSON.parse(userJson) : null;
   }
 

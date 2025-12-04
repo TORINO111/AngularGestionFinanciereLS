@@ -9,7 +9,10 @@ import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
 import { first } from "rxjs/operators";
 import { AuthenticationService } from "src/app/core/service/auth.service";
+import { Role } from "src/app/models/utilisateur.model";
+import { ExerciceComptableService } from "src/app/services/exercices-comptables/exercice-comptable.service";
 import { SocieteSelectionService } from "src/app/services/societe-selection/societe-selection.service";
+import { SocieteService } from "src/app/services/societe/societe.service";
 
 @Component({
   selector: "app-login",
@@ -32,7 +35,9 @@ export class LoginComponent implements OnInit {
     private authenticationService: AuthenticationService,
     private fb: UntypedFormBuilder,
     private titleService: Title,
-    private societeSelectionService: SocieteSelectionService
+    private societeSelectionService: SocieteSelectionService,
+    private societeService: SocieteService,
+    private exerciceService: ExerciceComptableService
   ) {
     titleService.setTitle("Log In | GESTION FINANCIERE");
   }
@@ -83,42 +88,12 @@ export class LoginComponent implements OnInit {
             this.authenticationService
               .getUserByUsername(this.loginForm.value.username)
               .subscribe((data: any) => {
-                localStorage.setItem("user", JSON.stringify(data));
+                sessionStorage.setItem("user", JSON.stringify(data));
                 sessionStorage.setItem("currentUser", JSON.stringify(data));
                 const userRole = data.role;
-                sessionStorage.setItem('role', userRole);
-                switch (userRole) {
-                  case "ADMIN":
-                    this.returnUrl = "/parametrages/utilisateurs";
-                    this.router.navigate([this.returnUrl]);
-                    break;
-                  case "CLIENT_ADMIN":
-                    this.returnUrl = "/parametrages/cohortes";
-                    this.router.navigate([this.returnUrl]);
-                    break;
-                  case "CLIENT_AGENT":
-                    this.returnUrl = "/parametrages/cohortes";
-                    this.router.navigate([this.returnUrl]);
-                    break;
-                  case "BAILLEUR":
-                    this.returnUrl = "/parametrages/cohortes";
-                    this.router.navigate([this.returnUrl]);
-                    break;
-                  case "ENTREPRISE_ADMIN":
-                    this.returnUrl = "/parametrages/utilisateurs";
-                    this.router.navigate([this.returnUrl]);
-                    break;
-                  case "ENTREPRISE_USER":
-                    this.returnUrl = "/parametrages/operations";
-                    this.router.navigate([this.returnUrl]);
-                    break;
-                  default:
-                    this.returnUrl = "/";
-                    this.router.navigate([this.returnUrl]);
-                    break;
-                }
-                // if (this.authenticationService.isAdmin()) {
-                // }
+                sessionStorage.setItem("role", userRole);
+
+                this.handleLoginSuccess(data);
               });
           },
           error: (error: any) => {
@@ -139,5 +114,75 @@ export class LoginComponent implements OnInit {
       this.loading = false;
       this.error = "Formulaire invalide";
     }
+  }
+
+  private handleLoginSuccess(user: any) {
+    //Load de la société pour l'utilisateur connecté
+    if (
+      user.role === Role.ENTREPRISE_USER ||
+      user.role === Role.ENTREPRISE_ADMIN
+    ) {
+      this.loadSocieteForUser(user);
+    } else {
+      this.gestionRedirection(user.role);
+    }
+  }
+
+  private gestionRedirection(role: string) {
+    switch (role) {
+      case "ADMIN":
+        this.returnUrl = "/parametrages/utilisateurs";
+        this.router.navigate([this.returnUrl]);
+        break;
+      case "CLIENT_ADMIN":
+        this.returnUrl = "/parametrages/cohortes";
+        this.router.navigate([this.returnUrl]);
+        break;
+      case "CLIENT_AGENT":
+        this.returnUrl = "/parametrages/cohortes";
+        this.router.navigate([this.returnUrl]);
+        break;
+      case "BAILLEUR":
+        this.returnUrl = "/parametrages/cohortes";
+        this.router.navigate([this.returnUrl]);
+        break;
+      case "ENTREPRISE_ADMIN":
+        this.returnUrl = "/parametrages/utilisateurs";
+        this.router.navigate([this.returnUrl]);
+        break;
+      case "ENTREPRISE_USER":
+        this.returnUrl = "/parametrages/operations";
+        this.router.navigate([this.returnUrl]);
+        break;
+      default:
+        this.returnUrl = "/";
+        this.router.navigate([this.returnUrl]);
+        break;
+    }
+  }
+
+  private loadSocieteForUser(user: any) {
+    this.societeService
+      .getSocietePourUserConnecte(user!.id)
+      .subscribe((societe) => {
+        sessionStorage.setItem("societeActive", JSON.stringify(societe));
+        this.loadExerciceForSociete(societe, user.role);
+      });
+  }
+
+  private loadExerciceForSociete(societe: any, role: string) {
+    this.exerciceService.getExerciceEnCoursBySociete(societe.id).subscribe({
+      next: (data) => {
+        sessionStorage.setItem("exerciceEnCours", JSON.stringify(data));
+
+         this.gestionRedirection(role);
+      },
+      error: (err) => {
+        localStorage.removeItem("exerciceEnCours");
+        console.log(
+          err.error.message || "Erreur lors du chargement de l'exercice"
+        );
+      },
+    });
   }
 }

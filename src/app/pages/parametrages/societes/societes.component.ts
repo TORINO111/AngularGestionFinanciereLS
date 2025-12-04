@@ -71,8 +71,9 @@ export class SocietesComponent implements OnInit {
       ville: [{ value: '', disabled: true }, Validators.required],
       comptableId: [],
       cohorteId: [null, Validators.required],
+      userId: [null],
     });
-    const userJson = localStorage.getItem('user');
+    const userJson = sessionStorage.getItem('user');
     this.user = userJson ? JSON.parse(userJson) : null;
   }
 
@@ -207,6 +208,7 @@ export class SocietesComponent implements OnInit {
     this.societeForm.reset();
     if (societe) {
       this.societeForm.patchValue(societe);
+      this.societeForm.get('userId')?.setValue(this.user.id);
       if (societe.pays) {
         this.locationService
           .getCitiesByCountry(societe.pays)

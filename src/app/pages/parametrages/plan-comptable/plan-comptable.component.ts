@@ -98,8 +98,8 @@ export class PlanComptableComponent implements OnInit {
     this.chargerPlanComptables();
     this.chargerSocietes();
 
-    const societeActiveStr = localStorage.getItem("societeActive");
-    const userActive = localStorage.getItem("user");
+    const societeActiveStr = sessionStorage.getItem("societeActive");
+    const userActive = sessionStorage.getItem("user");
 
     if (societeActiveStr && userActive) {
       this.societeBi = JSON.parse(societeActiveStr);

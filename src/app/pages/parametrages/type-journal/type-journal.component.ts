@@ -32,26 +32,31 @@ export class TypeJournalComponent implements OnInit { // Renamed class
   isLoading: boolean = false;
   result: boolean = false;
   selectedIndex: number | null = null;
+  userBi: any;
 
   constructor(
     private fb: UntypedFormBuilder,
     private modalService: NgbModal,
     private notification: NotificationService,
-    private typeJournalService: TypeJournalService // Injected the new service
+    private typeJournalService: TypeJournalService
   ) {
     this.typeJournalForm = this.fb.group({
       id: [null],
       code: ['', [Validators.required, Validators.maxLength(50)]],
       libelle: ['', [Validators.required, Validators.maxLength(100)]],
-      // createdAt, updatedAt, createdBy, updatedBy will be set by backend or auth service
-      createdBy: ['system'], // Placeholder
-      updatedBy: ['system']  // Placeholder
+      userId: [null],
     });
   }
 
   ngOnInit(): void {
     this.pageTitle = [{ label: 'Types de Journal', path: '/', active: true }];
     this.chargerTypeJournals();
+    const userActive = sessionStorage.getItem("user");
+
+    if (userActive) {
+      this.userBi = JSON.parse(userActive);
+    }
+    
     this.initSearchListener();
   }
 
@@ -127,6 +132,7 @@ export class TypeJournalComponent implements OnInit { // Renamed class
   openModal(): void {
     this.selectedIndex = null;
     this.typeJournalForm.reset();
+    this.typeJournalForm.get('userId')?.setValue(this.userBi.id);
     this.modalService.open(this.typeJournalModal, { size: 's', centered: true });
   }
 

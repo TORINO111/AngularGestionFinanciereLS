@@ -91,8 +91,8 @@ export class SectionsAnalytiquesComponent implements OnInit {
     this.chargerPlansAnalytiques();
     this.initSearchListener();
 
-    const societeActiveStr = localStorage.getItem("societeActive");
-    const userActive = localStorage.getItem("user");
+    const societeActiveStr = sessionStorage.getItem("societeActive");
+    const userActive = sessionStorage.getItem("user");
 
     if (societeActiveStr && userActive) {
       this.societeBi = JSON.parse(societeActiveStr);

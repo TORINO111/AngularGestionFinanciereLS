@@ -50,9 +50,10 @@ export class CohortesComponent implements OnInit {
     this.cohorteForm = this.fb.group({
       id: [null],
       nom: ['', Validators.required],
-      bailleurId: [null, Validators.required]
+      bailleurId: [null, Validators.required],
+      userId: [null],
     });
-    const userJson = localStorage.getItem('user');
+    const userJson = sessionStorage.getItem('user');
     this.user = userJson ? JSON.parse(userJson) : null;
   }
 
@@ -146,6 +147,7 @@ export class CohortesComponent implements OnInit {
       this.cohorteForm.patchValue(cohorte);
     }
     this.modalService.open(this.modalContent, { centered: true });
+    this.cohorteForm.get('userId')?.setValue(this.user.id);
   }
 
   closeModal(): void {

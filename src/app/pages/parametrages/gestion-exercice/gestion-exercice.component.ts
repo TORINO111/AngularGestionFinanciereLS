@@ -53,13 +53,13 @@ export class GestionExerciceComponent implements OnInit {
     this.pageTitle = [{ label: "Vos exercices", path: "/", active: true }];
     const userJson = sessionStorage.getItem("currentUser");
     const societeJson = sessionStorage.getItem("societeActive");
-
     this.societeId = societeJson ? JSON.parse(societeJson).id : null;
     this.user = userJson ? JSON.parse(userJson) : null;
 
-    if (this.user && this.societeId) {
+    if (this.user && this.societeId && this.exerciceEnCours) {
       this.exerciceForm.patchValue({ userId: this.user.id });
       this.exerciceForm.patchValue({ societeId: this.societeId });
+      this.exerciceEnCours
       this.loadExercices();
     }
   }

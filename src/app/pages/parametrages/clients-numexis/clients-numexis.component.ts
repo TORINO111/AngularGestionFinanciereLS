@@ -44,6 +44,7 @@ export class ClientsNumexisComponent implements OnInit {
   totalElements = 0;
   pageSize = 10;
   currentPage = 0;
+  userBi: any;
 
   constructor(
     private clientNumexisService: ClientNumexisService,
@@ -64,11 +65,18 @@ export class ClientsNumexisComponent implements OnInit {
       ville: [{ value: "", disabled: true }, Validators.required],
       pays: ["", Validators.required],
       typeClientNumexis: ["", Validators.required],
+      userId: [null]
     });
   }
 
   ngOnInit(): void {
     this.pageTitle = [{ label: "Clients Numexis", path: "/", active: true }];
+    const userActive = sessionStorage.getItem("user");
+
+    if (userActive) {
+      this.userBi = JSON.parse(userActive);
+    }
+
     this.loadClients();
     this.loadCountries();
     this.initSearchListener();
@@ -202,6 +210,7 @@ export class ClientsNumexisComponent implements OnInit {
         numeroIFU: client.numeroIFU,
         typeClientNumexis: client.typeClientNumexis,
         pays: client.pays,
+        userId: this.userBi.id
       });
 
       if (client.pays) {

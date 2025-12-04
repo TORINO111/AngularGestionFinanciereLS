@@ -100,8 +100,8 @@ export class PlanAnalytiqueComponent implements OnInit {
     this.chargerSocietes();
     this.initSearchListener();
 
-    const societeActiveStr = localStorage.getItem("societeActive");
-    const userActive = localStorage.getItem("user");
+    const societeActiveStr = sessionStorage.getItem("societeActive");
+    const userActive = sessionStorage.getItem("user");
 
     if (societeActiveStr && userActive) {
       this.societeBi = JSON.parse(societeActiveStr);

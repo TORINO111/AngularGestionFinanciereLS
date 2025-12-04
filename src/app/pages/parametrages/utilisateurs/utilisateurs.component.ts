@@ -84,9 +84,6 @@ export class UtilisateursComponent implements OnInit {
     public controleForm: ControlesFormulairesService,
     private bailleurService: BailleurService
   ) {
-    const userJson = localStorage.getItem("user");
-    this.user = userJson ? JSON.parse(userJson) : null;
-
     this.utilisateurForm = this.fb.group({
       id: [],
       username: ["", [Validators.required, Validators.minLength(2)]],
@@ -107,23 +104,14 @@ export class UtilisateursComponent implements OnInit {
   ngOnInit(): void {
     this.pageTitle = [{ label: "utilisateurs", path: "/", active: true }];
 
-    const userActive = localStorage.getItem("user");
+    const userActive = sessionStorage.getItem("user");
 
     if (userActive) {
       this.userBi = JSON.parse(userActive);
       this.roleUser = this.userBi.role;
     }
 
-    switch (this.roleUser) {
-      case "ENTREPRISE_ADMIN":
-        this.isEntrepriseAdmin = true;
-        break;
-      case "ADMIN":
-        this.loadClientsNumexis();
-        this.loadBailleurs();
-        break;
-    }
-
+    this.loadDataBasedOnRole(this.roleUser);
     this.loadUsersByRole();
     this.loadSocietes();
     this.chargerRoles();
@@ -140,6 +128,18 @@ export class UtilisateursComponent implements OnInit {
         console.error("Erreur lors du chargement des sociétés", err);
       },
     });
+  }
+
+  private loadDataBasedOnRole(role: string): void {
+    switch (this.roleUser) {
+      case "ENTREPRISE_ADMIN":
+        this.isEntrepriseAdmin = true;
+        break;
+      case "ADMIN":
+        this.loadClientsNumexis();
+        this.loadBailleurs();
+        break;
+    }
   }
 
   private loadClientsNumexis(): void {

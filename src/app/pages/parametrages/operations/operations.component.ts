@@ -188,12 +188,13 @@ export class OperationsComponent implements OnInit {
   ngOnInit(): void {
     this.pageTitle = [{ label: "Vos opérations", path: "/", active: true }];
 
-    const societeActiveStr = localStorage.getItem("societeActive");
-    const userActive = localStorage.getItem("user");
-    const exerciceActive = localStorage.getItem("exerciceEnCours");
-
+    const societeActiveStr = sessionStorage.getItem("societeActive");
+    const userActive = sessionStorage.getItem("user");
+    const exerciceActive = sessionStorage.getItem("exerciceEnCours");
+    
     if (userActive) {
       this.userBi = JSON.parse(userActive);
+      console.log(this.userBi, 'Utilisateur connecté');
       if (this.userBi.role === "ADMIN") {
         this.isAdminNumexis = true; 
         this.chargerSocietes();
@@ -207,7 +208,7 @@ export class OperationsComponent implements OnInit {
     }
     if (societeActiveStr) {
       this.societeBi = JSON.parse(societeActiveStr);
-      console.log(this.societeBi);
+      console.log(this.societeBi, 'Société active');
     }
     this.chargerOperationPageable();
 
@@ -797,7 +798,9 @@ export class OperationsComponent implements OnInit {
       societeId: this.societeBi.id,
       userId: this.userBi.id,
       // exerciceId: this.exerciceBi.id,
-    });
+    })
+    console.log(this.operationForm.value)
+    ;
   }
 
   closeModal(): void {

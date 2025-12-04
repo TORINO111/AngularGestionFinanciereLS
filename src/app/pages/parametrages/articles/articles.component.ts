@@ -92,8 +92,8 @@ export class ArticlesComponent implements OnInit {
     this.isUserEntreprise = this.authService.isEntrepriseUser(); // Set property here
     this.pageTitle = [{ label: 'Vos articles', path: '/', active: true }];
 
-    const societeActiveStr = localStorage.getItem("societeActive");
-    const userActive = localStorage.getItem("user");
+    const societeActiveStr = sessionStorage.getItem("societeActive");
+    const userActive = sessionStorage.getItem("user");
     if (societeActiveStr && userActive) {
       this.currentSociete = JSON.parse(societeActiveStr);
       this.userBi = JSON.parse(userActive);
