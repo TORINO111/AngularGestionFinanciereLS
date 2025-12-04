@@ -137,3 +137,16 @@ tr {
   background-color: #37a6de; 
   border: #37a6de
 }
+
+.small-text .ng-select-container {
+  font-size: 12px !important;
+}
+
+.small-text .ng-option {
+  font-size: 12px !important;
+}
+
+.modal-custom .modal-dialog {
+  max-width: 1200px; 
+  width: 90%;      
+}
