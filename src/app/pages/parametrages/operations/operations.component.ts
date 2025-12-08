@@ -86,7 +86,7 @@ export class OperationsComponent implements OnInit {
 
   plansAnalytiques: any[] = [];
   analytiques: Select2Data = [];
-  comptables: PlanComptable[] = []; // Fait référence aux Plans comptables
+  comptables: PlanComptable[] = [];
   tiersList: any[] = [];
   societes: any[] = [];
 
@@ -135,7 +135,7 @@ export class OperationsComponent implements OnInit {
   isType = false;
   isTresorerie = false;
   showSectionAnalytique = false;
-  showTVA = false;
+  showTVA = true;
   showTTC = false;
   prefixe: string;
   lastTypeId: any;
@@ -150,6 +150,7 @@ export class OperationsComponent implements OnInit {
 
   isAdminNumexis: boolean = false;
   isAdminEntreprise: boolean = false;
+  isArticleDivers: boolean = false;
 
   constructor(
     private natureOperationService: NatureOperationService,
@@ -169,17 +170,16 @@ export class OperationsComponent implements OnInit {
       id: [],
       libelle: [null, [Validators.required, Validators.minLength(2)]],
       compteComptableId: [null, Validators.required],
-      codeJournalId: [null, Validators.required],
-      articleId: [{ value: null, disabled: true }, Validators.required],
-      mouvement: [{ value: null, disabled: true }, Validators.required],
+      articleId: [{ value: null }, Validators.required],
+      typeMouvement: [{ value: null }, Validators.required],
       societeId: [null],
       userId: [null],
       exerciceId: [null],
       // typeNature: [null],
       sectionAnalytiqueId: [null],
       tiersId: [null],
-      quantite: [0, Validators.required],
-      montantHt: [0, Validators.required],
+      quantite: [0],
+      montantHt: [0],
       tva: [0],
       montantTtc: [{ value: 0, disabled: true }],
     });
@@ -188,15 +188,16 @@ export class OperationsComponent implements OnInit {
   ngOnInit(): void {
     this.pageTitle = [{ label: "Vos opérations", path: "/", active: true }];
 
+    this.operationForm.get("articleId")?.disable();
+
     const societeActiveStr = sessionStorage.getItem("societeActive");
     const userActive = sessionStorage.getItem("user");
     const exerciceActive = sessionStorage.getItem("exerciceEnCours");
-    
+
     if (userActive) {
       this.userBi = JSON.parse(userActive);
-      console.log(this.userBi, 'Utilisateur connecté');
       if (this.userBi.role === "ADMIN") {
-        this.isAdminNumexis = true; 
+        this.isAdminNumexis = true;
         this.chargerSocietes();
       } else if (this.userBi.role === "ENTREPRISE_ADMIN") {
         this.isAdminEntreprise = true;
@@ -204,11 +205,9 @@ export class OperationsComponent implements OnInit {
     }
     if (exerciceActive) {
       this.exerciceBi = JSON.parse(exerciceActive);
-      console.log(this.exerciceBi, 'Exercice en cours');
     }
     if (societeActiveStr) {
       this.societeBi = JSON.parse(societeActiveStr);
-      console.log(this.societeBi, 'Société active');
     }
     this.chargerOperationPageable();
 
@@ -256,133 +255,208 @@ export class OperationsComponent implements OnInit {
       { emitEvent: false } // pour éviter une boucle infinie
     );
   }
+  //onJournalChange et onArticleChange commentés pour nouvelle gestion
+  // onJournalChange(journalId: number) {
+  //   this.selectedJournalId = journalId;
 
-  onJournalChange(journalId: number) {
-    this.selectedJournalId = journalId;
+  //   if (journalId != null) {
+  //     const journal = this.journaux.find((j) => j.id === journalId);
+  //     console.log(journal);
 
-    if (journalId != null) {
-      const journal = this.journaux.find((j) => j.id === journalId);
-      console.log(journal);
+  //     if (journal?.allowedCategoryTypes?.length) {
+  //       this.filteredArticles = this.articles.filter((article) =>
+  //         article.comptesParCategorie?.some((c: { typeCategorie: string }) =>
+  //           journal.allowedCategoryTypes?.includes(c.typeCategorie)
+  //         )
+  //       );
+  //     } else {
+  //       // Aucun filtre spécifique : on garde tous les articles
+  //       this.filteredArticles = [...this.articles];
+  //     }
 
-      if (journal?.allowedCategoryTypes?.length) {
-        this.filteredArticles = this.articles.filter((article) =>
-          article.comptesParCategorie?.some((c: { typeCategorie: string }) =>
-            journal.allowedCategoryTypes?.includes(c.typeCategorie)
-          )
-        );
-      } else {
-        // Aucun filtre spécifique : on garde tous les articles
-        this.filteredArticles = [...this.articles];
-      }
+  //     if (journal.typeJournalLibelle == "Recette") {
+  //       this.operationForm.patchValue({ mouvement: "VENTE" });
+  //       this.operationForm.get("typeMouvement")?.disable();
+  //     } else if (journal.typeJournalLibelle == "Dépense") {
+  //       this.operationForm.patchValue({ mouvement: this.mouvements[0].id });
+  //       this.operationForm.get("typeMouvement")?.disable();
+  //     } else {
+  //       this.operationForm.get("typeMouvement")?.enable();
+  //     }
 
-      if(journal.typeJournalLibelle == 'Recette'){
-        this.operationForm.patchValue({ mouvement: 'VENTE' });
-  this.operationForm.get('mouvement')?.disable();
-      } else if(journal.typeJournalLibelle == 'Dépense'){
-        this.operationForm.patchValue({ mouvement: this.mouvements[0].id })
-        this.operationForm.get('mouvement')?.disable();
-      } else {  
-        this.operationForm.get("mouvement")?.enable();
-      }
+  //     // Reset de l'article sélectionné à chaque changement de journal
+  //     this.selectedArticleId = null;
+  //     this.selectedArticle = null;
+  //     this.operationForm.patchValue({ articleId: null });
 
-      // Reset de l'article sélectionné à chaque changement de journal
-      this.selectedArticleId = null;
-      this.selectedArticle = null;
-      this.operationForm.patchValue({ articleId: null });
+  //     // Activer le champ article
+  //     // this.operationForm.get("typeMouvement")?.enable();
+  //     this.operationForm.get("articleId")?.enable();
+  //   } else {
+  //     // Aucun journal sélectionné : désactiver le champ article
+  //     this.filteredArticles = [];
+  //     this.selectedArticleId = null;
+  //     this.selectedArticle = null;
+  //     this.operationForm.patchValue({ articleId: null });
+  //     this.operationForm.get("articleId")?.disable();
+  //     this.operationForm.get("typeMouvement")?.disable();
+  //   }
+  // }
 
-      // Activer le champ article
-      // this.operationForm.get("mouvement")?.enable();
-      this.operationForm.get("articleId")?.enable();
-    } else {
-      // Aucun journal sélectionné : désactiver le champ article
-      this.filteredArticles = [];
-      this.selectedArticleId = null;
-      this.selectedArticle = null;
-      this.operationForm.patchValue({ articleId: null });
-      this.operationForm.get("articleId")?.disable();
-      this.operationForm.get("mouvement")?.disable();
-    }
-  }
+  // onArticleChange(articleId: number | null) {
+  //   if (!articleId) {
+  //     this.resetArticleSelection();
+  //     return;
+  //   }
 
-  onArticleChange(articleId: number | null) {
-    if (!articleId) {
-      this.resetArticleSelection();
+  //   const article = this.articles.find((a) => a.id === articleId);
+  //   if (!article) {
+  //     this.resetArticleSelection();
+  //     return;
+  //   }
+
+  //   this.selectedArticle = article;
+
+  //   const mouvement = this.operationForm.get("typeMouvement")?.value;
+  //   let comptesFiltres = article.comptesParCategorie ?? [];
+
+  //   // 🔍 Si un mouvement est sélectionné, on ne garde que les comptes correspondants
+  //   if (mouvement) {
+  //     comptesFiltres = comptesFiltres.filter(
+  //       (c: { typeMouvement: any }) => c.typeMouvement === mouvement
+  //     );
+  //   }
+
+  //   // S’il n’y a aucun compte pour ce mouvement => reset
+  //   if (!comptesFiltres.length) {
+  //     this.notification.showWarning(
+  //       `Aucun compte associé à cet article pour le mouvement "${mouvement}".`
+  //     );
+  //     this.resetArticleSelection();
+  //     return;
+  //   }
+
+  //   //  On continue avec les comptes filtrés
+  //   this.loadComptesForArticle({
+  //     ...article,
+  //     comptesParCategorie: comptesFiltres,
+  //   });
+  //   // this.filterJournauxForArticle(article);
+  //   this.applyArticleRules({
+  //     typesCategorie: comptesFiltres.map(
+  //       (c: { typeCategorie: any }) => c.typeCategorie
+  //     ),
+  //     typesMouvement: comptesFiltres.map(
+  //       (c: { typeMouvement: any }) => c.typeMouvement
+  //     ),
+  //   });
+
+  //   // Récupérer le compte comptable selon le journal sélectionné
+  //   if (this.selectedJournalId) {
+  //     const journal = this.journaux.find(
+  //       (j) => j.id === this.selectedJournalId
+  //     );
+
+  //     if (journal?.allowedCategoryTypes?.length) {
+  //       const matchedCompte = comptesFiltres.find((c: { typeCategorie: any }) =>
+  //         journal.allowedCategoryTypes.includes(c.typeCategorie)
+  //       );
+
+  //       if (matchedCompte) {
+  //         this.operationForm.patchValue({
+  //           compteComptableId: matchedCompte.compteId,
+  //         });
+  //         this.selectedCompte = matchedCompte;
+  //       } else {
+  //         this.selectedCompte = null;
+  //       }
+  //     }
+  //   }
+
+  //   this.assignerValidatorsQuantiteArticle();
+  // }
+
+  onArticleChange(articleId: number) {
+    this.selectedArticle = this.filteredArticles.find(
+      (a) => a.id === articleId
+    );
+
+    if (!this.selectedArticle) return;
+
+    const mouvement = this.operationForm.get("typeMouvement")?.value;
+
+    const compte = this.selectedArticle.comptesParCategorie.find(
+      (c: { typeMouvement: any }) => c.typeMouvement === mouvement
+    );
+
+    if (!compte) {
+      console.warn("Aucun compte lié à ce mouvement pour cet article");
       return;
     }
 
-    const article = this.articles.find((a) => a.id === articleId);
-    if (!article) {
-      this.resetArticleSelection();
-      return;
-    }
-
-    this.selectedArticle = article;
-
-    const mouvement = this.operationForm.get("mouvement")?.value;
-    let comptesFiltres = article.comptesParCategorie ?? [];
-
-    // 🔍 Si un mouvement est sélectionné, on ne garde que les comptes correspondants
-    if (mouvement) {
-      comptesFiltres = comptesFiltres.filter(
-        (c: { typeMouvement: any }) => c.typeMouvement === mouvement
-      );
-    }
-
-    // S’il n’y a aucun compte pour ce mouvement => reset
-    if (!comptesFiltres.length) {
-      this.notification.showWarning(
-        `Aucun compte associé à cet article pour le mouvement "${mouvement}".`
-      );
-      this.resetArticleSelection();
-      return;
-    }
-
-    //  On continue avec les comptes filtrés
-    this.loadComptesForArticle({
-      ...article,
-      comptesParCategorie: comptesFiltres,
+    // injecte automatiquement dans le formulaire
+    this.operationForm.patchValue({
+      compteComptableId: compte.compteId,
+      categorie: compte.typeCategorie,
+      journalId: compte.journalId,
     });
-    this.filterJournauxForArticle(article);
+
+    this.selectedCompte = compte;
+
+    // règles diverses
+    this.isArticleDivers = this.selectedArticle.designation === "Divers";
     this.applyArticleRules({
-      typesCategorie: comptesFiltres.map(
-        (c: { typeCategorie: any }) => c.typeCategorie
-      ),
-      typesMouvement: comptesFiltres.map(
-        (c: { typeMouvement: any }) => c.typeMouvement
-      ),
+      typesCategorie: [compte.typeCategorie],
+      typesMouvement: [compte.typeMouvement],
     });
-
-    // Récupérer le compte comptable selon le journal sélectionné
-    if (this.selectedJournalId) {
-      const journal = this.journaux.find(
-        (j) => j.id === this.selectedJournalId
-      );
-
-      if (journal?.allowedCategoryTypes?.length) {
-        const matchedCompte = comptesFiltres.find((c: { typeCategorie: any }) =>
-          journal.allowedCategoryTypes.includes(c.typeCategorie)
-        );
-
-        if (matchedCompte) {
-          this.operationForm.patchValue({
-            compteComptableId: matchedCompte.compteId,
-          });
-          this.selectedCompte = matchedCompte;
-        } else {
-          this.selectedCompte = null;
-        }
-      }
-    }
 
     this.assignerValidatorsQuantiteArticle();
   }
 
   onMouvementChange() {
-    this.assignerValidatorsQuantiteArticle();
+    const mouvement = this.operationForm.get("typeMouvement")?.value;
+    const articleControl = this.operationForm.get("articleId");
 
-    const articleId = this.operationForm.get("articleId")?.value;
-    if (articleId) {
-      this.onArticleChange(articleId);
+    if (!mouvement) {
+      // désactiver + vider + nettoyer
+      this.filteredArticles = [];
+      articleControl?.reset();
+      articleControl?.disable();
+      this.selectedArticle = null;
+      return;
+    }
+
+    // filtrer les articles compatibles avec le mouvement sélectionné
+    this.filteredArticles = this.articles.filter((a) =>
+      a.comptesParCategorie?.some((c: { typeMouvement: any; }) => c.typeMouvement === mouvement)
+    );
+
+    // activer le select Article
+    articleControl?.enable();
+
+    // reset pour forcer l'utilisateur à choisir un article valide
+    articleControl?.reset();
+    this.selectedArticle = null;
+  }
+
+  private assignCompteArticle(
+    article: ArticleDTO,
+    mouvement: string,
+    categorie: string
+  ) {
+    const compte = this.getCompteArticle(article, mouvement, categorie);
+
+    if (compte) {
+      this.operationForm.patchValue({
+        compteComptableId: compte.compteId,
+      });
+
+      this.selectedCompte = compte;
+      console.log("Compte assigné :", compte);
+    } else {
+      this.operationForm.patchValue({ compteComptableId: null });
+      this.selectedCompte = null;
+      console.warn("Aucun compte trouvé pour mouv/cat :", mouvement, categorie);
     }
   }
 
@@ -393,7 +467,7 @@ export class OperationsComponent implements OnInit {
       Validators.required,
       this.controleForm.quantiteMaxValidator(
         () => this.selectedArticle?.quantite ?? 0,
-        () => this.operationForm.get("mouvement")?.value ?? ""
+        () => this.operationForm.get("typeMouvement")?.value ?? ""
       ),
     ]);
 
@@ -422,6 +496,20 @@ export class OperationsComponent implements OnInit {
     this.resetArticleRules();
   }
 
+  private getCompteArticle(
+    article: ArticleDTO,
+    mouvement: string,
+    categorie: string
+  ) {
+    if (!article?.comptesParCategorie) return null;
+
+    return (
+      article.comptesParCategorie.find(
+        (c) => c.typeMouvement === mouvement && c.typeCategorie === categorie
+      ) || null
+    );
+  }
+
   private loadComptesForArticle(article: ArticleDTO): void {
     if (!article || !article.comptesParCategorie?.length) {
       this.resetArticleRules();
@@ -432,6 +520,9 @@ export class OperationsComponent implements OnInit {
     const typesCategorie = comptes.map((c) => c.typeCategorie);
     const typesMouvement = comptes.map((c) => c.typeMouvement);
 
+    console.log("Comptes chargés pour l'article :", comptes);
+    console.log("Types de catégorie :", typesCategorie);
+    console.log("Types de mouvement :", typesMouvement);
     // Application des règles analytiques et tiers
     this.applyArticleRules({ typesCategorie, typesMouvement });
   }
@@ -595,10 +686,10 @@ export class OperationsComponent implements OnInit {
         this.selectedIndex = null;
         this.selected = undefined;
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
         this.result = true;
-        this.notification.showError("Erreur serveur !!!");
+        this.notification.showError(err || "Erreur serveur !!!");
       },
     });
   }
@@ -797,10 +888,9 @@ export class OperationsComponent implements OnInit {
     this.operationForm.patchValue({
       societeId: this.societeBi.id,
       userId: this.userBi.id,
-      // exerciceId: this.exerciceBi.id,
-    })
-    console.log(this.operationForm.value)
-    ;
+      exerciceId: this.exerciceBi.id,
+    });
+    console.log(this.operationForm.value);
   }
 
   closeModal(): void {
@@ -888,4 +978,3 @@ export class OperationsComponent implements OnInit {
       });
   }
 }
-

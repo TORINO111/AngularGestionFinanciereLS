@@ -108,11 +108,10 @@
           <td>{{ e.montantTtc | number:'1.0-0' }} </td>
 
           <!-- Actions -->
-          <td class="d-flex gap-2 align-items-center">
-            <span class="fa fa-eye fa-2x text-info" style="cursor:pointer"></span>
-            <span class="fa fa-edit fa-2x text-primary " style="cursor:pointer" (click)="editNature(i)"></span>
-            <span class="fa fa-trash fa-2x text-danger" style="cursor:pointer"
-              (click)="deleteNatureOperationDto(i)"></span>
+          <td>
+            <!-- <span class="fa fa-eye fa-2x text-info" style="cursor:pointer"></span> -->
+            <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3"  (click)="editNature(i)"></span>
+            <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x"(click)="deleteNatureOperationDto(i)"></span>
           </td>
         </tr>
       </tbody>
@@ -194,7 +193,7 @@
             class="text-danger">Champ obligatoire !</div>
         </div>
 
-        <!-- Journal -->
+        <!-- Journal 
         <div class="col-md-4">
           <label>Journal</label>
           <ng-select [items]="filteredJournaux" bindLabel="libelle" bindValue="id" formControlName="codeJournalId"
@@ -203,24 +202,16 @@
               Aucun journal disponible
             </ng-template>
           </ng-select>
-        </div>
+        </div> -->
 
         <!-- Type de Mouvement -->
         <div class="col-md-4">
           <label>Mouvement</label>
-          <ng-select [items]="mouvements" bindLabel="libelle" bindValue="id" formControlName="mouvement"
-            placeholder="Sélectionner le mouvement" (ngModelChange)="onMouvementChange()" [disabled]="operationForm.get('mouvement')?.disabled === true">
+          <ng-select [items]="mouvements" bindLabel="libelle" bindValue="id" formControlName="typeMouvement"
+            placeholder="Sélectionner le mouvement" (ngModelChange)="onMouvementChange()" [disabled]="operationForm.get('typeMouvement')?.disabled === true">
           </ng-select>
         </div>
-
-        <!-- Catégorie -->
-        <!-- <div class="col-md-4">
-          <label>Catégorie</label>
-          <ng-select [items]="filteredCategories" bindLabel="libelle" bindValue="id" formControlName="categorieId"
-            (ngModelChange)="onCategorieChange($event)" placeholder="Sélectionner une catégorie">
-          </ng-select>
-        </div> -->
-
+        
         <!-- Article -->
         <div class="col-md-4">
           <label>Article</label>
@@ -231,6 +222,14 @@
             </ng-template>
           </ng-select>
         </div>
+
+        <!-- Catégorie -->
+        <!-- <div class="col-md-4">
+          <label>Catégorie</label>
+          <ng-select [items]="filteredCategories" bindLabel="libelle" bindValue="id" formControlName="categorieId"
+            (ngModelChange)="onCategorieChange($event)" placeholder="Sélectionner une catégorie">
+          </ng-select>
+        </div> -->
 
         <!-- Quantite -->
         <div class="col-md-4">
@@ -247,18 +246,6 @@
           </div>
         </div>
 
-        <!-- Tiers -->
-        <div class="col-md-4" *ngIf="showTiers">
-          <label>Tiers</label>
-          <ng-select [items]="tiersList" bindLabel="intitule" bindValue="id" placeholder="Sélection Tiers"
-            formControlName="tiersId" [searchable]="true">
-            <ng-template ng-notfound-tmp>Aucun tiers disponible</ng-template>
-          </ng-select>
-          <div
-            *ngIf="isTiersObligatoire && operationForm.get('tiersId')?.hasError('required') && operationForm.get('tiersId')?.touched"
-            class="text-danger">Champ obligatoire !</div>
-        </div>
-
         <!-- TVA -->
         <div class="col-md-4" *ngIf="showTVA">
           <label>TVA (%)</label>
@@ -266,7 +253,7 @@
         </div>
 
         <!-- Montant HT -->
-        <div class="col-md-4">
+        <div class="col-md-4" *ngIf="!isArticleDivers">
           <label>Montant (hors taxe)</label>
           <div class="input-group">
             <input type="number" class="form-control" formControlName="montantHt"
@@ -280,20 +267,31 @@
         <div class="col-md-4">
           <label>Montant TTC</label>
           <div class="input-group">
-            <input type="number" class="form-control" formControlName="montantTtc" placeholder="Montant TTC" readonly>
+            <input type="number" class="form-control" formControlName="montantTtc" placeholder="Montant TTC" [readonly]="!isArticleDivers">
             <span class="input-group-text">FCFA</span>
           </div>
         </div>
 
-        <!-- Section Analytique -->
-        <div class="col-md-6" *ngIf="showSectionAnalytique">
+        <!-- Section Analytique  *ngIf="showSectionAnalytique" -->
+        <!-- <div class="col-md-6" >
           <label>Section Analytique</label>
           <ng-select [items]="sectionsAnalytiques" bindLabel="libelle" bindValue="id"
             placeholder="Sélection Section Analytique" formControlName="sectionAnalytiqueId" [searchable]="true">
             <ng-template ng-notfound-tmp>Aucune section disponible</ng-template>
           </ng-select>
-        </div>
+        </div> -->
 
+        <!-- Tiers -->
+        <div class="col-md-4"   >
+          <label>Tiers</label>
+          <ng-select [items]="tiersList" bindLabel="intitule" bindValue="id" placeholder="Sélection Tiers"
+            formControlName="tiersId" [searchable]="true">
+            <ng-template ng-notfound-tmp>Aucun tiers disponible</ng-template>
+          </ng-select>
+          <div
+            *ngIf="isTiersObligatoire && operationForm.get('tiersId')?.hasError('required') && operationForm.get('tiersId')?.touched"
+            class="text-danger">Champ obligatoire !</div>
+        </div>
 
 
       </div>
