@@ -1,24 +1,22 @@
-
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Societe } from '../../models/societe.model';
-import { Pays } from '../../models/pays.model';
-import { environment } from 'src/environments/environment';
+import { Injectable } from "@angular/core";
+import { HttpClient, HttpParams } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { Societe } from "../../models/societe.model";
+import { Pays } from "../../models/pays.model";
+import { environment } from "src/environments/environment";
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class SocieteService {
-
   private baseUrlSociete = `${environment.apiUrl}/api/societes`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getAllSociete(): Observable<Societe[]> {
     return this.http.get<Societe[]>(`${this.baseUrlSociete}/all`);
   }
 
-    getAllSocietePageable(
+  getAllSocietePageable(
     page: number = 0,
     size: number = 10,
     nom?: string,
@@ -27,17 +25,16 @@ export class SocieteService {
     pays?: string
   ): Observable<any> {
     let params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
+      .set("page", page.toString())
+      .set("size", size.toString());
 
-    if (nom) params = params.set('nom', nom);
-    if (tel) params = params.set('telephone', tel);
-    if (ville) params = params.set('ville', ville);
-    if (pays) params = params.set('pays', pays);
+    if (nom) params = params.set("nom", nom);
+    if (tel) params = params.set("telephone", tel);
+    if (ville) params = params.set("ville", ville);
+    if (pays) params = params.set("pays", pays);
 
     return this.http.get<any>(`${this.baseUrlSociete}/pageable`, { params });
   }
-
 
   getSocietePourUserConnecte(userId: number): Observable<Societe> {
     return this.http.get<Societe>(`${this.baseUrlSociete}/user/${userId}`);
@@ -58,6 +55,4 @@ export class SocieteService {
   deleteSociete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrlSociete}/${id}`);
   }
-
 }
-

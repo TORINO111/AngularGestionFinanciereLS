@@ -46,8 +46,8 @@
             "styles": [
               "src/assets/scss/theme.scss",
               "src/styles.scss",
-              "node_modules/ngx-toastr/toastr.css",
-              "node_modules/sweetalert2/src/sweetalert2.scss"
+                "node_modules/ngx-toastr/toastr.css",
+                "node_modules/sweetalert2/src/sweetalert2.scss"
             ],
             "scripts": []
           },
