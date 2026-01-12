@@ -1,0 +1,337 @@
+<app-page-title [breadcrumbItems]="pageTitle" title="Opérations"></app-page-title>
+
+@if (!result) {
+<div class="loader-container">
+  <div class="lds-dual-ring"></div>
+</div>
+}
+
+@if (result){
+<div class="card ">
+  <div class="card-body">
+    <!-- Boutons et filtres -->
+    <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between">
+
+      <!-- Bouton Nouvelle Opération -->
+      @if (!isAdminNumexis && !isAdminEntreprise) {
+      <button class="btn btn-success" (click)="openModal()">Nouvelle Opération</button>
+      }
+
+      <!-- Barre de recherche + filtres -->
+      <div class="d-flex gap-2 ms-auto">
+
+        <!-- Recherche par libellé -->
+        <input #searchInput class="p-2" placeholder="Rechercher par libellé" [(ngModel)]="searchTerm"
+          (keyup)="onFilterChange()" (ngModelChange)="onFilterChange()" />
+
+        <!-- Filtre par societe -->
+        @if (isAdminNumexis) {
+        <ng-select class="mt-1" [items]="societes" placeholder="Filtrer par société" bindLabel="nom" bindValue="id"
+          [(ngModel)]="selectedSocieteId" (ngModelChange)="onFilterChange()">
+          <ng-template ng-notfound-tmp>Aucune société disponible</ng-template>
+        </ng-select>
+        }
+
+        <!-- Filtre par journal -->
+        <ng-select class="mt-1" [items]="filteredJournaux" placeholder="Filtrer par journal" bindLabel="libelle"
+          bindValue="id" [(ngModel)]="selectedJournalId" (ngModelChange)="onFilterChange()">
+          <ng-template ng-notfound-tmp>Aucun journal disponible</ng-template>
+        </ng-select>
+
+        <!-- Filtre par catégorie -->
+        <!-- <ng-select class="mt-1" [items]="categories" placeholder="Filtrer par catégorie" bindLabel="libelle"
+          bindValue="id" [(ngModel)]="selectedCategorieId" (ngModelChange)="onFilterChange()">
+          <ng-template ng-notfound-tmp>Aucune catégorie disponible</ng-template>
+        </ng-select> -->
+
+        <!-- Filtre par article -->
+        <ng-select class="mt-1" [items]="articles" placeholder="Filtrer par article" bindLabel="designation"
+          bindValue="id" [(ngModel)]="selectedArticleId" (ngModelChange)="onFilterChange()">
+          <ng-template ng-notfound-tmp>Aucune catégorie disponible</ng-template>
+        </ng-select>
+
+        <!-- Filtre par tiers -->
+        <ng-select class="mt-1" [items]="tiersList" placeholder="Filtrer par tiers" bindLabel="intitule" bindValue="id"
+          [(ngModel)]="selectedTiersId" (ngModelChange)="onFilterChange()">
+          <ng-template ng-notfound-tmp>Aucun tiers disponible</ng-template>
+        </ng-select>
+
+      </div>
+    </div>
+
+    <!-- Tableau des Natures d'Opérations -->
+    <table class="table table-bordered table-striped">
+      <!-- Entêtes du tableau -->
+      <thead class="table-custom">
+        <tr>
+          <th>
+            <h5>Code</h5>
+          </th>
+          <th style="width: 250px">
+            <h5>Libellé</h5>
+          </th>
+          <th>
+            <h5>Compte débit</h5>
+          </th>
+          <th>
+            <h5>Compte crédit</h5>
+          </th>
+          <th>
+            <h5>Quantité</h5>
+          </th>
+          <th>
+            <h5>Montant Total</h5>
+          </th>
+          <th>
+            <h5>Actions</h5>
+          </th>
+        </tr>
+      </thead>
+
+      <tbody *ngIf="!isLoading && lignes.length > 0">
+        <tr *ngFor="let e of lignes; let i = index" [class.table-active]="i === selectedIndex">
+          <td>{{ e.code }}</td>
+          <td>{{ e.libelle }}</td>
+          <td>
+            <div class="text-center">
+              <div>{{ e.compteComptableCode }}</div>
+              <div class="mt-1">{{ e.compteComptableIntitule }}</div>
+            </div>
+          </td>
+          <td>
+            <div class="text-center">
+              <div>{{ e.compteContrePartieCode }} </div>
+              <div class="mt-1">{{ e.compteContrePartieIntitule }}</div>
+            </div>
+          </td>
+          <td>{{ e.tiersLibelle || '-' }}</td>
+          <td>{{ e.montantTtc | number:'1.0-0' }} </td>
+
+          <!-- Actions -->
+          <td>
+            <!-- <span class="fa fa-eye fa-2x text-info" style="cursor:pointer"></span> -->
+            <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3"  (click)="editNature(i)"></span>
+            <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x"(click)="deleteNatureOperationDto(i)"></span>
+          </td>
+        </tr>
+      </tbody>
+
+      <tbody *ngIf="!isLoading && lignes.length === 0">
+        <tr>
+          <td colspan="8" class="text-center">
+            <h5>Aucune opération trouvée</h5>
+          </td>
+        </tr>
+      </tbody>
+
+      <tbody *ngIf="isLoading">
+        <tr>
+          <td colspan="8" class="text-center">
+            <div class="spinner-border text-secondary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav aria-label="Pagination">
+      <ul class="pagination mt-3">
+
+        <!-- Bouton Précédent -->
+        <li class="page-item" [class.disabled]="currentPage === 0">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(currentPage - 1)"
+            [ngStyle]="{'background-color': currentPage === 0 ? '#ccc' : 'transparent'}">Précédent</a>
+        </li>
+
+        <!-- Pages dynamiques -->
+        <li *ngFor="let page of pages()" class="page-item" [class.active]="page === currentPage">
+          <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)"
+            [ngStyle]="{'background-color': page === currentPage ? '#37a6de' : 'transparent'}">
+            {{ page + 1 }}
+            <span *ngIf="page === currentPage" class="visually-hidden">(current)</span>
+          </a>
+        </li>
+
+        <!-- Bouton Suivant -->
+        <li class="page-item" [class.disabled]="currentPage >= totalPages() - 1">
+          <a class="page-link" href="javascript:void(0)"
+            [ngStyle]="{'background-color': currentPage >= totalPages() - 1 ? '#ccc' : 'transparent'}"
+            (click)="goToPage(currentPage + 1)">Suivant</a>
+        </li>
+
+      </ul>
+    </nav>
+
+  </div>
+</div>
+}
+
+<!-- Detail modal -->
+<div class="modal-dialog modal-dialog-scrollable" #detailModalContent>
+  ...
+</div>
+
+<!-- Modal Création / Modification -->
+<ng-template #modalContent>
+  <div class="modal-header text-white" style="background-color: #37a6de;  ">
+    <h4 class="modal-title" style="color: white;">{{ selectedIndex !== null ? 'Modifier Opération' : 'Opération' }}</h4>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="operationForm">
+      <input type="hidden" formControlName="id">
+
+      <div class="row g-3">
+
+        <!-- Journal 
+        <div class="col-md-4">
+          <label>Journal</label>
+          <ng-select [items]="filteredJournaux" bindLabel="libelle" bindValue="id" formControlName="codeJournalId"
+            (ngModelChange)="onJournalChange($event)" placeholder="Sélectionner un journal">
+            <ng-template ng-notfound-tmp>
+              Aucun journal disponible
+            </ng-template>
+          </ng-select>
+        </div> -->
+
+        <!-- Type d'opération -->
+        <div class="col-md-4">
+          <label>Opération</label>
+          <ng-select [items]="typeOperations" bindLabel="libelle" bindValue="id" formControlName="typeOperation"
+            placeholder="Sélectionner le type d'opération" (ngModelChange)="onTypeOperationChange()" [disabled]="operationForm.get('typeOperation')?.disabled === true">
+          </ng-select>
+        </div>
+
+        @if (operationForm.get('typeOperation')?.value !== " ") {
+        <!-- Type de Mouvement -->
+        <div class="col-md-4">
+          <label>Mouvement</label>
+          <ng-select [items]="mouvements" bindLabel="libelle" bindValue="id" formControlName="typeMouvement"
+            placeholder="Sélectionner le mouvement" (ngModelChange)="onMouvementChange()" [disabled]="operationForm.get('typeMouvement')?.disabled === true">
+          </ng-select>
+        </div>
+        }
+
+        @if (operationForm.get('typeMouvement')?.value === 'ACHAT') {
+        <!-- Comptes Achats -->
+        <div class="col-md-4">
+          <label>Comptes</label>
+          <ng-select [items]="comptesAchats" bindLabel="intitule" bindValue="id"
+            formControlName="compteComptableId" 
+            placeholder="Sélectionner un compte comptable">
+            <ng-template ng-notfound-tmp>
+              Aucun compte comptable disponible
+            </ng-template>
+          </ng-select>
+          <div *ngIf="operationForm.get('compteComptableId')?.hasError('required') && operationForm.get('compteComptableId')?.touched"
+            class="text-danger">Champ obligatoire !</div>
+        </div>
+        }
+        @if (operationForm.get('typeMouvement')?.value === 'VENTE') {
+        <!-- Comptes Ventes --> 
+        <div class="col-md-4">
+          <label>Comptes</label>
+          <ng-select [items]="comptesVentes" bindLabel="intitule" bindValue="id"
+            formControlName="compteComptableId" 
+            placeholder="Sélectionner un compte comptable">
+            <ng-template ng-notfound-tmp>
+              Aucun compte comptable disponible
+            </ng-template>
+          </ng-select>
+          <div *ngIf="operationForm.get('compteComptableId')?.hasError('required') && operationForm.get('compteComptableId')?.touched"
+            class="text-danger">Champ obligatoire !</div>
+        </div>
+        }
+
+        <!-- Intitulé -->
+        <div class="col-md-4">
+          <label>Intitulé</label>
+          <input type="text" class="form-control" formControlName="libelle" placeholder="Intitulé">
+          <div *ngIf="operationForm.get('libelle')?.hasError('required') && operationForm.get('libelle')?.touched"
+            class="text-danger">Champ obligatoire !</div>
+        </div>
+
+        <!-- Article -->
+        <!-- <div class="col-md-4">
+          <label>Article</label>
+          <ng-select [items]="filteredArticles" bindLabel="designation" bindValue="id" formControlName="articleId"
+            (ngModelChange)="onArticleChange($event)" placeholder="Sélectionner une catégorie">
+            <ng-template ng-notfound-tmp>
+              Aucun article disponible
+            </ng-template>
+          </ng-select>
+        </div> -->
+
+        <!-- Catégorie -->
+        <!-- <div class="col-md-4">
+          <label>Catégorie</label>
+          <ng-select [items]="filteredCategories" bindLabel="libelle" bindValue="id" formControlName="categorieId"
+            (ngModelChange)="onCategorieChange($event)" placeholder="Sélectionner une catégorie">
+          </ng-select>
+        </div> -->
+
+        <!-- Quantite -->
+        <div class="col-md-4">
+          <label>Quantité</label>
+          <div class="input-group">
+            <input type="text" class="form-control" formControlName="quantite" [placeholder]="selectedArticle?.quantite != null
+              ? selectedArticle.quantite + (operationForm.get('mouvement')?.value === 'ACHAT' ? ' en stock' : ' disponible')
+              : 'Quantité'" (keypress)="controleForm.allowNumbersOnly($event)">
+            <span class="input-group-text">pc(s)</span>
+          </div>
+          <div *ngIf="operationForm.get('quantite')?.hasError('quantiteMax')" class="text-danger mt-1">
+            La quantité maximale disponible est
+            <strong>{{ operationForm.get('quantite')?.getError('quantiteMax')?.max }}</strong> pc(s).
+          </div>
+        </div>
+
+        <!-- TVA -->
+        <!-- <div class="col-md-4" *ngIf="showTVA">
+          <label>TVA (%)</label>
+          <input type="number" class="form-control" formControlName="tva" placeholder="Ex: 18">
+        </div> -->
+
+        <!-- Montant HT -->
+        <!-- <div class="col-md-4" *ngIf="!isArticleDivers">
+          <label>Montant (hors taxe)</label>
+          <div class="input-group">
+            <input type="number" class="form-control" formControlName="montantHt"
+              [placeholder]="operationForm.get('quantite')?.value != null && selectedArticle != null ? (operationForm.get('quantite')?.value * selectedArticle.prixUnitaire) : 'montantHt'"
+              readonly>
+            <span class="input-group-text">FCFA</span>
+          </div>
+        </div> -->
+
+        <!-- Montant TTC (readonly) -->
+        <div class="col-md-4">
+          <label>Montant</label>
+          <div class="input-group">
+            <input type="number" class="form-control" formControlName="montantTtc" placeholder="Montant TTC" [readonly]="!isArticleDivers">
+            <span class="input-group-text">FCFA</span>
+          </div>
+        </div>
+
+        <!-- Tiers -->
+        <!-- <div class="col-md-4"   >
+          <label>Tiers</label>
+          <ng-select [items]="tiersList" bindLabel="intitule" bindValue="id" placeholder="Sélection Tiers"
+            formControlName="tiersId" [searchable]="true">
+            <ng-template ng-notfound-tmp>Aucun tiers disponible</ng-template>
+          </ng-select>
+          <div
+            *ngIf="isTiersObligatoire && operationForm.get('tiersId')?.hasError('required') && operationForm.get('tiersId')?.touched"
+            class="text-danger">Champ obligatoire !</div>
+        </div> -->
+
+
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
+    <button type="button" class="btn btn-success" (click)="enregistrer()">Enregistrer</button>
+  </div>
+</ng-template>

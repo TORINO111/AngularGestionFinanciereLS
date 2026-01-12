@@ -14,7 +14,7 @@ export class NotificationService {
       positionClass: 'toast-top-right',
       progressBar: true,
       closeButton: true
-    });
+    }); 
   }
 
   showError(message: string) {

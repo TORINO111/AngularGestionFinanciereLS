@@ -135,6 +135,14 @@ const MENU_ITEMS: MenuItem[] = [
         roles: ['ADMIN', 'ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
     },
     {
+        key: 'operations-bi',
+        label: "Operations BI",
+        link: '/parametrages/operations-bi',
+        icon: 'package',
+        isTitle: false,
+        roles: ['ADMIN', 'ENTREPRISE_ADMIN', 'ENTREPRISE_USER']
+    },
+    {
         key: 'comptescomptables',
         label: 'Comptes Comptable',
         link: '/parametrages/comptes-comptables',

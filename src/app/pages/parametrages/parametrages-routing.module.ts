@@ -1,3 +1,4 @@
+import { OperationsModuleBi } from './operationsBi/operations.module';
 import { CodeJournalModule } from './codes-journaux/code-journal.module';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
@@ -7,6 +8,12 @@ const routes: Routes = [
   {
     path: 'operations',   
     loadChildren: () => import('./operations/operations.module').then(m => m.OperationsModule),
+    canActivate: [AuthGuard],
+    data: { roles: ['ADMIN', 'ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
+  },
+  {
+    path: 'operations-bi',   
+    loadChildren: () => import('./operationsBi/operations.module').then(m => m.OperationsModuleBi),
     canActivate: [AuthGuard],
     data: { roles: ['ADMIN', 'ENTREPRISE_ADMIN', 'ENTREPRISE_USER'] }
   },

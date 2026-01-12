@@ -8,6 +8,7 @@ import { environment } from 'src/environments/environment';
   providedIn: 'root'
 })
 export class CompteComptableService {
+  private apiUrl = `${environment.apiUrl}/api`;
   private apiCompteUrl = `${environment.apiUrl}/api/compte`;
   private apiComptesUrl = `${environment.apiUrl}/api/comptes`;
 
@@ -15,6 +16,14 @@ export class CompteComptableService {
 
   getAll(): Observable<CompteComptableDTO[]> {
     return this.http.get<CompteComptableDTO[]>(`${this.apiComptesUrl}`);
+  }
+
+  getAllCompteAchats(): Observable<CompteComptableDTO[]> {
+    return this.http.get<CompteComptableDTO[]>(`${this.apiUrl}/achats`);
+  }
+
+  getAllCompteVentes(): Observable<CompteComptableDTO[]> {
+    return this.http.get<CompteComptableDTO[]>(`${this.apiUrl}/ventes`);
   }
 
   getAllCompteComptablePageable(
