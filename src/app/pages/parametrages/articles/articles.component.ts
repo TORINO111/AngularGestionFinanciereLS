@@ -27,7 +27,8 @@ import { TypeCategorie } from "src/app/models/type-categorie.model";
 import { TypeMouvement } from "src/app/models/type-mouvement.model";
 import { ControlesFormulairesService } from "src/app/services/composite/controles-formulaires/controles-formulaires.service";
 import { AuthenticationService } from "src/app/core/service/auth.service"; // Added import
-import { NatureOperationService } from "src/app/services/operations/operations.service";
+import { OperationService } from "src/app/services/operations/operations.service";
+import { CodeJournalService } from "src/app/services/code-journal/code-journal.service";
 
 @Component({
   selector: "app-articles-component",
@@ -83,7 +84,7 @@ export class ArticlesComponent implements OnInit {
     private typeCategorieService: TypeCategorieService,
     public controleForm: ControlesFormulairesService,
     private authService: AuthenticationService,
-    private journalService: NatureOperationService
+    private journalService: CodeJournalService
   ) {
     this.articleForm = this.fb.group({
       id: [""],
@@ -129,7 +130,7 @@ export class ArticlesComponent implements OnInit {
   };
 
   chargerJournaux() {
-    this.journalService.getAllCodeJournal().subscribe({
+    this.journalService.getAll().subscribe({
       next: (data: any) => {
         this.journaux = data;
         this.result = true;

@@ -64,17 +64,17 @@
       <!-- Entêtes du tableau -->
       <thead class="table-custom">
         <tr>
-          <th>
+          <!-- <th>
             <h5>Code</h5>
-          </th>
+          </th> -->
           <th style="width: 250px">
             <h5>Libellé</h5>
           </th>
           <th>
-            <h5>Compte débit</h5>
+            <h5>Compte crédit</h5>
           </th>
           <th>
-            <h5>Compte crédit</h5>
+            <h5>Compte débit</h5>
           </th>
           <th>
             <h5>Quantité</h5>
@@ -90,28 +90,33 @@
 
       <tbody *ngIf="!isLoading && lignes.length > 0">
         <tr *ngFor="let e of lignes; let i = index" [class.table-active]="i === selectedIndex">
-          <td>{{ e.code }}</td>
+          <!-- <td>{{ e.code }}</td> -->
           <td>{{ e.libelle }}</td>
           <td>
             <div class="text-center">
-              <div>{{ e.compteComptableCode }}</div>
-              <div class="mt-1">{{ e.compteComptableIntitule }}</div>
+              <div>{{ e.compteCreditCode }}</div>
+              <div class="mt-1">{{ e.compteCreditIntitule }}</div>
             </div>
           </td>
           <td>
             <div class="text-center">
-              <div>{{ e.compteContrePartieCode }} </div>
-              <div class="mt-1">{{ e.compteContrePartieIntitule }}</div>
+              <div>{{ e.compteDebitCode }} </div>
+              <div class="mt-1">{{ e.compteDebitIntitule }}</div>
             </div>
           </td>
-          <td>{{ e.quantite || '-' }}</td>
-          <td>{{ e.montantTtc | number:'1.0-0' }} </td>
+          <td class="text-center">
+            {{ e.quantite || 'Non renseignée' }}
+          </td>
+          <td class="text-center">
+            {{ e.montantTtc | number:'1.0-0' }}
+          </td>
 
           <!-- Actions -->
           <td>
             <!-- <span class="fa fa-eye fa-2x text-info" style="cursor:pointer"></span> -->
-            <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3"  (click)="editNature(i)"></span>
-            <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x"(click)="deleteNatureOperationDto(i)"></span>
+            <span style="color:blue;cursor:pointer" class="fa fa-edit fa-2x me-3" (click)="editNature(i)"></span>
+            <span style="color:red;cursor:pointer" class="fa fa-trash fa-2x"
+              (click)="deleteNatureOperationDto(i)"></span>
           </td>
         </tr>
       </tbody>
@@ -169,9 +174,9 @@
 }
 
 <!-- Detail modal -->
-<div class="modal-dialog modal-dialog-scrollable" #detailModalContent>
+<!-- <div class="modal-dialog modal-dialog-scrollable" #detailModalContent>
   ...
-</div>
+</div> -->
 
 <!-- Modal Création / Modification -->
 <ng-template #modalContent>
@@ -200,7 +205,8 @@
         <div class="col-md-4">
           <label>Opération</label>
           <ng-select [items]="typeOperations" bindLabel="libelle" bindValue="id" formControlName="typeOperation"
-            placeholder="Sélectionner le type d'opération" (ngModelChange)="onTypeOperationChange()" [disabled]="operationForm.get('typeOperation')?.disabled === true">
+            placeholder="Sélectionner le type d'opération" (ngModelChange)="onTypeOperationChange()"
+            [disabled]="operationForm.get('typeOperation')?.disabled === true">
           </ng-select>
         </div>
 
@@ -209,7 +215,8 @@
         <div class="col-md-4">
           <label>Mouvement</label>
           <ng-select [items]="mouvements" bindLabel="libelle" bindValue="id" formControlName="typeMouvement"
-            placeholder="Sélectionner le mouvement" (ngModelChange)="onMouvementChange()" [disabled]="operationForm.get('typeMouvement')?.disabled === true">
+            placeholder="Sélectionner le mouvement" (ngModelChange)="onMouvementChange()"
+            [disabled]="operationForm.get('typeMouvement')?.disabled === true">
           </ng-select>
         </div>
         }
@@ -218,29 +225,29 @@
         <!-- Comptes Achats -->
         <div class="col-md-4">
           <label>Comptes</label>
-          <ng-select [items]="comptesAchats" bindLabel="intitule" bindValue="id"
-            formControlName="compteComptableId" 
+          <ng-select [items]="comptesAchats" bindLabel="intitule" bindValue="id" formControlName="compteComptableId"
             placeholder="Sélectionner un compte comptable">
             <ng-template ng-notfound-tmp>
               Aucun compte comptable disponible
             </ng-template>
           </ng-select>
-          <div *ngIf="operationForm.get('compteComptableId')?.hasError('required') && operationForm.get('compteComptableId')?.touched"
+          <div
+            *ngIf="operationForm.get('compteComptableId')?.hasError('required') && operationForm.get('compteComptableId')?.touched"
             class="text-danger">Champ obligatoire !</div>
         </div>
         }
         @if (operationForm.get('typeMouvement')?.value === 'VENTE') {
-        <!-- Comptes Ventes --> 
+        <!-- Comptes Ventes -->
         <div class="col-md-4">
           <label>Comptes</label>
-          <ng-select [items]="comptesVentes" bindLabel="intitule" bindValue="id"
-            formControlName="compteComptableId" 
+          <ng-select [items]="comptesVentes" bindLabel="intitule" bindValue="id" formControlName="compteComptableId"
             placeholder="Sélectionner un compte comptable">
             <ng-template ng-notfound-tmp>
               Aucun compte comptable disponible
             </ng-template>
           </ng-select>
-          <div *ngIf="operationForm.get('compteComptableId')?.hasError('required') && operationForm.get('compteComptableId')?.touched"
+          <div
+            *ngIf="operationForm.get('compteComptableId')?.hasError('required') && operationForm.get('compteComptableId')?.touched"
             class="text-danger">Champ obligatoire !</div>
         </div>
         }
@@ -308,7 +315,7 @@
         <div class="col-md-4">
           <label>Montant</label>
           <div class="input-group">
-            <input type="number" class="form-control" formControlName="montantTtc" placeholder="Montant TTC" >
+            <input type="number" class="form-control" formControlName="montantTtc" placeholder="Montant TTC">
             <!-- [readonly]="!isArticleDivers" -->
             <span class="input-group-text">FCFA</span>
           </div>

@@ -8,9 +8,9 @@ const routes: Routes = [
     pathMatch: 'full'
   },
   
-  { path: 'traitements', loadChildren: () => import('./traitements/traitements.module').then(m => m.TraitementsModule) },
+  // { path: 'traitements', loadChildren: () => import('./traitements/traitements.module').then(m => m.TraitementsModule) },
   { path: 'parametrages', loadChildren: () => import('./parametrages/parametrages.module').then(m => m.ParametragesModule) },
-  { path: 'etats', loadChildren: () => import('./etats/etats.module').then(m => m.EtatsModule) }
+  // { path: 'etats', loadChildren: () => import('./etats/etats.module').then(m => m.EtatsModule) }
 
 ];
 

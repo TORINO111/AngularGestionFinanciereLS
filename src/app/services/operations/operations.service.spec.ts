@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { NatureOperationService } from './operations.service';
+import { OperationService } from './operations.service';
 
-describe('NatureOperationService', () => {
-  let service: NatureOperationService;
+describe('OperationService', () => {
+  let service: OperationService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(NatureOperationService);
+    service = TestBed.inject(OperationService);
   });
 
   it('should be created', () => {

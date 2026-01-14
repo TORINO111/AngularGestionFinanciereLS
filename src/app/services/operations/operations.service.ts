@@ -8,7 +8,7 @@ import { Page } from 'ngx-pagination';
 @Injectable({
   providedIn: 'root'
 })
-export class NatureOperationService {
+export class OperationService {
 
   //private host:string='http://localhost:8082/gest-fin';
   //private host:string='//4.222.22.46:8082/gest-fin';

@@ -8,7 +8,7 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from "@angular/core";
-import { NatureOperationService } from "src/app/services/operations/operations.service";
+import { OperationService } from "src/app/services/operations/operations.service";
 import { CategorieService } from "src/app/services/categories/categorie.service";
 import { PlanComptableService } from "src/app/services/plan-comptable/plan-comptable.service";
 import {
@@ -58,7 +58,7 @@ export class OperationsComponentBi implements OnInit {
 
   selected?: OperationDto | null;
 
-  natureOperations: any[] = [];
+  operations: any[] = [];
   lignes: any[] = [];
 
   totalElements: number = 0;
@@ -160,7 +160,7 @@ export class OperationsComponentBi implements OnInit {
   comptesVentes: any;
 
   constructor(
-    private natureOperationService: NatureOperationService,
+    private operationService: OperationService,
     private articleService: ArticlesService,
     private planComptableService: PlanComptableService,
     private compteComptableService: CompteComptableService,
@@ -582,8 +582,8 @@ export class OperationsComponentBi implements OnInit {
     const natureOperation = this.operationForm.value;
     console.log(natureOperation);
     const action$ = natureOperation?.id
-      ? this.natureOperationService.update(natureOperation.id, natureOperation)
-      : this.natureOperationService.create(natureOperation);
+      ? this.operationService.update(natureOperation.id, natureOperation)
+      : this.operationService.create(natureOperation);
 
     action$.subscribe({
       next: () => {
@@ -609,7 +609,7 @@ export class OperationsComponentBi implements OnInit {
 
     this.currentPage = page;
 
-    this.natureOperationService
+    this.operationService
       .getByFilters(
         page,
         this.pageSize,
@@ -621,14 +621,14 @@ export class OperationsComponentBi implements OnInit {
       )
       .subscribe({
         next: (data) => {
-          this.natureOperations = data.content;
-          this.lignes = [...this.natureOperations];
+          this.operations = data.content;
+          this.lignes = [...this.operations];
           this.totalElements = data.totalElements;
           this.result = true;
           this.isLoading = false;
         },
         error: (err) => {
-          console.error("Erreur lors du chargement des écritures", err);
+          console.error("Erreur lors du chargement des opérations", err);
           this.result = true;
           this.isLoading = false;
         },
@@ -648,7 +648,7 @@ export class OperationsComponentBi implements OnInit {
   }
 
   chargerJournaux() {
-    this.natureOperationService.getAllCodeJournal().subscribe({
+    this.operationService.getAllCodeJournal().subscribe({
       next: (data: any) => {
         this.journaux = data;
         this.filteredJournaux = [...this.journaux];
@@ -801,9 +801,9 @@ export class OperationsComponentBi implements OnInit {
       buttonsStyling: false,
     }).then((result) => {
       if (result.value) {
-        this.natureOperationService.delete(nature.id!).subscribe({
+        this.operationService.delete(nature.id!).subscribe({
           next: () => {
-            this.natureOperations = [];
+            this.operations = [];
             this.chargerOperationPageable();
             Swal.fire("Succès", "Opération supprimée avec succès.", "success");
           },
@@ -811,9 +811,10 @@ export class OperationsComponentBi implements OnInit {
             Swal.fire("Erreur", "Une erreur s'est produite.", "error");
           },
         });
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
-        Swal.fire("Abandonné", "Suppression annulée", "info");
-      }
+      } 
+      // else if (result.dismiss === Swal.DismissReason.cancel) {
+      //   Swal.fire("Abandonné", "Suppression annulée", "info");
+      // }
     });
   }
 
@@ -846,7 +847,7 @@ export class OperationsComponentBi implements OnInit {
   }
 
   deleteNature(index: number): void {
-    const nature = this.natureOperations[index].value;
+    const nature = this.operations[index].value;
     this.deleteNatureOperationDto(nature);
   }
 
@@ -890,7 +891,7 @@ export class OperationsComponentBi implements OnInit {
           const libelle = filters.libelle?.trim() || undefined;
           const societeId = filters.societeId || undefined;
 
-          return this.natureOperationService.getByFilters(
+          return this.operationService.getByFilters(
             this.currentPage,
             this.pageSize,
             journalId,
@@ -903,8 +904,8 @@ export class OperationsComponentBi implements OnInit {
       )
       .subscribe({
         next: (data) => {
-          this.natureOperations = data.content;
-          this.lignes = [...this.natureOperations];
+          this.operations = data.content;
+          this.lignes = [...this.operations];
           this.totalElements = data.totalElements;
           this.isLoading = false;
           this.result = true;
