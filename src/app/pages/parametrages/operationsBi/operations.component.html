@@ -104,7 +104,7 @@
               <div class="mt-1">{{ e.compteContrePartieIntitule }}</div>
             </div>
           </td>
-          <td>{{ e.tiersLibelle || '-' }}</td>
+          <td>{{ e.quantite || '-' }}</td>
           <td>{{ e.montantTtc | number:'1.0-0' }} </td>
 
           <!-- Actions -->
@@ -308,7 +308,8 @@
         <div class="col-md-4">
           <label>Montant</label>
           <div class="input-group">
-            <input type="number" class="form-control" formControlName="montantTtc" placeholder="Montant TTC" [readonly]="!isArticleDivers">
+            <input type="number" class="form-control" formControlName="montantTtc" placeholder="Montant TTC" >
+            <!-- [readonly]="!isArticleDivers" -->
             <span class="input-group-text">FCFA</span>
           </div>
         </div>
@@ -324,7 +325,6 @@
             *ngIf="isTiersObligatoire && operationForm.get('tiersId')?.hasError('required') && operationForm.get('tiersId')?.touched"
             class="text-danger">Champ obligatoire !</div>
         </div> -->
-
 
       </div>
     </form>

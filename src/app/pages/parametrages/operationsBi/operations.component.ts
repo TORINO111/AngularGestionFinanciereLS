@@ -177,19 +177,18 @@ export class OperationsComponentBi implements OnInit {
       id: [],
       libelle: [null, [Validators.required, Validators.minLength(2)]],
       compteComptableId: [null, Validators.required],
-      articleId: [{ value: null }, Validators.required],
+      articleId: [null],
       typeOperation: [null, Validators.required],
-      typeMouvement: [{ value: null }, Validators.required],
+      typeMouvement: [null, Validators.required],
       societeId: [null],
       userId: [null],
       exerciceId: [null],
-      // typeNature: [null],
       sectionAnalytiqueId: [null],
       tiersId: [null],
       quantite: [0],
       montantHt: [0],
       tva: [0],
-      montantTtc: [{ value: 0, disabled: true }],
+      montantTtc: [0],
     });
   }
 
@@ -572,7 +571,6 @@ export class OperationsComponentBi implements OnInit {
     // this.closeModal();
     this.modalService.dismissAll();
 
-    console.log(this.operationForm.value);
     this.isLoading = true;
     this.result = false;
 
@@ -788,7 +786,7 @@ export class OperationsComponentBi implements OnInit {
     const nature = this.lignes[index];
 
     Swal.fire({
-      title: "Supprimer l'écriture",
+      title: "Supprimer l'opération",
       html: `
         <p><strong>Nature : </strong><span style="color: #009879; font-size: 1.2em;">${nature.libelle}</span></p>
       `,
@@ -807,7 +805,7 @@ export class OperationsComponentBi implements OnInit {
           next: () => {
             this.natureOperations = [];
             this.chargerOperationPageable();
-            Swal.fire("Succès", "Nature supprimée avec succès.", "success");
+            Swal.fire("Succès", "Opération supprimée avec succès.", "success");
           },
           error: () => {
             Swal.fire("Erreur", "Une erreur s'est produite.", "error");
